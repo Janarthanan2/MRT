@@ -1,0 +1,209 @@
+/* ==========================================================================
+   MRT Metal Mart — Design System Viewer & Component Gallery Styles
+   ========================================================================== */
+
+.design-system-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xl);
+}
+
+.ds-section-block {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  box-shadow: var(--shadow-sm);
+}
+
+.ds-block-title {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-xs);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.ds-block-desc {
+  font-size: var(--font-size-sm);
+  color: var(--color-light-gray);
+  margin-bottom: var(--space-xl);
+}
+
+/* Palette Swatches Grid */
+.swatches-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-md);
+}
+
+.swatch-card {
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: var(--color-white);
+}
+
+.swatch-color-box {
+  height: 90px;
+  width: 100%;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.swatch-info {
+  padding: 10px 12px;
+}
+
+.swatch-name {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-charcoal);
+}
+
+.swatch-hex {
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  color: var(--color-light-gray);
+  margin-top: 2px;
+}
+
+/* State Comparison Row */
+.component-states-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  flex-wrap: wrap;
+  padding: var(--space-lg);
+  background-color: var(--color-warm-ivory);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-gray);
+  margin-bottom: var(--space-md);
+}
+
+.state-label {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-light-gray);
+  text-transform: uppercase;
+  min-width: 90px;
+}
+
+/* Prototype Showcase Frame & Presentation Topbar */
+.prototype-presentation-bar {
+  background-color: #181818;
+  color: var(--color-white);
+  padding: 10px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(176, 141, 87, 0.4);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+.presentation-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-warm-ivory);
+}
+
+.presentation-badge {
+  background-color: var(--color-brass);
+  color: var(--color-white);
+  padding: 2px 8px;
+  border-radius: var(--radius-xs);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.viewport-controls {
+  display: flex;
+  align-items: center;
+  background-color: #262626;
+  border: 1px solid #3A3A3A;
+  border-radius: var(--radius-full);
+  padding: 3px;
+  gap: 4px;
+}
+
+.viewport-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: #AAA;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.viewport-btn:hover {
+  color: var(--color-white);
+}
+
+.viewport-btn.active {
+  background-color: var(--color-brass);
+  color: var(--color-white);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+}
+
+.presentation-quick-screens {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.screen-select-dropdown {
+  background-color: #262626;
+  border: 1px solid #3A3A3A;
+  color: var(--color-white);
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  cursor: pointer;
+}
+
+.screen-select-dropdown:focus {
+  outline: 1px solid var(--color-brass);
+}
+
+/* Viewport Shell Simulator */
+.viewport-frame-wrapper {
+  display: flex;
+  justify-content: center;
+  padding: 20px 0;
+  transition: all var(--transition-smooth);
+}
+
+.viewport-frame-wrapper.mode-desktop {
+  width: 100%;
+}
+
+.viewport-frame-wrapper.mode-tablet {
+  max-width: 768px;
+  margin: 0 auto;
+  border: 8px solid #222;
+  border-radius: 28px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.25);
+  background-color: var(--color-white);
+  overflow: hidden;
+}
+
+.viewport-frame-wrapper.mode-mobile {
+  max-width: 390px;
+  margin: 0 auto;
+  border: 10px solid #222;
+  border-radius: 36px;
+  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+  background-color: var(--color-white);
+  overflow: hidden;
+}

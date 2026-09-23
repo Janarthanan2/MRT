@@ -1,0 +1,321 @@
+/* ==========================================================================
+   MRT Metal Mart — Customer Dashboard, Order Tracking & Admin Console
+   ========================================================================== */
+
+/* Dashboard Layout */
+.dashboard-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: var(--space-2xl);
+  min-height: 600px;
+}
+
+/* Sidebar Navigation */
+.dashboard-sidebar {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  height: fit-content;
+}
+
+.dashboard-user-card {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--color-border-subtle);
+  margin-bottom: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.user-avatar-circle {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-brass-tint);
+  border: 1.5px solid var(--color-brass-border);
+  color: var(--color-brass-dark);
+  font-weight: var(--font-weight-extrabold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-md);
+}
+
+.dashboard-nav-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-dark-gray);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  margin-bottom: 2px;
+}
+
+.dashboard-nav-item:hover {
+  background-color: var(--color-warm-ivory);
+  color: var(--color-charcoal);
+}
+
+.dashboard-nav-item.active {
+  background-color: var(--color-brass-tint);
+  color: var(--color-brass-dark);
+  border-left: 3px solid var(--color-brass);
+}
+
+/* KPI Cards Grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-md);
+  margin-bottom: var(--space-xl);
+}
+
+.kpi-card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+}
+
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background-color: var(--color-border-gray);
+}
+
+.kpi-card.highlight::before {
+  background-color: var(--color-brass);
+}
+
+.kpi-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-light-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: var(--font-weight-semibold);
+  margin-bottom: var(--space-xs);
+}
+
+.kpi-value {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-charcoal);
+  letter-spacing: -0.02em;
+}
+
+.kpi-subtext {
+  font-size: var(--font-size-xs);
+  color: var(--color-success);
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Order Tracking Timeline */
+.tracking-card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.timeline-stepper {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  position: relative;
+  margin: var(--space-xl) 0;
+}
+
+.timeline-stepper::before {
+  content: '';
+  position: absolute;
+  top: 18px;
+  left: 10%;
+  right: 10%;
+  height: 2px;
+  background-color: var(--color-border-gray);
+  z-index: 1;
+}
+
+.timeline-progress-line {
+  position: absolute;
+  top: 18px;
+  left: 10%;
+  width: 50%; /* progress to step 3 */
+  height: 2px;
+  background-color: var(--color-brass);
+  z-index: 2;
+}
+
+.timeline-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  z-index: 3;
+}
+
+.timeline-dot {
+  width: 36px;
+  height: 36px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-white);
+  border: 2px solid var(--color-border-gray);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-muted-gray);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-xs);
+  transition: all var(--transition-fast);
+}
+
+.timeline-step.completed .timeline-dot,
+.timeline-step.active .timeline-dot {
+  border-color: var(--color-brass);
+  background-color: var(--color-brass);
+  color: var(--color-white);
+}
+
+.timeline-step.active .timeline-dot {
+  box-shadow: 0 0 0 4px var(--color-brass-glow);
+}
+
+.timeline-title {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-charcoal);
+}
+
+.timeline-date {
+  font-size: 11px;
+  color: var(--color-light-gray);
+  margin-top: 2px;
+}
+
+/* AI Product Categorizer Box (Admin) */
+.ai-categorizer-box {
+  background-color: var(--color-white);
+  border: 1.5px solid var(--color-brass-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--space-2xl);
+  position: relative;
+}
+
+.ai-badge-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-brass-tint);
+  border: 1px solid var(--color-brass-border);
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brass-dark);
+  margin-bottom: var(--space-sm);
+}
+
+.ai-result-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  background-color: var(--color-warm-ivory);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-sm);
+  padding: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+.ai-field {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ai-field-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-light-gray);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: var(--font-weight-semibold);
+}
+
+.ai-field-val {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-charcoal);
+  background-color: var(--color-white);
+  padding: 6px 10px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--color-border-subtle);
+}
+
+/* Simple CSS Bar Chart for Analytics */
+.analytics-chart-card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  margin-bottom: var(--space-xl);
+}
+
+.bar-chart-container {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-lg);
+  height: 200px;
+  padding-top: var(--space-xl);
+  border-bottom: 1px solid var(--color-border-gray);
+  margin-top: var(--space-lg);
+}
+
+.chart-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.chart-bar {
+  width: 100%;
+  max-width: 48px;
+  background-color: var(--color-warm-ivory);
+  border-radius: var(--radius-xs) var(--radius-xs) 0 0;
+  border: 1px solid var(--color-border-gray);
+  border-bottom: none;
+  transition: all var(--transition-normal);
+  position: relative;
+}
+
+.chart-bar.highlight {
+  background-color: var(--color-brass);
+  border-color: var(--color-brass-dark);
+}
+
+.chart-bar-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-light-gray);
+}

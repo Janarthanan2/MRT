@@ -1,0 +1,205 @@
+/* ==========================================================================
+   MRT Metal Mart — Responsive Breakpoints (1440px, 768px, 390px)
+   ========================================================================== */
+
+/* Mobile Hamburger & Toggle */
+.mobile-nav-toggle {
+  display: none;
+  width: 40px;
+  height: 40px;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-warm-ivory);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-sm);
+  color: var(--color-charcoal);
+  cursor: pointer;
+}
+
+.mobile-bottom-bar {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  background-color: var(--color-white);
+  border-top: 1px solid var(--color-border-gray);
+  z-index: 100;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.06);
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 var(--space-xs);
+}
+
+.bottom-bar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-light-gray);
+  cursor: pointer;
+}
+
+.bottom-bar-item.active {
+  color: var(--color-brass-dark);
+}
+
+/* --- Tablet Breakpoint (<= 1024px / 768px) --- */
+@media (max-width: 1024px) {
+  .products-grid-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .category-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-2xl);
+  }
+  
+  .hero-media-wrap {
+    order: -1;
+    max-width: 580px;
+    margin: 0 auto;
+  }
+  
+  .customizer-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2xl);
+  }
+  
+  .rfq-workflow {
+    grid-template-columns: repeat(3, 1fr);
+  }
+  
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* --- Tablet / Large Mobile (<= 768px) --- */
+@media (max-width: 768px) {
+  :root {
+    --header-height: 70px;
+  }
+
+  .nav-menu {
+    display: none;
+  }
+  
+  .mobile-nav-toggle {
+    display: flex;
+  }
+  
+  .mobile-bottom-bar {
+    display: flex;
+  }
+  
+  body {
+    padding-bottom: 70px; /* Space for bottom bar */
+  }
+  
+  .header-search-btn {
+    min-width: auto;
+    padding: 0.5rem;
+  }
+  
+  .header-search-btn span,
+  .header-search-btn kbd {
+    display: none;
+  }
+  
+  .promo-strip-links {
+    display: none;
+  }
+  
+  .promo-strip-content {
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .hero-floating-card {
+    display: none;
+  }
+  
+  .form-grid-2,
+  .form-grid-3 {
+    grid-template-columns: 1fr;
+  }
+  
+  .rfq-workflow {
+    grid-template-columns: 1fr;
+    gap: var(--space-sm);
+  }
+  
+  .workflow-step {
+    flex-direction: row;
+    text-align: left;
+    gap: var(--space-md);
+  }
+  
+  .timeline-stepper {
+    grid-template-columns: 1fr;
+    gap: var(--space-md);
+  }
+  
+  .timeline-stepper::before,
+  .timeline-progress-line {
+    display: none;
+  }
+  
+  .timeline-step {
+    flex-direction: row;
+    text-align: left;
+    gap: var(--space-md);
+  }
+}
+
+/* --- Mobile Specific (<= 480px / 390px) --- */
+@media (max-width: 480px) {
+  .products-grid-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  .category-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-trust-bar {
+    grid-template-columns: 1fr;
+  }
+  
+  .hero-cta-group {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .hero-cta-group .btn {
+    width: 100%;
+  }
+  
+  .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .preset-card {
+    grid-template-columns: 1fr;
+  }
+}

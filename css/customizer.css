@@ -1,0 +1,254 @@
+/* ==========================================================================
+   MRT Metal Mart — Interactive Customizer Styles
+   ========================================================================== */
+
+.customizer-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: var(--space-2xl);
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-lg);
+  padding: var(--space-2xl);
+  box-shadow: var(--shadow-md);
+}
+
+/* Left: Live Visual Preview Canvas */
+.customizer-preview-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background-color: #F7F5EE;
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-md);
+  padding: var(--space-2xl);
+  position: relative;
+  min-height: 480px;
+}
+
+.customizer-live-badge {
+  position: absolute;
+  top: var(--space-md);
+  left: var(--space-md);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-full);
+  padding: 4px 10px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-charcoal);
+  box-shadow: var(--shadow-xs);
+}
+
+.live-indicator-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10B981;
+  animation: pulse-dot 1.8s infinite;
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+
+.customizer-trophy-display {
+  position: relative;
+  width: 100%;
+  max-width: 380px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.customizer-product-img {
+  width: 100%;
+  max-height: 320px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 20px rgba(0, 0, 0, 0.08));
+}
+
+/* Simulated Brass Engraving Plate */
+.engraving-plate-mockup {
+  width: 90%;
+  max-width: 320px;
+  min-height: 90px;
+  padding: 12px 16px;
+  margin-top: 10px;
+  border-radius: var(--radius-xs);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  border: 1.5px solid rgba(0, 0, 0, 0.2);
+  transition: all var(--transition-normal);
+}
+
+/* Finish Variants */
+.engraving-plate-mockup.finish-antique-brass {
+  background: linear-gradient(135deg, #C2A26F 0%, #B08D57 40%, #A07C44 70%, #B8965F 100%);
+  color: #241A0B;
+  text-shadow: 0.5px 0.5px 0 rgba(255, 255, 255, 0.35);
+  border-color: #7A5B2C;
+}
+
+.engraving-plate-mockup.finish-polished-gold {
+  background: linear-gradient(135deg, #F3D993 0%, #D4AF37 50%, #C59B27 100%);
+  color: #2A2004;
+  text-shadow: 0.5px 0.5px 0 rgba(255, 255, 255, 0.5);
+  border-color: #8C6D13;
+}
+
+.engraving-plate-mockup.finish-silver-chrome {
+  background: linear-gradient(135deg, #F0F0F0 0%, #D4D8DB 50%, #BCC1C6 100%);
+  color: #1F2428;
+  text-shadow: 0.5px 0.5px 0 rgba(255, 255, 255, 0.6);
+  border-color: #8A929A;
+}
+
+/* Corner Screws */
+.plate-rivet {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.6), 0 0.5px 0 rgba(255, 255, 255, 0.4);
+}
+
+.plate-rivet-tl { top: 4px; left: 4px; }
+.plate-rivet-tr { top: 4px; right: 4px; }
+.plate-rivet-bl { bottom: 4px; left: 4px; }
+.plate-rivet-br { bottom: 4px; right: 4px; }
+
+/* Engraved Text Lines */
+.plate-logo-preview {
+  max-height: 24px;
+  margin-bottom: 4px;
+}
+
+.plate-line-1 {
+  font-size: 0.9375rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1.2;
+}
+
+.plate-line-2 {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-top: 2px;
+}
+
+.plate-line-3 {
+  font-size: 0.6875rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  margin-top: 3px;
+  opacity: 0.85;
+}
+
+/* Font styles applied to the plate */
+.engraving-plate-mockup.font-serif {
+  font-family: 'Playfair Display', Georgia, serif;
+}
+
+.engraving-plate-mockup.font-sans {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.engraving-plate-mockup.font-script {
+  font-family: 'Brush Script MT', cursive, Georgia;
+  font-style: italic;
+}
+
+/* Right: Customization Controls */
+.customizer-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.control-card {
+  padding: var(--space-md);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-sm);
+  background-color: var(--color-off-white);
+}
+
+.finish-options-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-sm);
+  margin-top: var(--space-xs);
+}
+
+.finish-option-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: var(--space-sm);
+  background-color: var(--color-white);
+  border: 1.5px solid var(--color-border-gray);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.finish-option-btn:hover {
+  border-color: var(--color-brass);
+}
+
+.finish-option-btn.active {
+  border-color: var(--color-brass);
+  background-color: var(--color-brass-tint);
+  box-shadow: 0 0 0 2px var(--color-brass-glow);
+}
+
+.finish-swatch {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  border: 1px solid rgba(0, 0, 0, 0.15);
+}
+
+.swatch-antique-brass { background: linear-gradient(135deg, #B08D57, #7A5B2C); }
+.swatch-polished-gold { background: linear-gradient(135deg, #F3D993, #D4AF37); }
+.swatch-silver-chrome { background: linear-gradient(135deg, #F0F0F0, #A2A9B0); }
+
+.font-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xs);
+  margin-top: var(--space-xs);
+}
+
+.font-btn {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-xs);
+  background-color: var(--color-white);
+  font-size: var(--font-size-sm);
+  text-align: center;
+  cursor: pointer;
+}
+
+.font-btn.active {
+  border-color: var(--color-brass);
+  background-color: var(--color-brass-tint);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brass-dark);
+}

@@ -1,0 +1,585 @@
+/* ==========================================================================
+   MRT Metal Mart — Storefront Layouts (Kerala Brass Heritage Focus)
+   ========================================================================== */
+
+/* --- Promotional Strip --- */
+.promo-strip {
+  background-color: var(--color-deep-brown);
+  color: var(--color-warm-ivory);
+  font-size: var(--font-size-xs);
+  height: var(--promo-height);
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(176, 141, 87, 0.35);
+  position: relative;
+  z-index: 100;
+}
+
+.promo-strip-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.promo-strip-text {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.promo-highlight {
+  color: var(--color-brass-light);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.promo-strip-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  color: #CCC;
+}
+
+.promo-strip-links a:hover {
+  color: var(--color-white);
+}
+
+/* --- Main Navigation Header --- */
+.site-header {
+  background-color: var(--color-white);
+  border-bottom: 1px solid var(--color-border-gray);
+  position: sticky;
+  top: 0;
+  z-index: 90;
+  box-shadow: var(--shadow-xs);
+  transition: all var(--transition-normal);
+}
+
+.header-inner {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-xl);
+}
+
+/* Brand Logo Treatment */
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.brand-monogram {
+  width: 46px;
+  height: 46px;
+  background-color: var(--color-warm-ivory);
+  border: 1.5px solid var(--color-brass);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-deep-brown);
+  font-family: var(--font-family-serif);
+  font-weight: 700;
+  font-size: 1.35rem;
+  position: relative;
+  box-shadow: inset 0 0 10px rgba(176, 141, 87, 0.2);
+}
+
+.brand-monogram::after {
+  content: '';
+  position: absolute;
+  bottom: 4px;
+  width: 16px;
+  height: 2px;
+  background-color: var(--color-brass);
+}
+
+.brand-text-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.brand-name {
+  font-family: var(--font-family-serif);
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--color-deep-brown);
+  line-height: 1.1;
+}
+
+.brand-tagline {
+  font-size: 0.6875rem;
+  color: var(--color-brass-dark);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+/* Navigation Links */
+.nav-menu {
+  display: flex;
+  align-items: center;
+  gap: var(--space-lg);
+}
+
+.nav-link {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-charcoal);
+  padding: var(--space-xs) 0;
+  display: inline-block;
+  transition: color var(--transition-fast);
+  position: relative;
+}
+
+.nav-link:hover {
+  color: var(--color-brass-dark);
+}
+
+.nav-link.active {
+  color: var(--color-brass-dark);
+}
+
+.nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: var(--color-brass);
+  border-radius: var(--radius-full);
+}
+
+/* Header Action Icons */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex-shrink: 0;
+}
+
+.header-search-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: 0.6rem 1.1rem;
+  background-color: var(--color-warm-ivory);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-full);
+  color: var(--color-light-gray);
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 240px;
+}
+
+.header-search-btn:hover {
+  border-color: var(--color-brass);
+  background-color: var(--color-white);
+  color: var(--color-charcoal);
+}
+
+.header-search-btn kbd {
+  margin-left: auto;
+  font-size: 11px;
+  background: var(--color-white);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-xs);
+  padding: 2px 6px;
+  color: var(--color-muted-gray);
+  font-family: var(--font-family-mono);
+}
+
+.action-badge-wrap {
+  position: relative;
+}
+
+.action-count-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background-color: var(--color-brass-dark);
+  color: var(--color-white);
+  font-size: 10px;
+  font-weight: var(--font-weight-bold);
+  width: 18px;
+  height: 18px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* --- Hero Section (Brass as Hero) --- */
+.hero-section {
+  background-color: var(--color-cream);
+  position: relative;
+  overflow: hidden;
+  padding-top: var(--space-2xl);
+  padding-bottom: var(--space-3xl);
+  border-bottom: 1px solid var(--color-border-gray);
+  background-image: radial-gradient(circle at 80% 30%, rgba(214, 183, 127, 0.25) 0%, transparent 60%);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  align-items: center;
+  gap: var(--space-3xl);
+}
+
+.hero-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  z-index: 2;
+}
+
+.hero-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--color-white);
+  border: 1px solid var(--color-brass-border);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brass-dark);
+  margin-bottom: var(--space-md);
+  box-shadow: var(--shadow-xs);
+}
+
+.hero-kicker-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: var(--color-brass-gold);
+}
+
+.hero-title {
+  font-family: var(--font-family-serif);
+  font-size: clamp(2.4rem, 4.2vw + 1rem, 3.8rem);
+  font-weight: 700;
+  color: var(--color-deep-brown);
+  line-height: 1.12;
+  margin-bottom: var(--space-md);
+}
+
+.hero-description {
+  font-size: var(--font-size-lg);
+  color: var(--color-dark-gray);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--space-xl);
+  max-width: 560px;
+}
+
+.hero-cta-group {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-2xl);
+  flex-wrap: wrap;
+}
+
+.hero-trust-bar {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  width: 100%;
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--color-border-gray);
+}
+
+.trust-item {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.trust-metric {
+  font-size: 1.15rem;
+  font-weight: var(--font-weight-extrabold);
+  color: var(--color-deep-brown);
+}
+
+.trust-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-light-gray);
+  font-weight: var(--font-weight-medium);
+}
+
+/* Hero Media Frame */
+.hero-media-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-image-frame {
+  position: relative;
+  width: 100%;
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-xl);
+  border: 1.5px solid var(--color-brass-border);
+  background-color: var(--color-white);
+}
+
+.hero-image-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Floating Showroom Badge */
+.hero-floating-card {
+  position: absolute;
+  bottom: -20px;
+  left: -20px;
+  background-color: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--color-brass-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  max-width: 310px;
+  z-index: 3;
+}
+
+.hero-floating-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-brass-tint);
+  border: 1px solid var(--color-brass-border);
+  color: var(--color-brass-dark);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Section 3: Main Categories Grid (Brass Products Visually Dominant)
+   ========================================================================== */
+.main-categories-layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr 1fr;
+  gap: var(--space-xl);
+  margin-top: var(--space-xl);
+}
+
+.main-cat-card {
+  background-color: var(--color-white);
+  border: 1px solid var(--color-border-gray);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-normal);
+  cursor: pointer;
+}
+
+.main-cat-card:hover {
+  border-color: var(--color-brass);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-4px);
+}
+
+/* Dominant Brass Products Card */
+.main-cat-card.dominant-card {
+  background: linear-gradient(145deg, var(--color-white) 0%, var(--color-brass-tint) 100%);
+  border: 2px solid var(--color-brass);
+  box-shadow: var(--shadow-md);
+}
+
+.main-cat-card.dominant-card::after {
+  content: 'PRIMARY FOUNDRY CATEGORY';
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background-color: var(--color-brass-dark);
+  color: var(--color-white);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 3px 8px;
+  border-radius: var(--radius-xs);
+  letter-spacing: 0.08em;
+}
+
+.main-cat-thumb {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background-color: var(--color-warm-ivory);
+  margin-bottom: var(--space-md);
+}
+
+.main-cat-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--transition-smooth);
+}
+
+.main-cat-card:hover .main-cat-thumb img {
+  transform: scale(1.04);
+}
+
+.main-cat-title {
+  font-family: var(--font-family-serif);
+  font-size: 1.6rem;
+  color: var(--color-deep-brown);
+  margin-bottom: 4px;
+}
+
+.main-cat-subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-light-gray);
+  margin-bottom: var(--space-md);
+}
+
+.main-cat-cta {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-brass-dark);
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ==========================================================================
+   Section 5: Brass Product Collections (6 Cards)
+   ========================================================================== */
+.brass-collections-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-lg);
+}
+
+/* ==========================================================================
+   Section 6: Festive Offers Section
+   ========================================================================== */
+.festive-banner {
+  background: linear-gradient(135deg, var(--color-deep-brown) 0%, #261609 100%);
+  border-radius: var(--radius-lg);
+  color: var(--color-white);
+  padding: var(--space-3xl);
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(176, 141, 87, 0.4);
+  box-shadow: var(--shadow-xl);
+}
+
+.festive-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: var(--space-2xl);
+  align-items: center;
+}
+
+.festive-promo-pill {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(214, 183, 127, 0.3);
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+}
+
+/* --- Footer --- */
+.site-footer {
+  background-color: #171410;
+  color: #AAA;
+  padding-top: var(--space-4xl);
+  padding-bottom: var(--space-2xl);
+  border-top: 1px solid rgba(176, 141, 87, 0.3);
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: var(--space-3xl);
+  margin-bottom: var(--space-3xl);
+}
+
+.footer-brand-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.footer-brand-title {
+  color: var(--color-white);
+  font-family: var(--font-family-serif);
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.footer-bio {
+  font-size: var(--font-size-sm);
+  color: #8E8A83;
+  line-height: var(--line-height-relaxed);
+  max-width: 320px;
+}
+
+.footer-col-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-white);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: var(--space-md);
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-link {
+  font-size: var(--font-size-sm);
+  color: #8E8A83;
+  transition: color var(--transition-fast);
+}
+
+.footer-link:hover {
+  color: var(--color-brass-light);
+}
+
+.footer-bottom {
+  padding-top: var(--space-xl);
+  border-top: 1px solid #26221D;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  font-size: var(--font-size-xs);
+  color: #6E6A63;
+}
