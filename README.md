@@ -1,4 +1,4 @@
-# MRT Metal Mart — Brass Heritage & Modern Recognition E-Commerce UI/UX
+# MRT Metal Mart :  Brass Heritage & Modern Recognition E-Commerce UI/UX
 
 > **"MRT Metal Mart — Brass Heritage. Modern Shopping. Meaningful Awards."**  
 > A complete, modern, premium, responsive e-commerce web platform and UI/UX design system for **MRT Metal Mart**, a metal products business based in Kerala, India.
