@@ -997,7 +997,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <StatCard icon="₹" label="Monthly Revenue" value="₹4.21L" trend="+8.4%" color="brass" />
         <StatCard icon="📦" label="Orders This Month" value="211" trend="+11.2%" color="green" />
-        <StatCard icon="🛒" label="Avg. Order Value" value="₹1,995" trend="+2.1%" color="blue" />        <StatCard icon="↩️" label="Return Rate" value="2.4%" trend="-0.3%" color="amber" />
+        <StatCard icon="🛒" label="Avg. Order Value" value="₹1,995" trend="+2.1%" color="blue" />
+        <StatCard icon="↩️" label="Return Rate" value="2.4%" trend="-0.3%" color="amber" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-5">
