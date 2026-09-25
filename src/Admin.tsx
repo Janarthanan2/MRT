@@ -390,7 +390,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                 <h1 className="text-xl font-bold text-stone-800">MRT Metal Mart</h1>
                 <p className="text-xs text-stone-500 tracking-widest uppercase mt-0.5">Admin Portal</p>
                 <div className="flex items-center gap-2 mt-3 mx-auto w-fit bg-amber-50 border border-amber-200 rounded-full px-3 py-1">
-                  <span className="text-amber-700 text-[10px]">≡ƒöÆ</span>
+                  <span className="text-amber-700 text-[10px]">🔐</span>
                   <span className="text-[10px] text-amber-700 font-medium">Authorized Access Only</span>
                 </div>
               </div>
@@ -411,7 +411,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                       </button>
                     </>
                   )}
-                  <button onClick={() => { setForgotPw(false); setForgotSent(false) }} className="w-full text-xs text-stone-500 hover:text-stone-700 mt-2">ΓåÉ Back to Login</button>
+                  <button onClick={() => { setForgotPw(false); setForgotSent(false) }} className="w-full text-xs text-stone-500 hover:text-stone-700 mt-2">← Back to Login</button>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -429,7 +429,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                     <label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-500 mb-1.5">Password</label>
                     <input
                       type="password"
-                      placeholder="ΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇóΓÇó"
+                      placeholder="••••••••"
                       value={loginForm.password}
                       onChange={e => setLoginForm(f => ({ ...f, password: e.target.value }))}
                       onKeyDown={e => e.key === 'Enter' && handleLogin()}
@@ -439,7 +439,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
                   {loginError && (
                     <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 text-xs text-red-700">
-                      ≡ƒöÆ {loginError}
+                      🔐 {loginError}
                     </div>
                   )}
 
@@ -452,7 +452,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   </div>
 
                   <button onClick={handleLogin} className="w-full py-3.5 text-sm font-semibold text-white rounded-lg transition-opacity hover:opacity-90" style={{ background: `linear-gradient(135deg, ${BRASS}, ${GOLD})` }}>
-                    Secure Login ΓåÆ
+                    Secure Login →
                   </button>
 
                   <p className="text-[10px] text-stone-400 text-center mt-2">
@@ -463,8 +463,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
             </div>
 
             <div className="bg-stone-50 border-t border-stone-100 px-8 py-4 flex items-center justify-between">
-              <p className="text-[10px] text-stone-400">≡ƒ¢í∩╕Å SSL Secured ┬╖ 2FA Available</p>
-              <button onClick={onBack} className="text-[10px] text-stone-400 hover:text-stone-600">ΓåÉ Back to Store</button>
+              <p className="text-[10px] text-stone-400">🛡️ SSL Secured · 2FA Available</p>
+              <button onClick={onBack} className="text-[10px] text-stone-400 hover:text-stone-600">← Back to Store</button>
             </div>
           </div>
         </div>
@@ -572,14 +572,14 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <h3 className="font-semibold text-stone-700 text-sm">Recent Orders</h3>
-            <button onClick={() => setPage('orders')} className="text-[11px] font-medium hover:underline" style={{ color: BRASS }}>View all ΓåÆ</button>
+            <button onClick={() => setPage('orders')} className="text-[11px] font-medium hover:underline" style={{ color: BRASS }}>View all →</button>
           </div>
           <div className="space-y-2">
             {ORDERS.slice(0, 5).map(o => (
               <div key={o.id} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
                 <div>
                   <p className="text-xs font-medium text-stone-700">{o.id}</p>
-                  <p className="text-[10px] text-stone-400">{o.customer} ┬╖ {o.date}</p>
+                  <p className="text-[10px] text-stone-400">{o.customer} · {o.date}</p>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-semibold text-stone-700">Γé╣{o.total.toLocaleString()}</p>
@@ -726,7 +726,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                 <label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-500 mb-1.5">Product Images</label>
                 <div className="border-2 border-dashed border-stone-200 rounded-lg p-6 text-center">
                   <p className="text-stone-400 text-xs">Drag & drop images or click to upload</p>
-                  <p className="text-[10px] text-stone-300 mt-1">PNG, JPG up to 5MB ┬╖ Min. 800├ù800px</p>
+                  <p className="text-[10px] text-stone-300 mt-1">PNG, JPG up to 5MB · Min. 800├ù800px</p>
                   <button className="mt-3 text-xs font-medium px-4 py-2 rounded-lg" style={{ color: BRASS, border: `1px solid ${BRASS}` }}>Browse Files</button>
                 </div>
               </div>
@@ -920,7 +920,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   <StatusBadge status={r.status} />
                 </div>
                 <h3 className="font-semibold text-stone-800">{r.name}</h3>
-                <p className="text-xs text-stone-500">{r.email} ┬╖ {r.phone}</p>
+                <p className="text-xs text-stone-500">{r.email} · {r.phone}</p>
               </div>
               <div className="text-right">
                 <p className="text-xs text-stone-400">{r.date}</p>
