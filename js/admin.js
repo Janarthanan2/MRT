@@ -112,8 +112,14 @@ const AdminConsole = {
 
       try {
         for (let index = 0; index < files.length; index++) {
-          const result = await window.MRTApi.uploadProductImage(productId, files[index], index === primaryIndex);
-          if (!result.ok) throw new Error(result.message || `Upload failed for ${files[index].name}`);
+          await window.MRTApi.uploadProductImage(
+            productId,
+            files[index],
+            index === primaryIndex,
+            (progress) => {
+              if (status) status.textContent = `Uploading ${index + 1}/${files.length}: ${progress}%`;
+            }
+          );
         }
 
         if (status) status.textContent = `${files.length} image(s) uploaded successfully.`;
