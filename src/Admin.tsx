@@ -106,7 +106,7 @@ const BESTSELLERS = [
   { name: 'Brass Kalash', sold: 189, revenue: 283311 },
 ]
 
-const DAILY_ORDERS = [
+const dailyOrders = [
   { day: 'Mon', orders: 28 }, { day: 'Tue', orders: 35 }, { day: 'Wed', orders: 31 },
   { day: 'Thu', orders: 42 }, { day: 'Fri', orders: 38 }, { day: 'Sat', orders: 55 }, { day: 'Sun', orders: 47 },
 ]
@@ -266,7 +266,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
 
   // Products state
-  const [products, setProducts] = useState(PRODUCTS)
+  const [products, setProducts] = useState<Product[]>([])
   const [productSearch, setProductSearch] = useState('')
   const [showProductForm, setShowProductForm] = useState(false)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
@@ -278,7 +278,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   })
 
   // Orders state
-  const [orders, setOrders] = useState(ORDERS)
+  const [orders, setOrders] = useState<Order[]>([])
   const [orderSearch, setOrderSearch] = useState('')
   const [orderFilter, setOrderFilter] = useState('')
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
@@ -287,46 +287,20 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [custSearch, setCustSearch] = useState('')
 
   // Custom orders
-  const [requests, setRequests] = useState(CUSTOM_REQUESTS)
+  const [requests, setRequests] = useState<CustomRequest[]>([])
+  const [customers, setCustomers] = useState<Customer[]>([])
+  const [reviews, setReviews] = useState<any[]>([])
+  const [offers, setOffers] = useState<any[]>([])
+  const [notifications, setNotifications] = useState<any[]>([])
+  const [adminUsers, setAdminUsers] = useState<any[]>([])
+  const [activityLog, setActivityLog] = useState<any[]>([])
+  const [revenueData, setRevenueData] = useState<any[]>([])
+  const [dailyOrders, setDailyOrders] = useState<any[]>([])
+  const [bestSellers, setBestSellers] = useState<any[]>([])
+  const [categoryData, setCategoryData] = useState<any[]>([])
   const [selectedReq, setSelectedReq] = useState<CustomRequest | null>(null)
   const [showQuoteForm, setShowQuoteForm] = useState(false)
   const [quoteForm, setQuoteForm] = useState({ amount: '', validity: '30', notes: '', deliveryDays: '45' })
-
-  // Reviews mock
-  const REVIEWS = [
-    { id: 1, customer: 'Priya N.', product: 'Dancing Ganesha Idol', rating: 5, comment: 'Absolutely stunning, exceeded all expectations. Masterful craftsmanship!', date: 'Sep 22, 2025', status: 'Published' },
-    { id: 2, customer: 'Rajesh S.', product: 'Brass Puja Thali Set', rating: 4, comment: 'Very good quality. Minor delay in delivery but packaging was excellent.', date: 'Sep 20, 2025', status: 'Published' },
-    { id: 3, customer: 'Ananya K.', product: 'Brass Urli Bowl', rating: 5, comment: 'Perfect for my living room décor. Exactly as described.', date: 'Sep 18, 2025', status: 'Published' },
-    { id: 4, customer: 'Anonymous', product: 'Peacock Incense Holder', rating: 2, comment: 'Quality was below expectation. Not worth the price.', date: 'Sep 15, 2025', status: 'Flagged' },
-    { id: 5, customer: 'Sunita P.', product: 'Kuthu Vilakku Lamp', rating: 5, comment: 'Museum quality. I was speechless when I opened the package.', date: 'Sep 12, 2025', status: 'Published' },
-  ]
-
-  // Offers mock
-  const OFFERS = [
-    { id: 1, code: 'DIWALI25', discount: '25%', type: 'Percentage', minOrder: 2000, used: 142, validity: 'Oct 31, 2025', status: 'Active' },
-    { id: 2, code: 'FIRSTBUY', discount: '15%', type: 'Percentage', minOrder: 0, used: 389, validity: 'Dec 31, 2025', status: 'Active' },
-    { id: 3, code: 'FREESHIP', discount: 'Free Shipping', type: 'Shipping', minOrder: 1500, used: 201, validity: 'Dec 31, 2025', status: 'Active' },
-    { id: 4, code: 'SUMMER500', discount: '₹500 off', type: 'Fixed', minOrder: 3000, used: 67, validity: 'Sep 30, 2025', status: 'Expired' },
-  ]
-
-  // Notifications
-  const NOTIFS = [
-    { id: 1, type: '🔴', msg: 'Stock critically low: Brass Urli Bowl (3 units remaining)', time: '5 min ago', read: false },
-    { id: 2, type: '🟡', msg: 'New custom order request from Lakshmi Ventures (₹5,00,000 potential)', time: '20 min ago', read: false },
-    { id: 3, type: '🟢', msg: 'Order MRT-2025-1899 delivered successfully', time: '1 hr ago', read: false },
-    { id: 4, type: '🔵', msg: 'New review posted for Dancing Ganesha Idol — 5★', time: '2 hr ago', read: true },
-    { id: 5, type: '🔴', msg: 'Payment failed: Order MRT-2025-1896 — ₹4,499', time: '3 hr ago', read: true },
-    { id: 6, type: '🟡', msg: 'Kuthu Vilakku Lamp — Only 2 units left!', time: '4 hr ago', read: true },
-  ]
-
-  // Admin users mock
-  const ADMIN_USERS = [
-    { id: 1, name: 'Suresh Kumar', email: 'suresh@mrtmetalmart.in', role: 'Super Admin', lastLogin: '2 min ago', status: 'Active' },
-    { id: 2, name: 'Priya Anand', email: 'priya@mrtmetalmart.in', role: 'Manager', lastLogin: '1 hr ago', status: 'Active' },
-    { id: 3, name: 'Rahul Mehta', email: 'rahul@mrtmetalmart.in', role: 'Order Manager', lastLogin: 'Yesterday', status: 'Active' },
-    { id: 4, name: 'Deepa Nair', email: 'deepa@mrtmetalmart.in', role: 'Content Editor', lastLogin: '3 days ago', status: 'Active' },
-    { id: 5, name: 'Arjun Singh', email: 'arjun@mrtmetalmart.in', role: 'Viewer', lastLogin: 'Never', status: 'Inactive' },
-  ]
 
   const handleLogin = async () => {
     try {
@@ -401,11 +375,46 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   useEffect(() => {
     if (!loggedIn) return
-    adminApi.products().then((rows: any[]) => setProducts(rows.map((p: any) => ({ id: Number(p.id), name: p.name, category: p.category || 'Uncategorized', price: Number(p.price || 0), stock: Number(p.stock || 0), status: (p.status || 'Active') as Product['status'], material: p.material || 'Pure Brass', weight: p.weight || '', dimensions: p.dimensions || '', sku: p.sku || `MRT-${p.id}`, antique: false, customizable: false })))).catch(() => {})
-    adminApi.orders().then((rows: any[]) => setOrders(rows.map((o: any) => ({ id: o.order_number || String(o.id), customer: o.customer || 'Customer', date: o.created_at || '', items: 0, total: Number(o.total || 0), payment: (o.payment_status || 'Pending') as Order['payment'], status: (o.status || 'Processing') as Order['status'], city: '' })))).catch(() => {})
+    const load = <T,>(loader: () => Promise<T>, setter: (value: T) => void) => {
+      loader().then(setter).catch(() => {})
+    }
+
+    load(adminApi.products, (rows: any[]) => setProducts(rows.map((p: any) => ({
+      id: Number(p.id), name: p.name || '', category: p.category || '', price: Number(p.price || 0),
+      stock: Number(p.stock || 0), status: (p.status || 'Active') as Product['status'],
+      material: p.material || '', weight: p.weight || '', dimensions: p.dimensions || '',
+      sku: p.sku || '', antique: Boolean(p.antique), customizable: Boolean(p.customizable),
+    }))))
+    load(adminApi.orders, (rows: any[]) => setOrders(rows.map((o: any) => ({
+      id: o.order_number || String(o.id), customer: o.customer || '', date: o.created_at || '',
+      items: Number(o.items_count || o.items || 0), total: Number(o.total || 0),
+      payment: (o.payment_status || 'Pending') as Order['payment'],
+      status: (o.status || 'Processing') as Order['status'], city: o.city || '',
+    }))))
+    load(adminApi.customers, (rows: any[]) => setCustomers(rows.map((c: any) => ({
+      id: Number(c.id), name: c.name || '', email: c.email || '', phone: c.phone || '',
+      orders: Number(c.orders || c.order_count || 0), totalSpent: Number(c.total_spent || c.totalSpent || 0),
+      joined: c.joined || c.created_at || '', status: (c.status || 'Active') as Customer['status'],
+    }))))
+    load(adminApi.customOrders, (rows: any[]) => setRequests(rows.map((r: any) => ({
+      id: String(r.id || r.request_number || ''), name: r.name || r.customer_name || '',
+      email: r.email || '', phone: r.phone || '', product: r.product || r.product_name || '',
+      qty: Number(r.qty || r.quantity || 0), details: r.details || r.description || '',
+      date: r.date || r.created_at || '', status: (r.status || 'New') as CustomRequest['status'],
+      budget: r.budget == null ? undefined : Number(r.budget),
+    }))))
+    load(adminApi.reviews, setReviews)
+    load(adminApi.offers, setOffers)
+    load(adminApi.notifications, setNotifications)
+    load(adminApi.users, setAdminUsers)
+    load(adminApi.activityLog, setActivityLog)
+    load(adminApi.revenue, setRevenueData)
+    load(adminApi.analyticsOrders, setDailyOrders)
+    load(adminApi.analyticsProducts, setBestSellers)
+    load(adminApi.dashboardCategories, setCategoryData)
   }, [loggedIn])
 
-  const unreadCount = NOTIFS.filter(n => !n.read).length
+  const unreadCount = notifications.filter(n => !n.read).length
 
   // ── Login Screen ─────────────────────────────────────────────────────────
 
@@ -565,7 +574,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
             <span className="text-[10px] text-stone-400">Apr–Sep 2025</span>
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={REVENUE_DATA}>
+            <AreaChart data={revenueData}>
               <defs>
                 <linearGradient id="rev" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={BRASS} stopOpacity={0.15}/>
@@ -585,8 +594,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           <h3 className="font-semibold text-stone-700 text-sm mb-5">Revenue by Category</h3>
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
-              <Pie data={CATEGORY_DATA} dataKey="value" cx="50%" cy="50%" outerRadius={65} innerRadius={35}>
-                {CATEGORY_DATA.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              <Pie data={categoryData} dataKey="value" cx="50%" cy="50%" outerRadius={65} innerRadius={35}>
+                {categoryData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
               <Tooltip formatter={(v: unknown) => [`${v}%`, "Share"]} />
             </PieChart>
@@ -614,7 +623,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
             <button onClick={() => setPage('orders')} className="text-[11px] font-medium hover:underline" style={{ color: BRASS }}>View all →</button>
           </div>
           <div className="space-y-2">
-            {ORDERS.slice(0, 5).map(o => (
+            {orders.slice(0, 5).map(o => (
               <div key={o.id} className="flex items-center justify-between py-2 border-b border-stone-100 last:border-0">
                 <div>
                   <p className="text-xs font-medium text-stone-700">{o.id}</p>
@@ -914,7 +923,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <table className="w-full">
           <TableHeader cols={['Customer', 'Contact', 'Orders', 'Total Spent', 'Member Since', 'Status', 'Actions']} />
           <tbody>
-            {CUSTOMERS.filter(c => c.name.toLowerCase().includes(custSearch.toLowerCase()) || c.email.includes(custSearch)).map(c => (
+            {customers.filter(c => c.name.toLowerCase().includes(custSearch.toLowerCase()) || c.email.includes(custSearch)).map(c => (
               <tr key={c.id} className="border-b border-stone-100 hover:bg-amber-50/30 transition-colors">
                 <td className="py-3 px-3 pl-5">
                   <div className="flex items-center gap-2">
@@ -1046,7 +1055,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
           <h3 className="font-semibold text-stone-700 text-sm mb-5">Revenue Trend — 6 Months</h3>
           <ResponsiveContainer width="100%" height={200}>
-            <AreaChart data={REVENUE_DATA}>
+            <AreaChart data={revenueData}>
               <defs>
                 <linearGradient id="rev2" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor={BRASS} stopOpacity={0.2}/>
@@ -1066,7 +1075,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
           <h3 className="font-semibold text-stone-700 text-sm mb-5">Daily Orders — This Week</h3>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={DAILY_ORDERS} barSize={28}>
+            <BarChart data={dailyOrders} barSize={28}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f5f1e8" />
               <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#78716c' }} />
               <YAxis tick={{ fontSize: 10, fill: '#78716c' }} />
@@ -1080,7 +1089,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
           <h3 className="font-semibold text-stone-700 text-sm mb-5">🏆 Bestselling Products</h3>
           <div className="space-y-3">
-            {BESTSELLERS.map((p, i) => (
+            {bestSellers.map((p, i) => (
               <div key={p.name}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
@@ -1105,8 +1114,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           <h3 className="font-semibold text-stone-700 text-sm mb-5">Category Revenue Share</h3>
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
-              <Pie data={CATEGORY_DATA} dataKey="value" cx="50%" cy="50%" outerRadius={70} innerRadius={30} paddingAngle={2}>
-                {CATEGORY_DATA.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              <Pie data={categoryData} dataKey="value" cx="50%" cy="50%" outerRadius={70} innerRadius={30} paddingAngle={2}>
+                {categoryData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
               <Tooltip formatter={(v: unknown) => [`${v}%`, "Share"]} />
               <Legend formatter={(value) => <span style={{ fontSize: 11, color: '#78716c' }}>{value}</span>} />
@@ -1122,7 +1131,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           <table className="w-full">
             <TableHeader cols={['Product', 'Stock', 'Units Sold', 'Turnover Rate', 'Status']} />
             <tbody>
-              {PRODUCTS.slice(0, 6).map(p => {
+              {products.slice(0, 6).map(p => {
                 const sold = Math.floor(Math.random() * 200 + 50)
                 const turnover = ((sold / (p.stock + sold)) * 100).toFixed(1)
                 return (
@@ -1155,7 +1164,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     <div>
       <SectionHeader title="Customer Reviews" />
       <div className="space-y-4">
-        {REVIEWS.map(r => (
+        {reviews.map(r => (
           <div key={r.id} className="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-3">
@@ -1191,7 +1200,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <table className="w-full">
           <TableHeader cols={['Code', 'Discount', 'Type', 'Min. Order', 'Times Used', 'Validity', 'Status', 'Actions']} />
           <tbody>
-            {OFFERS.map(o => (
+            {offers.map(o => (
               <tr key={o.id} className="border-b border-stone-100 hover:bg-amber-50/30">
                 <td className="py-3 px-3 pl-5 font-mono text-sm font-bold" style={{ color: BRASS }}>{o.code}</td>
                 <td className="py-3 px-3 text-sm font-semibold text-stone-700">{o.discount}</td>
@@ -1220,7 +1229,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     <div>
       <SectionHeader title={`Notifications (${unreadCount} unread)`} />
       <div className="space-y-3">
-        {NOTIFS.map(n => (
+        {notifications.map(n => (
           <div key={n.id} className={`flex items-start gap-4 p-4 rounded-xl border transition-colors ${n.read ? 'bg-white border-stone-200' : 'bg-amber-50/40 border-amber-200/60'}`}>
             <span className="text-xl flex-shrink-0">{n.type}</span>
             <div className="flex-1">
@@ -1243,7 +1252,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <table className="w-full">
           <TableHeader cols={['Admin', 'Email', 'Role', 'Last Login', 'Status', 'Actions']} />
           <tbody>
-            {ADMIN_USERS.map(u => (
+            {adminUsers.map(u => (
               <tr key={u.id} className="border-b border-stone-100 hover:bg-amber-50/30">
                 <td className="py-3 px-3 pl-5">
                   <div className="flex items-center gap-2">
