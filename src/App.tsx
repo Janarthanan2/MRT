@@ -47,11 +47,6 @@ function normalizeApiCategory(c: any) {
   }
 }
 
-
-  const image = p.image_url || p.image || ""
-  return { id: Number(p.id), name: p.name, category: p.category || "", price: Number(p.price || 0), originalPrice: p.original_price == null ? undefined : Number(p.original_price), rating: Number(p.rating || 0), reviews: Number(p.review_count || 0), image, images: image ? [image] : [], material: p.material || "", weight: p.weight || "", dimensions: p.dimensions || "", description: p.description || "", features: [], inStock: Number(p.stock || 0) > 0, featured: Boolean(p.featured), badge: p.badge || undefined, occasion: p.occasion || undefined }
-}
-
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -59,7 +54,8 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [cart, setCart] = useState<CartItem[]>([])
   const [wishlist, setWishlist] = useState<number[]>([])
-  const [products, setProducts] = useState<Product[]>([])\n  const [categories, setCategories] = useState<{ id: string; name: string; count: number; img: string }[]>([])
+  const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<{ id: string; name: string; count: number; img: string }[]>([])
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [account, setAccount] = useState<any>(null)
   const [serverOrders, setServerOrders] = useState<any[]>([])
