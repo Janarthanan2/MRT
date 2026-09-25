@@ -999,3 +999,86 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <StatCard icon="Γé╣" label="Monthly Revenue" value="Γé╣4.21L" trend="+8.4%" color="brass" />
         <StatCard icon="≡ƒôª" label="Orders This Month" value="211" trend="+11.2%" color="green" />
         <StatCard icon="≡ƒ¢Æ" label="Avg. Order Value" value="Γé╣1,995" trend="+2.1%" color="blue" />
+
+        <StatCard icon="👥" label="Active Customers" value="1,842" trend="+5.3%" color="purple" />
+      </div>
+
+      <div className="bg-white rounded-xl p-5 shadow-sm">
+        <h3 className="text-sm font-semibold text-charcoal mb-4">Revenue Trend (Last 6 Months)</h3>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={[
+            { month: 'Apr', revenue: 285000 },
+            { month: 'May', revenue: 312000 },
+            { month: 'Jun', revenue: 298000 },
+            { month: 'Jul', revenue: 356000 },
+            { month: 'Aug', revenue: 389000 },
+            { month: 'Sep', revenue: 421000 },
+          ]}>
+            <CartesianGrid strokeDasharray="3 3" stroke="#f0e8d8" />
+            <XAxis dataKey="month" tick={{ fontSize: 11 }} />
+            <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${(v/1000).toFixed(0)}K`} />
+            <Tooltip formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']} />
+            <Area type="monotone" dataKey="revenue" stroke="#b8860b" fill="#b8860b22" strokeWidth={2} />
+          </AreaChart>
+        </ResponsiveContainer>
+      </div>
+    </div>
+  )
+
+  // -- Main render ----------------------------------------------------------
+
+  const pageContent: Record<AdminPage, ReactNode> = {
+    dashboard: DashboardPage,
+    products: ProductsPage,
+    categories: <div className="p-6 text-stone-500 text-sm">Categories coming soon.</div>,
+    inventory: <div className="p-6 text-stone-500 text-sm">Inventory coming soon.</div>,
+    orders: OrdersPage,
+    customers: CustomersPage,
+    'custom-orders': CustomOrdersPage,
+    quotations: <div className="p-6 text-stone-500 text-sm">Quotations coming soon.</div>,
+    reviews: <div className="p-6 text-stone-500 text-sm">Reviews coming soon.</div>,
+    offers: <div className="p-6 text-stone-500 text-sm">Offers coming soon.</div>,
+    notifications: <div className="p-6 text-stone-500 text-sm">Notifications coming soon.</div>,
+    analytics: AnalyticsPage,
+    'admin-users': <div className="p-6 text-stone-500 text-sm">Admin users coming soon.</div>,
+    settings: <div className="p-6 text-stone-500 text-sm">Settings coming soon.</div>,
+    'activity-log': <div className="p-6 text-stone-500 text-sm">Activity log coming soon.</div>,
+  }
+
+  return (
+    <div className="min-h-screen flex" style={{ background: '#faf8f4' }}>
+      <aside
+        className="flex flex-col flex-shrink-0 overflow-y-auto transition-all"
+        style={{ width: sidebarOpen ? 240 : 64, background: '#1C1308', minHeight: '100vh' }}
+      >
+        <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
+          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{ background: 'linear-gradient(135deg,#b8860b,#d4a017)' }}>M</div>
+          {sidebarOpen && <span className="text-white text-sm font-semibold truncate">MRT Admin</span>}
+          <button onClick={() => setSidebarOpen(v => !v)} className="ml-auto text-stone-400 hover:text-white text-xs">{sidebarOpen ? '<' : '>'}</button>
+        </div>
+        <nav className="flex-1 py-4 space-y-0.5 px-2">
+          {NAV.map(n => navItem(n.id as AdminPage, n.label, n.icon, n.id === 'notifications' ? unreadCount : undefined))}
+        </nav>
+        <div className="p-3 border-t border-white/10">
+          <button onClick={onBack} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-stone-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
+            <span>&larr;</span>
+            {sidebarOpen && <span>Back to Store</span>}
+          </button>
+        </div>
+      </aside>
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <header className="bg-white border-b border-stone-200 px-6 py-3 flex items-center gap-4 shadow-sm">
+          <h2 className="text-sm font-semibold text-stone-700 capitalize">{page.replace('-', ' ')}</h2>
+          <div className="ml-auto flex items-center gap-3">
+            <span className="text-xs text-stone-500">admin@mrtmetalmart.in</span>
+            <div className="w-7 h-7 rounded-full bg-amber-700 flex items-center justify-center text-white text-xs font-bold">S</div>
+          </div>
+        </header>
+        <main className="flex-1 overflow-y-auto p-6">
+          {pageContent[page]}
+        </main>
+      </div>
+    </div>
+  )
+}
+
