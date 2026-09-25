@@ -1,5 +1,4 @@
 import { useState, useCallback, useMemo } from 'react'
-import type { ReactNode } from 'react'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
@@ -328,35 +327,6 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     { id: 5, name: 'Arjun Singh', email: 'arjun@mrtmetalmart.in', role: 'Viewer', lastLogin: 'Never', status: 'Inactive' },
   ]
 
-
-  // ── Completed admin modules state ──────────────────────────────────────────
-  const [categories, setCategories] = useState([
-    { id: 1, name: 'Brass Statues & Idols', description: 'Traditional deities and decorative statues', products: 2, status: 'Active' },
-    { id: 2, name: 'Brass Lamps & Diyas', description: 'Traditional lamps, diyas and lighting', products: 2, status: 'Active' },
-    { id: 3, name: 'Brass Pooja Items', description: 'Puja thalis, bells and devotional accessories', products: 3, status: 'Active' },
-    { id: 4, name: 'Brass Home Décor', description: 'Urli bowls and decorative home pieces', products: 1, status: 'Active' },
-    { id: 5, name: 'Brass Vessels', description: 'Kalash and utility vessels', products: 1, status: 'Active' },
-    { id: 6, name: 'Antique-Style Collectibles', description: 'Vintage-inspired brass collectibles', products: 1, status: 'Active' },
-  ])
-  const [inventorySearch, setInventorySearch] = useState('')
-  const [reviews, setReviews] = useState(REVIEWS)
-  const [reviewFilter, setReviewFilter] = useState('All')
-  const [offers, setOffers] = useState(OFFERS)
-  const [showOfferForm, setShowOfferForm] = useState(false)
-  const [offerForm, setOfferForm] = useState({ code: '', discount: '', type: 'Percentage', minOrder: '0', validity: '' })
-  const [notifications, setNotifications] = useState(NOTIFS)
-  const [adminUsers, setAdminUsers] = useState(ADMIN_USERS)
-  const [showAdminUserForm, setShowAdminUserForm] = useState(false)
-  const [adminUserForm, setAdminUserForm] = useState({ name: '', email: '', role: 'Viewer' })
-  const [settings, setSettings] = useState({
-    storeName: 'MRT Metal Mart', supportEmail: 'support@mrtmetalmart.in', phone: '+91 98765 43210',
-    lowStockThreshold: '5', currency: 'INR (₹)', timezone: 'Asia/Kolkata',
-    emailAlerts: true, orderAlerts: true, reviewAlerts: true, lowStockAlerts: true,
-    twoFactor: false, sessionTimeout: '30',
-  })
-  const [activitySearch, setActivitySearch] = useState('')
-  const [activityType, setActivityType] = useState('All')
-
   const handleLogin = () => {
     if (loginForm.email === 'admin@mrtmetalmart.in' && loginForm.password === 'admin123') {
       setLoggedIn(true); setLoginError('')
@@ -419,7 +389,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                 <h1 className="text-xl font-bold text-stone-800">MRT Metal Mart</h1>
                 <p className="text-xs text-stone-500 tracking-widest uppercase mt-0.5">Admin Portal</p>
                 <div className="flex items-center gap-2 mt-3 mx-auto w-fit bg-amber-50 border border-amber-200 rounded-full px-3 py-1">
-                  <span className="text-amber-700 text-[10px]">🔐</span>
+                  <span className="text-amber-700 text-[10px]">🔒</span>
                   <span className="text-[10px] text-amber-700 font-medium">Authorized Access Only</span>
                 </div>
               </div>
@@ -468,7 +438,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
                   {loginError && (
                     <div className="bg-red-50 border border-red-200 rounded-lg px-4 py-2.5 text-xs text-red-700">
-                      🔐 {loginError}
+                      🔒 {loginError}
                     </div>
                   )}
 
@@ -1017,186 +987,14 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     </div>
   )
 
-
-  // ── Completed admin modules ────────────────────────────────────────────────
-
-  const CategoriesPage = (
-    <div className="space-y-6">
-      <SectionHeader title="Categories" action="Add Category" onAction={() => {
-        const name = window.prompt('Category name')
-        if (name && name.trim()) setCategories(prev => [...prev, { id: Date.now(), name: name.trim(), description: 'New MRT Metal Mart category', products: 0, status: 'Active' }])
-      }} />
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {categories.map(c => (
-          <div key={c.id} className="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
-            <div className="flex items-start justify-between"><div className="w-10 h-10 rounded-lg flex items-center justify-center text-white font-bold" style={{background: BRASS}}>M</div><StatusBadge status={c.status} /></div>
-            <h3 className="font-semibold text-stone-800 mt-4">{c.name}</h3>
-            <p className="text-xs text-stone-500 mt-1 min-h-8">{c.description}</p>
-            <div className="flex justify-between items-center mt-5 pt-4 border-t border-stone-100"><span className="text-xs text-stone-500">{c.products} products</span><button onClick={() => setCategories(prev => prev.map(x => x.id === c.id ? {...x,status:x.status === 'Active' ? 'Inactive' : 'Active'} : x))} className="text-xs font-semibold" style={{color:BRASS}}>{c.status === 'Active' ? 'Disable' : 'Enable'}</button></div>
-          </div>
-        ))}
-      </div>
-    </div>
-  )
-
-  const InventoryPage = (
-    <div className="space-y-6">
-      <SectionHeader title="Inventory Management" />
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon="▣" label="Total SKUs" value={String(products.length)} color="brass" />
-        <StatCard icon="!" label="Low Stock" value={String(products.filter(p => p.stock > 0 && p.stock <= 5).length)} color="amber" />
-        <StatCard icon="×" label="Out of Stock" value={String(products.filter(p => p.stock === 0).length)} color="red" />
-        <StatCard icon="✓" label="Healthy Stock" value={String(products.filter(p => p.stock > 5).length)} color="green" />
-      </div>
-      <div className="flex flex-wrap gap-3">
-        <input value={inventorySearch} onChange={e => setInventorySearch(e.target.value)} placeholder="Search SKU or product…" className="border border-stone-200 rounded-lg px-4 py-2 text-sm outline-none focus:border-amber-600 w-full max-w-sm" />
-        <button onClick={() => setProducts(prev => prev.map(p => p.stock <= 5 ? {...p,stock:p.stock + 10} : p))} className="px-4 py-2 rounded-lg text-xs font-semibold text-white" style={{background:BRASS}}>Restock Low Items +10</button>
-      </div>
-      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[850px]"><TableHeader cols={['SKU','Product','Category','Current Stock','Threshold','Status','Quick Actions']} /><tbody>
-        {products.filter(p => (p.name + ' ' + p.sku).toLowerCase().includes(inventorySearch.toLowerCase())).map(p => (
-          <tr key={p.id} className="border-b border-stone-100 hover:bg-amber-50/30">
-            <td className="py-3 px-3 pl-5 text-[10px] font-mono text-stone-400">{p.sku}</td><td className="py-3 px-3 text-sm font-medium">{p.name}</td><td className="py-3 px-3 text-xs text-stone-500">{p.category}</td><td className="py-3 px-3 text-sm font-bold">{p.stock}</td><td className="py-3 px-3 text-xs text-stone-500">5</td><td className="py-3 px-3">{p.stock === 0 ? <StatusBadge status="Failed" /> : p.stock <= 5 ? <StatusBadge status="Pending" /> : <StatusBadge status="Active" />}</td>
-            <td className="py-3 px-3"><div className="flex gap-1.5"><button onClick={() => setProducts(prev => prev.map(x => x.id === p.id ? {...x,stock:x.stock+1}:x))} className="px-2.5 py-1 rounded border text-xs" style={{borderColor:BRASS,color:BRASS}}>+1</button><button onClick={() => setProducts(prev => prev.map(x => x.id === p.id ? {...x,stock:Math.max(0,x.stock-1)}:x))} className="px-2.5 py-1 rounded border border-stone-200 text-xs">−1</button></div></td>
-          </tr>
-        ))}
-      </tbody></table></div></div>
-    </div>
-  )
-
-  const QuotationsPage = (
-    <div className="space-y-6">
-      <SectionHeader title="Quotations" />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4"><StatCard icon="N" label="New Requests" value={String(requests.filter(r=>r.status==='New').length)} color="blue" /><StatCard icon="R" label="In Review" value={String(requests.filter(r=>r.status==='In Review').length)} color="amber" /><StatCard icon="Q" label="Quoted" value={String(requests.filter(r=>r.status==='Quoted').length)} color="purple" /><StatCard icon="✓" label="Confirmed" value={String(requests.filter(r=>r.status==='Confirmed').length)} color="green" /></div>
-      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[950px]"><TableHeader cols={['Request','Product','Qty','Budget','Date','Status','Actions']} /><tbody>
-        {requests.map(r => <tr key={r.id} className="border-b border-stone-100 hover:bg-amber-50/30"><td className="py-4 px-3 pl-5"><p className="text-sm font-semibold">{r.id}</p><p className="text-[10px] text-stone-400">{r.name}</p></td><td className="py-4 px-3 text-xs text-stone-600">{r.product}</td><td className="py-4 px-3 text-sm font-semibold">{r.qty}</td><td className="py-4 px-3 text-sm">{r.budget ? '₹' + r.budget.toLocaleString() : '—'}</td><td className="py-4 px-3 text-xs text-stone-500">{r.date}</td><td className="py-4 px-3"><StatusBadge status={r.status}/></td><td className="py-4 px-3"><div className="flex gap-2">{r.status === 'New' && <button onClick={()=>setRequests(prev=>prev.map(x=>x.id===r.id?{...x,status:'In Review'}:x))} className="text-xs font-semibold" style={{color:BRASS}}>Review</button>}{['New','In Review'].includes(r.status) && <button onClick={()=>{setSelectedReq(r);setShowQuoteForm(true)}} className="text-xs font-semibold text-purple-700">Quote</button>}{r.status === 'Quoted' && <button onClick={()=>setRequests(prev=>prev.map(x=>x.id===r.id?{...x,status:'Confirmed'}:x))} className="text-xs font-semibold text-green-700">Confirm</button>}</div></td></tr>)}
-      </tbody></table></div></div>
-    </div>
-  )
-
-  const ReviewsPage = (
-    <div className="space-y-6">
-      <SectionHeader title="Reviews & Moderation" />
-      <div className="flex flex-wrap gap-2">{['All','Published','Flagged'].map(f=><button key={f} onClick={()=>setReviewFilter(f)} className={"px-4 py-2 rounded-lg text-xs font-semibold " + (reviewFilter===f ? 'text-white':'bg-white border border-stone-200 text-stone-600')} style={reviewFilter===f?{background:BRASS}:undefined}>{f}</button>)}</div>
-      <div className="space-y-3">{reviews.filter(r=>reviewFilter==='All'||r.status===reviewFilter).map(r=><div key={r.id} className="bg-white rounded-xl border border-stone-200 shadow-sm p-5"><div className="flex justify-between gap-4"><div><span className="font-semibold text-stone-800">{r.customer}</span><span className="ml-3 text-amber-600">{'★'.repeat(r.rating)}</span><p className="text-xs text-stone-500 mt-1">{r.product} · {r.date}</p></div><StatusBadge status={r.status==='Published'?'Active':'Declined'}/></div><p className="text-sm text-stone-600 leading-relaxed mt-4">“{r.comment}”</p><div className="flex gap-2 mt-4"><button onClick={()=>setReviews(prev=>prev.map(x=>x.id===r.id?{...x,status:'Published'}:x))} className="text-xs px-3 py-1.5 rounded border border-green-200 text-green-700">Publish</button><button onClick={()=>setReviews(prev=>prev.map(x=>x.id===r.id?{...x,status:'Flagged'}:x))} className="text-xs px-3 py-1.5 rounded border border-amber-200 text-amber-700">Flag</button><button onClick={()=>setReviews(prev=>prev.filter(x=>x.id!==r.id))} className="text-xs px-3 py-1.5 rounded border border-red-200 text-red-600">Remove</button></div></div>)}</div>
-    </div>
-  )
-
-  const OffersPage = (
-    <div className="space-y-6">
-      <SectionHeader title="Offers & Discounts" action="Create Offer" onAction={()=>setShowOfferForm(true)} />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4"><StatCard icon="%" label="Active Offers" value={String(offers.filter(o=>o.status==='Active').length)} color="green"/><StatCard icon="↗" label="Redemptions" value={String(offers.reduce((n,o)=>n+o.used,0))} color="brass"/><StatCard icon="₹" label="Minimum Order" value="₹0–₹3,000" color="blue"/><StatCard icon="!" label="Expired" value={String(offers.filter(o=>o.status==='Expired').length)} color="red"/></div>
-      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[850px]"><TableHeader cols={['Code','Discount','Type','Min Order','Used','Valid Until','Status','Action']}/><tbody>{offers.map(o=><tr key={o.id} className="border-b border-stone-100"><td className="py-4 px-3 pl-5 font-mono font-semibold text-sm">{o.code}</td><td className="py-4 px-3 text-sm font-semibold">{o.discount}</td><td className="py-4 px-3 text-xs text-stone-500">{o.type}</td><td className="py-4 px-3 text-sm">₹{o.minOrder.toLocaleString()}</td><td className="py-4 px-3 text-sm">{o.used}</td><td className="py-4 px-3 text-xs text-stone-500">{o.validity}</td><td className="py-4 px-3"><StatusBadge status={o.status==='Active'?'Active':'Inactive'}/></td><td className="py-4 px-3"><button onClick={()=>setOffers(prev=>prev.map(x=>x.id===o.id?{...x,status:x.status==='Active'?'Expired':'Active'}:x))} className="text-xs font-semibold" style={{color:BRASS}}>{o.status==='Active'?'Deactivate':'Activate'}</button></td></tr>)}</tbody></table></div></div>
-      {showOfferForm && <div className="fixed inset-0 z-50 flex items-center justify-center p-4"><div className="absolute inset-0 bg-stone-900/50" onClick={()=>setShowOfferForm(false)}/><div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"><h3 className="font-bold text-stone-800 mb-5">Create Offer</h3><div className="space-y-3">{[['code','Coupon Code'],['discount','Discount'],['minOrder','Minimum Order'],['validity','Valid Until']].map(([key,label])=><label key={key} className="block"><span className="block text-[10px] font-semibold uppercase tracking-widest text-stone-500 mb-1">{label}</span><input value={offerForm[key as keyof typeof offerForm]} onChange={e=>setOfferForm(x=>({...x,[key]:e.target.value}))} className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm"/></label>)}<select value={offerForm.type} onChange={e=>setOfferForm(x=>({...x,type:e.target.value}))} className="w-full border rounded-lg px-3 py-2.5 text-sm"><option>Percentage</option><option>Fixed</option><option>Shipping</option></select><div className="flex gap-3 pt-3"><button onClick={()=>setShowOfferForm(false)} className="flex-1 py-2.5 border rounded-lg text-sm">Cancel</button><button onClick={()=>{if(!offerForm.code.trim())return;setOffers(prev=>[{id:Date.now(),code:offerForm.code.toUpperCase(),discount:offerForm.discount||'—',type:offerForm.type,minOrder:Number(offerForm.minOrder)||0,used:0,validity:offerForm.validity||'Not set',status:'Active'},...prev]);setOfferForm({code:'',discount:'',type:'Percentage',minOrder:'0',validity:''});setShowOfferForm(false)}} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{background:BRASS}}>Create Offer</button></div></div></div></div>}
-    </div>
-  )
-
-  const NotificationsPage = (
-    <div className="space-y-6">
-      <SectionHeader title="Notifications" action="Mark All Read" onAction={()=>setNotifications(prev=>prev.map(n=>({...n,read:true})))} />
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4"><StatCard icon="●" label="Unread" value={String(notifications.filter(n=>!n.read).length)} color="red"/><StatCard icon="✓" label="Read" value={String(notifications.filter(n=>n.read).length)} color="green"/><StatCard icon="!" label="Total Alerts" value={String(notifications.length)} color="brass"/></div>
-      <div className="bg-white rounded-xl border border-stone-200 shadow-sm divide-y divide-stone-100">{notifications.map(n=><div key={n.id} className={"p-5 flex gap-4 " + (!n.read?'bg-amber-50/40':'')}><span className="text-xl">{n.type}</span><div className="flex-1"><p className="text-sm text-stone-700">{n.msg}</p><p className="text-[10px] text-stone-400 mt-1">{n.time}</p></div>{!n.read&&<button onClick={()=>setNotifications(prev=>prev.map(x=>x.id===n.id?{...x,read:true}:x))} className="text-xs font-semibold" style={{color:BRASS}}>Mark read</button>}</div>)}</div>
-    </div>
-  )
+  // ── Page: Analytics ───────────────────────────────────────────────────────
 
   const AnalyticsPage = (
     <div className="space-y-6">
       <SectionHeader title="Analytics & Insights" />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4"><StatCard icon="₹" label="Monthly Revenue" value="₹4.21L" trend="+8.4%" color="brass"/><StatCard icon="▣" label="Orders This Month" value="211" trend="+11.2%" color="green"/><StatCard icon="▤" label="Avg. Order Value" value="₹1,995" trend="+2.1%" color="blue"/><StatCard icon="◎" label="Active Customers" value="1,842" trend="+5.3%" color="purple"/></div>
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm"><h3 className="font-semibold text-sm mb-4">Revenue & Orders</h3><div className="h-64"><ResponsiveContainer width="100%" height="100%"><AreaChart data={REVENUE_DATA}><CartesianGrid strokeDasharray="3 3" stroke="#eee8df"/><XAxis dataKey="month" fontSize={11}/><YAxis fontSize={10}/><Tooltip/><Area type="monotone" dataKey="revenue" stroke={BRASS} fill="#E8D48B" fillOpacity={0.25}/></AreaChart></ResponsiveContainer></div></div>
-        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm"><h3 className="font-semibold text-sm mb-4">Orders by Day</h3><div className="h-64"><ResponsiveContainer width="100%" height="100%"><BarChart data={DAILY_ORDERS}><CartesianGrid strokeDasharray="3 3" stroke="#eee8df"/><XAxis dataKey="day" fontSize={11}/><YAxis fontSize={10}/><Tooltip/><Bar dataKey="orders" fill={GOLD} radius={[4,4,0,0]}/></BarChart></ResponsiveContainer></div></div>
-      </div>
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm"><h3 className="font-semibold text-sm mb-4">Sales by Category</h3><div className="h-64"><ResponsiveContainer width="100%" height="100%"><PieChart><Pie data={CATEGORY_DATA} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={88}>{CATEGORY_DATA.map(x=><Cell key={x.name} fill={x.color}/>)}</Pie><Tooltip/><Legend/></PieChart></ResponsiveContainer></div></div>
-        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm"><h3 className="font-semibold text-sm mb-4">Top Selling Products</h3><div className="space-y-3">{BESTSELLERS.map((p,i)=><div key={p.name} className="flex items-center gap-3"><span className="w-6 text-xs font-bold text-stone-400">{i+1}</span><div className="flex-1"><p className="text-xs font-semibold">{p.name}</p><p className="text-[10px] text-stone-400">{p.sold} units sold</p></div><span className="text-xs font-semibold">₹{p.revenue.toLocaleString()}</span></div>)}</div></div>
-      </div>
-    </div>
-  )
 
-  const AdminUsersPage = (
-    <div className="space-y-6">
-      <SectionHeader title="Admin Users & Roles" action="Add Admin User" onAction={()=>setShowAdminUserForm(true)} />
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4"><StatCard icon="◎" label="Total Admins" value={String(adminUsers.length)} color="brass"/><StatCard icon="✓" label="Active" value={String(adminUsers.filter(u=>u.status==='Active').length)} color="green"/><StatCard icon="◈" label="Managers" value={String(adminUsers.filter(u=>u.role.includes('Manager')).length)} color="blue"/><StatCard icon="○" label="Inactive" value={String(adminUsers.filter(u=>u.status==='Inactive').length)} color="red"/></div>
-      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[850px]"><TableHeader cols={['Admin','Role','Last Login','Status','Actions']}/><tbody>{adminUsers.map(u=><tr key={u.id} className="border-b border-stone-100 hover:bg-amber-50/30"><td className="py-4 px-3 pl-5"><p className="text-sm font-semibold">{u.name}</p><p className="text-xs text-stone-400">{u.email}</p></td><td className="py-4 px-3 text-xs">{u.role}</td><td className="py-4 px-3 text-xs text-stone-500">{u.lastLogin}</td><td className="py-4 px-3"><StatusBadge status={u.status}/></td><td className="py-4 px-3"><button onClick={()=>setAdminUsers(prev=>prev.map(x=>x.id===u.id?{...x,status:x.status==='Active'?'Inactive':'Active'}:x))} className="text-xs font-semibold" style={{color:BRASS}}>{u.status==='Active'?'Disable':'Enable'}</button></td></tr>)}</tbody></table></div></div>
-      {showAdminUserForm&&<div className="fixed inset-0 z-50 flex items-center justify-center p-4"><div className="absolute inset-0 bg-stone-900/50" onClick={()=>setShowAdminUserForm(false)}/><div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"><h3 className="font-bold text-stone-800 mb-5">Add Admin User</h3><div className="space-y-3"><input value={adminUserForm.name} onChange={e=>setAdminUserForm(x=>({...x,name:e.target.value}))} placeholder="Full name" className="w-full border rounded-lg px-3 py-2.5 text-sm"/><input value={adminUserForm.email} onChange={e=>setAdminUserForm(x=>({...x,email:e.target.value}))} placeholder="Email address" className="w-full border rounded-lg px-3 py-2.5 text-sm"/><select value={adminUserForm.role} onChange={e=>setAdminUserForm(x=>({...x,role:e.target.value}))} className="w-full border rounded-lg px-3 py-2.5 text-sm"><option>Viewer</option><option>Content Editor</option><option>Order Manager</option><option>Manager</option></select><div className="flex gap-3 pt-3"><button onClick={()=>setShowAdminUserForm(false)} className="flex-1 py-2.5 border rounded-lg text-sm">Cancel</button><button onClick={()=>{if(!adminUserForm.name.trim()||!adminUserForm.email.trim())return;setAdminUsers(p=>[{id:Date.now(),name:adminUserForm.name,email:adminUserForm.email,role:adminUserForm.role,lastLogin:'Never',status:'Active'},...p]);setAdminUserForm({name:'',email:'',role:'Viewer'});setShowAdminUserForm(false)}} className="flex-1 py-2.5 rounded-lg text-sm font-semibold text-white" style={{background:BRASS}}>Add User</button></div></div></div></div>}
-    </div>
-  )
-
-  const SettingsPage = (
-    <div className="space-y-6">
-      <SectionHeader title="Settings"/>
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-5">
-        <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm"><h3 className="font-semibold text-stone-800 mb-4">Store Configuration</h3><div className="space-y-4">{[['storeName','Store Name'],['supportEmail','Support Email'],['phone','Support Phone'],['lowStockThreshold','Low Stock Threshold']].map(([key,label])=><label key={key} className="block"><span className="block text-[10px] font-semibold uppercase tracking-widest text-stone-500 mb-1.5">{label}</span><input value={settings[key as keyof typeof settings] as string} onChange={e=>setSettings(x=>({...x,[key]:e.target.value}))} className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm"/></label>)}</div></div>
-        <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm"><h3 className="font-semibold text-stone-800 mb-4">Regional Preferences</h3><label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-500">Currency<select value={settings.currency} onChange={e=>setSettings(x=>({...x,currency:e.target.value}))} className="mt-1.5 w-full border rounded-lg px-3 py-2.5 text-sm"><option>INR (₹)</option><option>USD ($)</option><option>EUR (€)</option></select></label><label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-500 mt-4">Timezone<select value={settings.timezone} onChange={e=>setSettings(x=>({...x,timezone:e.target.value}))} className="mt-1.5 w-full border rounded-lg px-3 py-2.5 text-sm"><option>Asia/Kolkata</option><option>UTC</option><option>Asia/Dubai</option></select></label></div>
-        <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm"><h3 className="font-semibold text-stone-800 mb-4">Notifications</h3>{[['emailAlerts','Email alerts'],['orderAlerts','Order alerts'],['reviewAlerts','Review alerts'],['lowStockAlerts','Low stock alerts']].map(([key,label])=><label key={key} className="flex justify-between items-center py-3 border-b last:border-0 border-stone-100 text-sm"><span>{label}</span><input type="checkbox" checked={Boolean(settings[key as keyof typeof settings])} onChange={e=>setSettings(x=>({...x,[key]:e.target.checked}))} className="w-4 h-4 accent-amber-700"/></label>)}</div>
-        <div className="bg-white rounded-xl border border-stone-200 p-6 shadow-sm"><h3 className="font-semibold text-stone-800 mb-4">Security & Session</h3><label className="flex justify-between items-center py-3 border-b border-stone-100 text-sm"><span>Two-factor authentication</span><input type="checkbox" checked={settings.twoFactor} onChange={e=>setSettings(x=>({...x,twoFactor:e.target.checked}))} className="w-4 h-4 accent-amber-700"/></label><label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-500 pt-4">Session timeout<select value={settings.sessionTimeout} onChange={e=>setSettings(x=>({...x,sessionTimeout:e.target.value}))} className="mt-1.5 w-full border rounded-lg px-3 py-2.5 text-sm"><option value="15">15 minutes</option><option value="30">30 minutes</option><option value="60">60 minutes</option></select></label></div>
-      </div>
-      <div className="flex justify-end"><button onClick={()=>window.alert('Settings saved for this admin session.')} className="px-5 py-2.5 rounded-lg text-sm font-semibold text-white" style={{background:BRASS}}>Save Settings</button></div>
-    </div>
-  )
-
-  const ActivityLogPage = (
-    <div className="space-y-6">
-      <SectionHeader title="Activity Log"/>
-      <div className="flex flex-wrap gap-3"><input value={activitySearch} onChange={e=>setActivitySearch(e.target.value)} placeholder="Search activity…" className="border border-stone-200 rounded-lg px-4 py-2 text-sm w-full max-w-sm"/><select value={activityType} onChange={e=>setActivityType(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-2 text-sm"><option>All</option><option>edit</option><option>order</option><option>add</option><option>approve</option><option>delete</option><option>login</option></select><button onClick={()=>{const csv=['User,Action,Time,Type'].concat(ACTIVITY_LOG.map(a=>'"'+a.user+'","'+a.action.replaceAll('"','""')+'","'+a.time+'","'+a.type+'"')).join('\n');const blob=new Blob([csv],{type:'text/csv'});const url=URL.createObjectURL(blob);const link=document.createElement('a');link.href=url;link.download='mrt-activity-log.csv';link.click();URL.revokeObjectURL(url)}} className="px-4 py-2 rounded-lg text-xs font-semibold text-white" style={{background:BRASS}}>Export CSV</button></div>
-      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden"><div className="overflow-x-auto"><table className="w-full min-w-[800px]"><TableHeader cols={['Time','Admin','Activity','Type']}/><tbody>{ACTIVITY_LOG.filter(a=>(activityType==='All'||a.type===activityType)&&(a.user+' '+a.action).toLowerCase().includes(activitySearch.toLowerCase())).map(a=><tr key={a.id} className="border-b border-stone-100"><td className="py-4 px-3 pl-5 text-xs text-stone-400">{a.time}</td><td className="py-4 px-3 text-sm font-semibold">{a.user}</td><td className="py-4 px-3 text-sm text-stone-600">{a.action}</td><td className="py-4 px-3"><span className="text-[10px] uppercase font-semibold bg-stone-100 text-stone-600 rounded px-2 py-1">{a.type}</span></td></tr>)}</tbody></table></div></div>
-    </div>
-  )
-
-  // -- Main render ----------------------------------------------------------
-
-  const pageContent: Record<AdminPage, ReactNode> = {
-    dashboard: DashboardPage,
-    products: ProductsPage,
-    categories: CategoriesPage,
-    inventory: InventoryPage,
-    orders: OrdersPage,
-    customers: CustomersPage,
-    'custom-orders': CustomOrdersPage,
-    quotations: QuotationsPage,
-    reviews: ReviewsPage,
-    offers: OffersPage,
-    notifications: NotificationsPage,
-    analytics: AnalyticsPage,
-    'admin-users': AdminUsersPage,
-    settings: SettingsPage,
-    'activity-log': ActivityLogPage,
-  }
-
-  return (
-    <div className="min-h-screen flex" style={{ background: '#faf8f4' }}>
-      <aside
-        className="flex flex-col flex-shrink-0 overflow-y-auto transition-all"
-        style={{ width: sidebarOpen ? 240 : 64, background: '#1C1308', minHeight: '100vh' }}
-      >
-        <div className="flex items-center gap-3 px-4 py-5 border-b border-white/10">
-          <div className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm flex-shrink-0" style={{ background: 'linear-gradient(135deg,#b8860b,#d4a017)' }}>M</div>
-          {sidebarOpen && <span className="text-white text-sm font-semibold truncate">MRT Admin</span>}
-          <button onClick={() => setSidebarOpen(v => !v)} className="ml-auto text-stone-400 hover:text-white text-xs">{sidebarOpen ? '<' : '>'}</button>
-        </div>
-        <nav className="flex-1 py-4 space-y-0.5 px-2">
-          {NAV.map(n => navItem(n.id as AdminPage, n.label, n.icon, n.id === 'notifications' ? unreadCount : undefined))}
-        </nav>
-        <div className="p-3 border-t border-white/10">
-          <button onClick={onBack} className="w-full flex items-center gap-2 px-3 py-2 text-xs text-stone-400 hover:text-white rounded-lg hover:bg-white/5 transition-colors">
-            <span>&larr;</span>
-            {sidebarOpen && <span>Back to Store</span>}
-          </button>
-        </div>
-      </aside>
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <header className="bg-white border-b border-stone-200 px-6 py-3 flex items-center gap-4 shadow-sm">
-          <h2 className="text-sm font-semibold text-stone-700 capitalize">{page.replace('-', ' ')}</h2>
-          <div className="ml-auto flex items-center gap-3">
-            <span className="text-xs text-stone-500">admin@mrtmetalmart.in</span>
-            <div className="w-7 h-7 rounded-full bg-amber-700 flex items-center justify-center text-white text-xs font-bold">S</div>
-          </div>
-        </header>
-        <main className="flex-1 overflow-y-auto p-6">
-          {pageContent[page]}
-        </main>
-      </div>
-    </div>
-  )
-}
-
+      {/* KPI row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard icon="₹" label="Monthly Revenue" value="₹4.21L" trend="+8.4%" color="brass" />
+        <StatCard icon="📦" label="Orders This Month" value="211" trend="+11.2%" color="green" />
+        <StatCard icon="🛒" label="Avg. Order Value" value="₹1,995" trend="+2.1%" color="blue" />
