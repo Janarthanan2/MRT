@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react"
 import Admin from "./Admin"
-import { authApi, productApi, cartApi, wishlistApi, customOrderApi } from "./api/api"
+import { authApi, productApi, cartApi, wishlistApi, customOrderApi, orderApi, userApi, paymentApi } from "./api/api"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -642,6 +642,8 @@ export default function App() {
   const [cart, setCart] = useState<CartItem[]>([])
   const [wishlist, setWishlist] = useState<number[]>([])\n  const [products, setProducts] = useState<Product[]>(PRODUCTS)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [account, setAccount] = useState<any>(null)
+  const [serverOrders, setServerOrders] = useState<any[]>([])
   const [showAuth, setShowAuth] = useState(false)
   const [authTab, setAuthTab] = useState<"login" | "register">("login")
   const [searchQuery, setSearchQuery] = useState("")
@@ -674,17 +676,21 @@ export default function App() {
     productApi.list().then(rows => {
       if (rows.length) setProducts(rows.map(normalizeApiProduct))
     }).catch(() => {})
-    authApi.me().then(async () => {
+    authApi.me().then(async (me) => {
       setIsLoggedIn(true)
-      const [serverCart, serverWishlist] = await Promise.all([
+      setAccount(me)
+      const [serverCart, serverWishlist, serverOrderRows] = await Promise.all([
         cartApi.list().catch(() => []),
         wishlistApi.list().catch(() => []),
+        orderApi.list().catch(() => []),
       ])
       setCart(serverCart.map((item: any) => {
         const product = products.find(p => p.id === Number(item.product_id)) || normalizeApiProduct(item)
         return { product, qty: Number(item.quantity || 1) }
       }))
       setWishlist(serverWishlist.map((item: any) => Number(item.product_id)))
+      setServerOrders(serverOrderRows)
+      userApi.profile().then(setAccount).catch(() => {})
     }).catch(() => {})
   }, [])
 
@@ -2109,12 +2115,19 @@ export default function App() {
                 </button>
               </div>
               <button
-                onClick={() => {
-                  if (!isLoggedIn) {
-                    setShowAuth(true)
-                  } else {
-                    showToast("Proceeding to checkout…")
-                  }
+                onClick={async () => {
+                  if (!isLoggedIn) { setShowAuth(true); return }
+                  try {
+                    const shipping = cartTotal >= 2000 ? 0 : 120
+                    const created = await orderApi.create({ total: cartTotal + shipping, shippingAddress: account?.address || "", items: cart.map((item) => ({ productId: item.product.id, productName: item.product.name, quantity: item.qty, unitPrice: item.product.price })) })
+                    const payment = await paymentApi.create({ orderId: created?.id, amount: cartTotal + shipping }).catch(() => null)
+                    if (payment) await paymentApi.verify({ orderId: created?.id, paymentId: payment.paymentId }).catch(() => null)
+                    setServerOrders((prev) => [created, ...prev])
+                    await cartApi.clear().catch(() => {})
+                    setCart([])
+                    showToast("Order placed successfully")
+                    navTo("orders")
+                  } catch (e) { showToast(e instanceof Error ? e.message : "Could not place order") }
                 }}
                 className="w-full bg-brass text-cream py-3.5 text-sm font-semibold tracking-wide rounded btn-primary"
               >
@@ -2370,11 +2383,11 @@ export default function App() {
       <div className="mt-6 grid md:grid-cols-3 gap-6">
         <div className="bg-cream rounded border border-sand/60 p-5 text-center">
           <div className="w-16 h-16 rounded-full bg-brass/20 mx-auto flex items-center justify-center font-display text-brass text-2xl font-semibold mb-3">
-            {isLoggedIn ? "A" : "?"}
+            {account?.name ? String(account.name)[0].toUpperCase() : isLoggedIn ? "A" : "?"}
           </div>
-          <h3 className="font-display text-charcoal">Ananya Sharma</h3>
-          <p className="text-xs text-brown-light mt-1">ananya@example.com</p>
-          <p className="text-xs text-brown-light">Member since August 2024</p>
+          <h3 className="font-display text-charcoal">{account?.name || "My Account"}</h3>
+          <p className="text-xs text-brown-light mt-1">{account?.email || "Sign in to view your account"}</p>
+          <p className="text-xs text-brown-light">{account?.phone || "MRT Metal Mart customer"}</p>
           <button
             onClick={() => {
               authApi.logout().catch(() => {})
@@ -2450,65 +2463,25 @@ export default function App() {
       <h1 className="font-display text-2xl text-charcoal mb-2">My Orders</h1>
       <Divider />
       <div className="mt-6 space-y-4">
-        {[
-          {
-            id: "MRT-2025-1834",
-            date: "Sep 18, 2025",
-            status: "Delivered",
-            total: 4398,
-            items: ["Dancing Ganesha Brass Idol", "Brass Temple Bell"],
-          },
-          {
-            id: "MRT-2025-1621",
-            date: "Aug 29, 2025",
-            status: "In Transit",
-            total: 2899,
-            items: ["Brass Krishna Flute Player Idol"],
-          },
-          {
-            id: "MRT-2025-1390",
-            date: "Jul 14, 2025",
-            status: "Delivered",
-            total: 1899,
-            items: ["Traditional Brass Puja Thali Set"],
-          },
-        ].map((order) => (
-          <div
-            key={order.id}
-            className="bg-cream rounded border border-sand/60 p-5"
-          >
+        {(serverOrders.length ? serverOrders : []).map((order: any) => (
+          <div key={order.id || order.orderNumber} className="bg-cream rounded border border-sand/60 p-5">
             <div className="flex items-start justify-between mb-3">
               <div>
-                <p className="text-xs font-mono text-brown-mid">{order.id}</p>
-                <p className="text-[10px] text-brown-light mt-0.5">
-                  Ordered: {order.date}
-                </p>
+                <p className="text-xs font-mono text-brown-mid">{order.order_number || order.orderNumber || "MRT-" + order.id}</p>
+                <p className="text-[10px] text-brown-light mt-0.5">Ordered: {order.created_at ? new Date(order.created_at).toLocaleDateString() : "Recently"}</p>
               </div>
-              <span
-                className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded ${
-                  order.status === "Delivered"
-                    ? "bg-green-100 text-green-700"
-                    : "bg-amber-100 text-amber-700"
-                }`}
-              >
-                {order.status}
-              </span>
+              <span className="text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded bg-amber-100 text-amber-700">{order.status || "Processing"}</span>
             </div>
-            {order.items.map((i) => (
-              <p key={i} className="text-xs text-charcoal/80 mb-0.5">
-                · {i}
-              </p>
+            {(order.items || []).map((item: any) => (
+              <p key={item.productId || item.product_id || item.productName} className="text-xs text-charcoal/80 mb-0.5">· {item.productName || item.product_name}</p>
             ))}
             <div className="flex items-center justify-between mt-3 pt-3 border-t border-sand/50">
-              <span className="font-display text-brass font-semibold">
-                ₹{order.total.toLocaleString()}
-              </span>
-              <button className="text-xs text-brass hover:underline">
-                View Details
-              </button>
+              <span className="font-display text-brass font-semibold">₹{Number(order.total || 0).toLocaleString()}</span>
+              <button onClick={async () => { const tracking = await orderApi.tracking(Number(order.id)).catch(() => null); if (tracking) showToast("Tracking information loaded") }} className="text-xs text-brass hover:underline">View Details</button>
             </div>
           </div>
         ))}
+        {!serverOrders.length && <div className="text-center py-20 text-sm text-brown-light">No orders yet. Your completed orders will appear here.</div>}
       </div>
     </main>
   )
