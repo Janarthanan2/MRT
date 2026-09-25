@@ -1,0 +1,16 @@
+/* MRT Metal Mart — Product image upload UI */
+.image-upload-panel{margin-top:var(--space-xl);padding:var(--space-lg);background:var(--color-warm-ivory);border:1px solid var(--color-border-gray);border-radius:var(--radius-md)}
+.image-upload-header{display:flex;justify-content:space-between;gap:var(--space-lg);align-items:flex-start;margin-bottom:var(--space-lg)}
+.image-upload-header h4{margin:2px 0 4px;font-size:18px}
+.image-upload-header p,.form-help{color:var(--color-light-gray);font-size:12px;line-height:1.5}
+.image-api-badge{flex:0 0 auto;padding:7px 10px;border-radius:var(--radius-full);background:var(--color-brass-tint);color:var(--color-brass-dark);border:1px solid var(--color-brass-border);font:600 11px var(--font-family-mono)}
+.image-file-input{padding:9px}
+.image-upload-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--space-sm);margin-top:var(--space-lg)}
+.image-preview-card{overflow:hidden;background:var(--color-white);border:1px solid var(--color-border-gray);border-radius:var(--radius-sm)}
+.image-preview-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block}
+.image-preview-meta{padding:8px 10px 4px;display:flex;flex-direction:column;gap:2px;font-size:11px}
+.image-preview-meta strong{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.image-primary-toggle{display:flex;gap:6px;align-items:center;padding:6px 10px 10px;font-size:11px;font-weight:700}
+.image-upload-actions{display:flex;justify-content:flex-end;gap:var(--space-sm);margin-top:var(--space-lg)}
+.image-upload-status{min-height:18px;margin-top:var(--space-sm);color:var(--color-light-gray);font-size:12px}
+@media(max-width:700px){.image-upload-header{flex-direction:column}.image-upload-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.image-upload-actions{flex-direction:column}}
