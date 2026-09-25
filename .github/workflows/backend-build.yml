@@ -23,4 +23,6 @@ jobs:
           distribution: temurin
           java-version: "21"
           cache: maven
+      # Compile-check the backend before packaging it.
+      - run: mvn -B -DskipTests compile
       - run: mvn -B -DskipTests package
