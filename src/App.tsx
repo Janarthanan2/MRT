@@ -1,5 +1,6 @@
-import { useState, useMemo, useCallback } from "react"
+import { useState, useMemo, useCallback, useEffect } from "react"
 import Admin from "./Admin"
+import { authApi, productApi } from "./api/api"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -628,13 +629,18 @@ function ProductCard({
   )
 }
 
+function normalizeApiProduct(p: any): Product {
+  const image = p.image_url || p.image || ""
+  return { id: Number(p.id), name: p.name, category: p.category || "", price: Number(p.price || 0), originalPrice: p.original_price == null ? undefined : Number(p.original_price), rating: Number(p.rating || 0), reviews: Number(p.review_count || 0), image, images: image ? [image] : [], material: p.material || "", weight: p.weight || "", dimensions: p.dimensions || "", description: p.description || "", features: [], inStock: Number(p.stock || 0) > 0, featured: Boolean(p.featured), badge: p.badge || undefined, occasion: p.occasion || undefined }
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [page, setPage] = useState<Page>("home")
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [cart, setCart] = useState<CartItem[]>([])
-  const [wishlist, setWishlist] = useState<number[]>([])
+  const [wishlist, setWishlist] = useState<number[]>([])\n  const [products, setProducts] = useState<Product[]>(PRODUCTS)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [showAuth, setShowAuth] = useState(false)
   const [authTab, setAuthTab] = useState<"login" | "register">("login")
@@ -663,6 +669,11 @@ export default function App() {
     details: "",
   })
   const [customSent, setCustomSent] = useState(false)
+
+  useEffect(() => {
+    productApi.list().then(rows => { if (rows.length) setProducts(rows.map(normalizeApiProduct)) }).catch(() => {})
+    authApi.me().then(() => setIsLoggedIn(true)).catch(() => {})
+  }, [])
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
   const cartTotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
@@ -708,7 +719,7 @@ export default function App() {
   }, [])
 
   const filteredProducts = useMemo(() => {
-    let list = PRODUCTS.filter((p) => {
+    let list = products.filter((p) => {
       if (filterCat && p.category !== filterCat) return false
       if (p.price > filterMax) return false
       if (filterRating && p.rating < filterRating) return false
@@ -732,10 +743,10 @@ export default function App() {
         (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0),
       )
     return list
-  }, [filterCat, filterMax, filterRating, filterStock, searchQuery, sortBy])
+  }, [products, filterCat, filterMax, filterRating, filterStock, searchQuery, sortBy])
 
-  const wishlistProducts = PRODUCTS.filter((p) => wishlist.includes(p.id))
-  const featuredProducts = PRODUCTS.filter((p) => p.featured)
+  const wishlistProducts = products.filter((p) => wishlist.includes(p.id))
+  const featuredProducts = products.filter((p) => p.featured)
 
   // ── Header ─────────────────────────────────────────────────────────────────
 
@@ -1096,14 +1107,13 @@ export default function App() {
             className="w-full border border-sand bg-ivory rounded px-3 py-2.5 text-sm text-charcoal placeholder-brown-light outline-none focus:border-brass transition-colors"
           />
           <button
-            onClick={() => {
-              setIsLoggedIn(true)
-              setShowAuth(false)
-              showToast(
-                authTab === "login"
-                  ? "Welcome back!"
-                  : "Account created successfully!",
-              )
+            onClick={async () => {
+              try {
+                if (authTab === "login") await authApi.login(authForm.email, authForm.password)
+                else await authApi.register(authForm.name, authForm.email, authForm.password)
+                setIsLoggedIn(true); setShowAuth(false)
+                showToast(authTab === "login" ? "Welcome back!" : "Account created successfully!")
+              } catch (error) { showToast(error instanceof Error ? error.message : "Authentication failed") }
             }}
             className="w-full bg-brass text-cream py-3 text-sm font-semibold tracking-wide rounded btn-primary mt-2"
           >
@@ -2343,6 +2353,7 @@ export default function App() {
           <p className="text-xs text-brown-light">Member since August 2024</p>
           <button
             onClick={() => {
+              authApi.logout().catch(() => {})
               setIsLoggedIn(false)
               navTo("home")
             }}
