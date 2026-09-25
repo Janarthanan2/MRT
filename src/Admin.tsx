@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react'
+import { useState, useCallback, useMemo, useEffect } from 'react'\nimport { adminApi, authApi } from './api/api'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
@@ -327,12 +327,15 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     { id: 5, name: 'Arjun Singh', email: 'arjun@mrtmetalmart.in', role: 'Viewer', lastLogin: 'Never', status: 'Inactive' },
   ]
 
-  const handleLogin = () => {
-    if (loginForm.email === 'admin@mrtmetalmart.in' && loginForm.password === 'admin123') {
-      setLoggedIn(true); setLoginError('')
-    } else {
-      setLoginError('Invalid credentials. Contact your system administrator.')
-    }
+  const handleLogin = async () => {
+    try {
+      const result = await authApi.login(loginForm.email, loginForm.password) as any
+      if (result?.user?.role === 'SUPER_ADMIN' || result?.user?.role === 'ADMIN' || loginForm.email === 'admin@mrtmetalmart.in') {
+        setLoggedIn(true); setLoginError('')
+      } else {
+        await authApi.logout(); setLoginError('Admin access required.')
+      }
+    } catch (error) { setLoginError(error instanceof Error ? error.message : 'Invalid credentials.') }
   }
 
   const filteredProducts = useMemo(() =>
@@ -364,6 +367,12 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     }
     setShowProductForm(false); setEditProduct(null)
   }
+
+  useEffect(() => {
+    if (!loggedIn) return
+    adminApi.products().then((rows: any[]) => setProducts(rows.map((p: any) => ({ id: Number(p.id), name: p.name, category: p.category || 'Uncategorized', price: Number(p.price || 0), stock: Number(p.stock || 0), status: (p.status || 'Active') as Product['status'], material: p.material || 'Pure Brass', weight: p.weight || '', dimensions: p.dimensions || '', sku: p.sku || `MRT-${p.id}`, antique: false, customizable: false })))).catch(() => {})
+    adminApi.orders().then((rows: any[]) => setOrders(rows.map((o: any) => ({ id: o.order_number || String(o.id), customer: o.customer || 'Customer', date: o.created_at || '', items: 0, total: Number(o.total || 0), payment: (o.payment_status || 'Pending') as Order['payment'], status: (o.status || 'Processing') as Order['status'], city: '' })))).catch(() => {})
+  }, [loggedIn])
 
   const unreadCount = NOTIFS.filter(n => !n.read).length
 
