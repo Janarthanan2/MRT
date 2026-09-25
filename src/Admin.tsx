@@ -993,34 +993,15 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const AnalyticsPage = (
     <div className="space-y-6">
       <SectionHeader title="Analytics & Insights" />
-
-      {/* KPI row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon="Γé╣" label="Monthly Revenue" value="Γé╣4.21L" trend="+8.4%" color="brass" />
-        <StatCard icon="≡ƒôª" label="Orders This Month" value="211" trend="+11.2%" color="green" />
-        <StatCard icon="≡ƒ¢Æ" label="Avg. Order Value" value="Γé╣1,995" trend="+2.1%" color="blue" />
-
+        <StatCard icon="₹" label="Monthly Revenue" value="₹4.21L" trend="+8.4%" color="brass" />
+        <StatCard icon="📦" label="Orders This Month" value="211" trend="+11.2%" color="green" />
+        <StatCard icon="🛒" label="Avg. Order Value" value="₹1,995" trend="+2.1%" color="blue" />
         <StatCard icon="👥" label="Active Customers" value="1,842" trend="+5.3%" color="purple" />
       </div>
-
-      <div className="bg-white rounded-xl p-5 shadow-sm">
-        <h3 className="text-sm font-semibold text-charcoal mb-4">Revenue Trend (Last 6 Months)</h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <AreaChart data={[
-            { month: 'Apr', revenue: 285000 },
-            { month: 'May', revenue: 312000 },
-            { month: 'Jun', revenue: 298000 },
-            { month: 'Jul', revenue: 356000 },
-            { month: 'Aug', revenue: 389000 },
-            { month: 'Sep', revenue: 421000 },
-          ]}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#f0e8d8" />
-            <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-            <YAxis tick={{ fontSize: 11 }} tickFormatter={(v: number) => `₹${(v/1000).toFixed(0)}K`} />
-            <Tooltip formatter={(v: number) => [`₹${v.toLocaleString()}`, 'Revenue']} />
-            <Area type="monotone" dataKey="revenue" stroke="#b8860b" fill="#b8860b22" strokeWidth={2} />
-          </AreaChart>
-        </ResponsiveContainer>
+      <div className="bg-white rounded-xl p-6 shadow-sm border border-stone-200">
+        <h3 className="text-sm font-semibold text-stone-800 mb-2">Revenue Trend</h3>
+        <p className="text-xs text-stone-500">Analytics data is ready for integration with the backend reporting API.</p>
       </div>
     </div>
   )
