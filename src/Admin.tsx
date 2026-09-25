@@ -358,14 +358,44 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     setShowProductForm(true)
   }
 
-  const saveProduct = () => {
-    if (editProduct) {
-      setProducts(prev => prev.map(p => p.id === editProduct.id ? { ...p, ...productForm, price: +productForm.price, stock: +productForm.stock } : p))
-    } else {
-      const np: Product = { id: Date.now(), name: productForm.name, category: productForm.category, price: +productForm.price, stock: +productForm.stock, status: productForm.status, material: productForm.material, weight: productForm.weight, dimensions: productForm.dimensions, sku: productForm.sku, antique: productForm.antique, customizable: productForm.customizable }
-      setProducts(prev => [np, ...prev])
+  const saveProduct = async () => {
+    try {
+      const payload = {
+        name: productForm.name,
+        category: productForm.category,
+        price: +productForm.price,
+        stock: +productForm.stock,
+        status: productForm.status,
+        material: productForm.material,
+        weight: productForm.weight,
+        dimensions: productForm.dimensions,
+        sku: productForm.sku,
+        description: productForm.description,
+        featured: false,
+      }
+      const saved = editProduct
+        ? await adminApi.updateProduct(editProduct.id, payload)
+        : await adminApi.createProduct(payload)
+      const p: Product = {
+        id: Number(saved?.id || editProduct?.id || Date.now()),
+        name: saved?.name || payload.name,
+        category: saved?.category || payload.category || 'Uncategorized',
+        price: Number(saved?.price || payload.price),
+        stock: Number(saved?.stock || payload.stock),
+        status: (saved?.status || payload.status || 'Active') as Product['status'],
+        material: saved?.material || payload.material,
+        weight: saved?.weight || payload.weight,
+        dimensions: saved?.dimensions || payload.dimensions,
+        sku: saved?.sku || payload.sku,
+        antique: productForm.antique,
+        customizable: productForm.customizable,
+      }
+      setProducts(prev => editProduct ? prev.map(x => x.id === p.id ? p : x) : [p, ...prev])
+      setShowProductForm(false)
+      setEditProduct(null)
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Could not save product.')
     }
-    setShowProductForm(false); setEditProduct(null)
   }
 
   useEffect(() => {
@@ -414,7 +444,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   ) : (
                     <>
                       <input type="email" placeholder="Admin email address" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} className="w-full border border-stone-200 rounded-lg px-4 py-3 text-sm mb-4 outline-none focus:border-amber-600" />
-                      <button onClick={() => setForgotSent(true)} className="w-full py-3 text-sm font-semibold text-white rounded-lg mb-3" style={{ background: BRASS }}>
+                      <button onClick={async () => { try { await authApi.forgotPassword(forgotEmail); setForgotSent(true) } catch (error) { setLoginError(error instanceof Error ? error.message : "Could not send reset link.") } } className="w-full py-3 text-sm font-semibold text-white rounded-lg mb-3" style={{ background: BRASS }}>
                         Send Reset Link
                       </button>
                     </>
