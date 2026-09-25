@@ -317,7 +317,7 @@ export default function App() {
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' })
   const [customForm, setCustomForm] = useState({ name: '', email: '', phone: '', product: '', qty: '', details: '' })
   const [customSent, setCustomSent] = useState(false)
-  const [isAdmin, setIsAdmin] = useState(() => window.location.hash === '#admin' || window.location.pathname.endsWith('/admin'))
+  const [isAdmin, setIsAdmin] = useState(false)
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
 
