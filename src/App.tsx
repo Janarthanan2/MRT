@@ -1926,7 +1926,7 @@ export default function App() {
             {
               icon: "📦",
               label: "My Orders",
-              desc: "3 orders · 1 pending delivery",
+              desc: `${serverOrders.length} orders · ${serverOrders.filter((o: any) => !["Delivered", "Cancelled", "Returned"].includes(String(o.status))).length} pending delivery`,
               action: () => navTo("orders"),
             },
             {
@@ -1938,7 +1938,7 @@ export default function App() {
             {
               icon: "📍",
               label: "Saved Addresses",
-              desc: "2 addresses saved",
+              desc: "Manage your saved addresses",
               action: () => {},
             },
             {
