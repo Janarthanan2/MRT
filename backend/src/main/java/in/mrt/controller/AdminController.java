@@ -51,6 +51,8 @@ public class AdminController {
   @PostMapping("/categories") public Map<String,Object> createCategory(@RequestBody Map<String,Object>b){db.update("insert into categories(name,description,image_url,active,status) values(?,?,?,?,?)",b.get("name"),b.get("description"),b.get("imageUrl"),b.getOrDefault("active",true),"ACTIVE");return category(db.queryForObject("select max(id) from categories",Long.class));}
   @PutMapping("/categories/{id}") public Map<String,Object> updateCategory(@PathVariable long id,@RequestBody Map<String,Object>b){db.update("update categories set name=?,description=?,image_url=?,active=?,status=? where id=?",b.get("name"),b.get("description"),b.get("imageUrl"),b.getOrDefault("active",true),b.getOrDefault("status","ACTIVE"),id);return category(id);}
   @DeleteMapping("/categories/{id}") public Map<String,Object> deleteCategory(@PathVariable long id){db.update("delete from categories where id=?",id);return Map.of("success",true);}
+  @PostMapping("/categories/{id}/image") public Map<String,Object> categoryImage(@PathVariable long id,@RequestBody Map<String,Object> b){db.update("update categories set image_url=? where id=?",b.get("imageUrl"),id);return category(id);}
+  @DeleteMapping("/categories/{id}/image") public Map<String,Object> deleteCategoryImage(@PathVariable long id){db.update("update categories set image_url=null where id=?",id);return category(id);}
 
   @GetMapping("/inventory") public List<Map<String,Object>> inventory(){return db.queryForList("select id,sku,name,stock,status,updated_at from products order by stock,id");}
   @GetMapping("/inventory/low-stock") public List<Map<String,Object>> lowStock(){return db.queryForList("select id,sku,name,stock,status from products where stock<=10 order by stock");}
