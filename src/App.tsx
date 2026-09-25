@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
+import Admin from './Admin'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -316,8 +317,19 @@ export default function App() {
   const [authForm, setAuthForm] = useState({ name: '', email: '', password: '' })
   const [customForm, setCustomForm] = useState({ name: '', email: '', phone: '', product: '', qty: '', details: '' })
   const [customSent, setCustomSent] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(() => window.location.hash === '#admin' || window.location.pathname.endsWith('/admin'))
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
+
+  const openAdmin = useCallback(() => {
+    window.history.pushState({}, '', '#admin')
+    setIsAdmin(true)
+  }, [])
+
+  const closeAdmin = useCallback(() => {
+    window.history.pushState({}, '', window.location.pathname + window.location.search)
+    setIsAdmin(false)
+  }, [])
   const cartTotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
 
   const showToast = useCallback((msg: string) => {
@@ -421,6 +433,14 @@ export default function App() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4zM3 6h18M16 10a4 4 0 01-8 0"/>
             </svg>
             {cartCount > 0 && <span className="absolute top-1 right-1 w-4 h-4 bg-brass text-cream text-[9px] rounded-full flex items-center justify-center font-bold">{cartCount}</span>}
+          </button>
+          {/* Admin Portal */}
+          <button
+            onClick={openAdmin}
+            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-charcoal text-cream text-xs font-semibold rounded hover:bg-brass transition-colors"
+            aria-label="Open Admin Portal"
+          >
+            Admin
           </button>
           {/* Account */}
           <button
@@ -1349,6 +1369,10 @@ export default function App() {
       case 'orders':  return OrdersPage
       default:        return HomePage
     }
+  }
+
+  if (isAdmin) {
+    return <Admin onBack={closeAdmin} />
   }
 
   return (
