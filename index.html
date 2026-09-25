@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/design-system.css">
   <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/image-upload.css">
   <link rel="stylesheet" href="css/product-images.css">
 </head>
 <body>
@@ -1290,6 +1291,40 @@
                   <label class="form-label">Bulk Tier Price (10+ Units ₹)</label>
                   <input type="number" class="form-input" value="1320">
                 </div>
+              </div>
+
+              <!-- Product Image Upload & API Endpoint -->
+              <div class="image-upload-panel">
+                <div class="image-upload-header">
+                  <div>
+                    <span class="section-kicker">Product Media</span>
+                    <h4>Product Images</h4>
+                    <p>Upload JPG, PNG or WebP images. The first image can be marked as the primary showroom image.</p>
+                  </div>
+                  <span class="image-api-badge">POST /api/products/{productId}/images</span>
+                </div>
+
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label class="form-label" for="admin-prod-id">Existing Product ID</label>
+                    <input type="number" id="admin-prod-id" class="form-input" placeholder="e.g. 101" min="1">
+                    <span class="form-help">Use this when adding images to a product already saved in the database.</span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label" for="admin-prod-images">Select Images</label>
+                    <input type="file" id="admin-prod-images" class="form-input image-file-input" accept="image/jpeg,image/png,image/webp" multiple>
+                    <span class="form-help">Maximum 10 images per upload.</span>
+                  </div>
+                </div>
+
+                <div id="admin-image-preview" class="image-upload-grid" aria-live="polite"></div>
+
+                <div class="image-upload-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" id="admin-clear-images-btn">Clear Selection</button>
+                  <button type="button" class="btn btn-primary" id="admin-upload-images-btn">Upload Images to Product →</button>
+                </div>
+
+                <div id="admin-image-upload-status" class="image-upload-status" role="status"></div>
               </div>
 
               <div style="display: flex; gap: var(--space-lg); margin-top: var(--space-md); margin-bottom: var(--space-xl);">
