@@ -445,7 +445,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   ) : (
                     <>
                       <input type="email" placeholder="Admin email address" value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} className="w-full border border-stone-200 rounded-lg px-4 py-3 text-sm mb-4 outline-none focus:border-amber-600" />
-                      <button onClick={async () => { try { await authApi.forgotPassword(forgotEmail); setForgotSent(true) } catch (error) { setLoginError(error instanceof Error ? error.message : "Could not send reset link.") } } className="w-full py-3 text-sm font-semibold text-white rounded-lg mb-3" style={{ background: BRASS }}>
+                      <button onClick={async () => { try { await authApi.forgotPassword(forgotEmail); setForgotSent(true) } catch (error) { setLoginError(error instanceof Error ? error.message : "Could not send reset link.") } }} className="w-full py-3 text-sm font-semibold text-white rounded-lg mb-3" style={{ background: BRASS }}>
                         Send Reset Link
                       </button>
                     </>
