@@ -1296,67 +1296,177 @@ export default function App() {
 
   // ── Footer ──────────────────────────────────────────────────────────────────
 
+  const footerNavigate = useCallback((label: string) => {
+    const categoryMap: Record<string, string> = {
+      'Brass Idols & Statues': 'Brass Statues & Idols',
+      'Lamps & Diyas': 'Brass Lamps & Diyas',
+      'Puja Items': 'Brass Pooja Items',
+      'Home Décor': 'Brass Home Décor',
+      'Antiques & Collectibles': 'Indian Antiques',
+      'Gift Sets': 'Brass Gifts',
+    }
+
+    if (categoryMap[label]) {
+      setFilterCat(categoryMap[label])
+      navTo('shop')
+      return
+    }
+
+    if (label === 'Track Your Order') {
+      navTo('orders')
+      return
+    }
+
+    if (label === 'Custom Orders') {
+      navTo('custom')
+      return
+    }
+
+    showToast(`${label} page is coming soon.`)
+  }, [navTo, showToast])
+
   const Footer = (
     <footer className="bg-charcoal mt-20">
       <div className="brass-strip" />
+
       <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-4 gap-10">
+        {/* Brand */}
         <div className="col-span-2 md:col-span-1">
-          <div className="font-display text-xl text-cream mb-1">MRT <span className="text-brass-light">Metal Mart</span></div>
-          <div className="text-[10px] tracking-[0.25em] text-sand/50 uppercase mb-4">Crafted in Pure Brass</div>
-          <p className="text-xs text-sand/60 leading-relaxed">Authentic Indian brassware and antique collectibles, sourced directly from master artisans. Preserving tradition since 1978.</p>
+          <button
+            type="button"
+            onClick={() => navTo('home')}
+            className="text-left group"
+            aria-label="Go to MRT Metal Mart home"
+          >
+            <div className="font-display text-xl text-cream mb-1">
+              MRT <span className="text-brass-light">Metal Mart</span>
+            </div>
+            <div className="text-[10px] tracking-[0.25em] text-sand/50 uppercase mb-4">
+              Crafted in Pure Brass
+            </div>
+          </button>
+
+          <p className="text-xs text-sand/60 leading-relaxed">
+            Authentic Indian brassware and antique collectibles, sourced directly
+            from master artisans. Preserving tradition since 1978.
+          </p>
+
+          {/* Social buttons */}
           <div className="flex gap-3 mt-5">
-            {['F', 'I', 'W', 'Y'].map(s => (
-              <div key={s} className="w-8 h-8 rounded-full border border-sand/20 flex items-center justify-center text-sand/50 text-xs hover:border-brass hover:text-brass transition-colors cursor-pointer">{s}</div>
+            {[
+              { label: 'F', name: 'Facebook' },
+              { label: 'I', name: 'Instagram' },
+              { label: 'W', name: 'WhatsApp' },
+              { label: 'Y', name: 'YouTube' },
+            ].map(s => (
+              <button
+                key={s.name}
+                type="button"
+                onClick={() => showToast(`${s.name} link is coming soon.`)}
+                className="w-8 h-8 rounded-full border border-sand/20 flex items-center justify-center text-sand/50 text-xs hover:border-brass hover:text-brass transition-colors"
+                aria-label={s.name}
+              >
+                {s.label}
+              </button>
             ))}
           </div>
         </div>
 
+        {/* Footer navigation */}
         {[
           {
             title: 'Collections',
-            links: ['Brass Idols & Statues', 'Lamps & Diyas', 'Puja Items', 'Home Décor', 'Antiques & Collectibles', 'Gift Sets'],
+            links: [
+              'Brass Idols & Statues',
+              'Lamps & Diyas',
+              'Puja Items',
+              'Home Décor',
+              'Antiques & Collectibles',
+              'Gift Sets',
+            ],
           },
           {
             title: 'Customer Care',
-            links: ['Track Your Order', 'Returns & Exchanges', 'Shipping Policy', 'Custom Orders', 'Wholesale Enquiry', 'Contact Us'],
+            links: [
+              'Track Your Order',
+              'Returns & Exchanges',
+              'Shipping Policy',
+              'Custom Orders',
+              'Wholesale Enquiry',
+              'Contact Us',
+            ],
           },
           {
             title: 'Company',
-            links: ['About MRT', 'Our Artisans', 'Sustainability', 'Press & Media', 'Careers', 'Terms & Privacy'],
+            links: [
+              'About MRT',
+              'Our Artisans',
+              'Sustainability',
+              'Press & Media',
+              'Careers',
+              'Terms & Privacy',
+            ],
           },
         ].map(col => (
           <div key={col.title}>
-            <h4 className="text-[10px] uppercase tracking-widest text-brass-light font-semibold mb-4">{col.title}</h4>
+            <h4 className="text-[10px] uppercase tracking-widest text-brass-light font-semibold mb-4">
+              {col.title}
+            </h4>
+
             <ul className="space-y-2">
-              {col.links.map(l => <li key={l}><a href="#" className="text-xs text-sand/55 hover:text-brass-light transition-colors">{l}</a></li>)}
+              {col.links.map(label => (
+                <li key={label}>
+                  <button
+                    type="button"
+                    onClick={() => footerNavigate(label)}
+                    className="text-xs text-sand/55 hover:text-brass-light transition-colors text-left"
+                  >
+                    {label}
+                  </button>
+                </li>
+              ))}
             </ul>
           </div>
         ))}
       </div>
 
+      {/* Bottom bar */}
       <div className="border-t border-sand/10">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <p className="text-[10px] text-sand/40">© 2025 MRT Metal Mart. All rights reserved. GST: 27AAFCM1234A1Z5</p>
+          <div className="flex flex-wrap items-center justify-center md:justify-start gap-3">
+            <p className="text-[10px] text-sand/40">
+              © 2025 MRT Metal Mart. All rights reserved.
+              {' '}GST: 27AAFCM1234A1Z5
+            </p>
+
             <span className="text-sand/20 text-[10px]">•</span>
+
             <button
               type="button"
               onClick={openAdmin}
-              className="text-[10px] text-sand/45 hover:text-brass-light transition-colors"
+              className="text-[10px] text-sand/45 hover:text-brass-light transition-colors underline underline-offset-2"
               aria-label="Open Admin Portal"
             >
               Admin Portal
             </button>
           </div>
-          <div className="flex items-center gap-2">
-            {['Visa', 'Mastercard', 'UPI', 'Paytm', 'NetBanking'].map(p => (
-              <span key={p} className="text-[9px] text-sand/35 border border-sand/15 rounded px-1.5 py-0.5">{p}</span>
+
+          {/* Payment methods */}
+          <div className="flex items-center gap-2 flex-wrap justify-center">
+            {['Visa', 'Mastercard', 'UPI', 'Paytm', 'NetBanking'].map(payment => (
+              <span
+                key={payment}
+                className="text-[9px] text-sand/35 border border-sand/15 rounded px-1.5 py-0.5"
+              >
+                {payment}
+              </span>
             ))}
           </div>
         </div>
       </div>
     </footer>
   )
+
 
   // ── Render ──────────────────────────────────────────────────────────────────
 
