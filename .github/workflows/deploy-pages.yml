@@ -19,7 +19,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm install
+      # The repository lockfile is intentionally not used by Pages while the Figma-generated
+      # dependency set is being synchronized. This avoids stale lockfile failures.
+      - run: npm install --no-package-lock --no-audit --no-fund
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
