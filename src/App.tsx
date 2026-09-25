@@ -1444,7 +1444,7 @@ export default function App() {
             <button
               type="button"
               onClick={openAdmin}
-              className="text-[10px] text-sand/45 hover:text-brass-light transition-colors underline underline-offset-2"
+              className="text-[10px] text-sand/40 hover:text-brass-light transition-colors"
               aria-label="Open Admin Portal"
             >
               Admin Portal
