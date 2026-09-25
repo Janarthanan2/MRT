@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react"
 import Admin from "./Admin"
-import { authApi, productApi, cartApi, wishlistApi, customOrderApi, orderApi, userApi, paymentApi } from "./api/api"
+import { authApi, productApi, categoryApi, cartApi, wishlistApi, customOrderApi, orderApi, userApi, paymentApi } from "./api/api"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,603 +33,21 @@ type Page = "home" | "shop" | "product" | "cart" | "wishlist" | "custom" | "prof
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const CATEGORIES = [
-  {
-    id: "Brass Pooja Items",
-    name: "Brass Pooja Items",
-    count: 48,
-    img: "https://images.unsplash.com/photo-1650383044645-5d32141ad1a3?w=600&h=440&fit=crop&auto=format",
-  },
-  {
-    id: "Brass Lamps & Diyas",
-    name: "Brass Lamps & Diyas",
-    count: 32,
-    img: "https://images.unsplash.com/photo-1771257350846-ff4af8ef91cd?w=600&h=440&fit=crop&auto=format",
-  },
-  {
-    id: "Brass Statues & Idols",
-    name: "Brass Statues & Idols",
-    count: 64,
-    img: "https://images.unsplash.com/photo-1763475944771-702683b1b42c?w=600&h=440&fit=crop&auto=format",
-  },
-  {
-    id: "Brass Home Décor",
-    name: "Brass Home Décor",
-    count: 55,
-    img: "https://images.unsplash.com/photo-1727698560440-8d3497039140?w=600&h=440&fit=crop&auto=format",
-  },
-  {
-    id: "Brass Vessels & Traditional Items",
-    name: "Brass Vessels & Traditional Items",
-    count: 29,
-    img: "https://images.unsplash.com/photo-1750847009743-e0281d1bca7d?w=600&h=440&fit=crop&auto=format",
-  },
-  {
-    id: "Brass Gifts",
-    name: "Brass Gifts",
-    count: 41,
-    img: "https://images.unsplash.com/photo-1766399654235-a6793895422d?w=600&h=440&fit=crop&auto=format",
-  },
-  {
-    id: "Indian Antiques",
-    name: "Indian Antiques",
-    count: 23,
-    img: "https://images.unsplash.com/photo-1765443455193-fb043c1dca8d?w=600&h=440&fit=crop&auto=format",
-  },
-  {
-    id: "Antique-Style Collectibles",
-    name: "Antique-Style Collectibles",
-    count: 37,
-    img: "https://images.unsplash.com/photo-1767338718657-9006d701ce6a?w=600&h=440&fit=crop&auto=format",
-  },
-]
-
-const PRODUCTS: Product[] = [
-  {
-    id: 1,
-    name: "Dancing Ganesha Brass Idol",
-    category: "Brass Statues & Idols",
-    price: 2499,
-    originalPrice: 3299,
-    rating: 4.8,
-    reviews: 124,
-    image:
-      "https://images.unsplash.com/photo-1767184122148-544404ead960?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1767184122148-544404ead960?w=800&h=920&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1771692820416-4b4634b82e9d?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "1.2 kg",
-    dimensions: "15 × 10 × 8 cm",
-    description:
-      "Intricately handcrafted by master artisans from Moradabad, this Dancing Ganesha idol captures the divine grace and auspiciousness of Lord Ganesha. Cast in pure brass using the traditional lost-wax technique, every detail — from the delicate lotus crown to the flowing dhoti — is meticulously hand-finished. An ideal idol for homes, puja rooms, and gifting.",
-    features: [
-      "Hand-cast lost-wax technique",
-      "Hand-polished mirror finish",
-      "Auspicious Nritya pose",
-      "Includes protective velvet pouch & certificate of authenticity",
-    ],
-    inStock: true,
-    featured: true,
-    badge: "Bestseller",
-    occasion: "Puja & Festivals",
-  },
-  {
-    id: 2,
-    name: "Traditional Brass Puja Thali Set",
-    category: "Brass Pooja Items",
-    price: 1899,
-    originalPrice: 2499,
-    rating: 4.7,
-    reviews: 89,
-    image:
-      "https://images.unsplash.com/photo-1650383044645-5d32141ad1a3?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1650383044645-5d32141ad1a3?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "0.8 kg",
-    dimensions: "30 cm diameter",
-    description:
-      "A complete puja thali set with all essentials for daily worship. Includes a large thali, diya holder, incense stick holder, and small bowls for kumkum and turmeric. Engraved with auspicious patterns around the rim.",
-    features: [
-      "Complete 7-piece set",
-      "Engraved floral border",
-      "Lacquered long-lasting finish",
-      "Gift-ready presentation box",
-    ],
-    inStock: true,
-    featured: true,
-    occasion: "Daily Puja",
-  },
-  {
-    id: 3,
-    name: "Antique Brass Hanging Diya",
-    category: "Brass Lamps & Diyas",
-    price: 1299,
-    rating: 4.9,
-    reviews: 203,
-    image:
-      "https://images.unsplash.com/photo-1771257350846-ff4af8ef91cd?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1771257350846-ff4af8ef91cd?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "0.6 kg",
-    dimensions: "40 cm height (with chain)",
-    description:
-      "An exquisite hanging diya with five oil cups, suspended from an ornate brass chain. The antique oxidized finish gives it a timeless heritage look, perfect for temples, puja rooms, or as a stunning home décor accent.",
-    features: [
-      "5-cup oil lamp",
-      "Oxidized antique finish",
-      "80 cm hanging chain included",
-      "Traditional Rajasthani design",
-    ],
-    inStock: true,
-    featured: true,
-    badge: "New Arrival",
-    occasion: "Diwali & Puja",
-  },
-  {
-    id: 4,
-    name: "Brass Urli Bowl — Floral Rim",
-    category: "Brass Home Décor",
-    price: 3299,
-    originalPrice: 4199,
-    rating: 4.6,
-    reviews: 67,
-    image:
-      "https://images.unsplash.com/photo-1702497508675-c67b1a38c9c6?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1702497508675-c67b1a38c9c6?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "2.1 kg",
-    dimensions: "35 cm dia × 12 cm height",
-    description:
-      "The traditional Kerala urli, reimagined with an ornate floral rim. Float marigolds, rose petals, or candles in this stunning centerpiece bowl that brings festive warmth to any living space or entrance.",
-    features: [
-      "Wide-rim floral design",
-      "Leakproof construction",
-      "Perfect for float decoration",
-      "Hand-hammered texture",
-    ],
-    inStock: true,
-    occasion: "Home Décor",
-  },
-  {
-    id: 5,
-    name: "Engraved Brass Kalash",
-    category: "Brass Vessels & Traditional Items",
-    price: 1499,
-    rating: 4.5,
-    reviews: 58,
-    image:
-      "https://images.unsplash.com/photo-1766399654235-a6793895422d?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1766399654235-a6793895422d?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "0.5 kg",
-    dimensions: "20 cm height × 12 cm width",
-    description:
-      "The sacred kalash, intricately engraved with auspicious symbols of prosperity. Used in all important religious ceremonies, this kalash blends spiritual significance with artisanal craft.",
-    features: [
-      "Hand-engraved patterns",
-      "Auspicious Om symbol",
-      "Used in puja ceremonies",
-      "Traditional South Indian design",
-    ],
-    inStock: true,
-    occasion: "Religious Ceremonies",
-  },
-  {
-    id: 6,
-    name: "Brass Krishna Flute Player Idol",
-    category: "Brass Statues & Idols",
-    price: 2899,
-    rating: 4.9,
-    reviews: 156,
-    image:
-      "https://images.unsplash.com/photo-1771692820416-4b4634b82e9d?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1771692820416-4b4634b82e9d?w=800&h=920&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1763475944771-702683b1b42c?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "1.5 kg",
-    dimensions: "20 × 8 × 6 cm",
-    description:
-      "Lord Krishna in his iconic murali pose, crafted with extraordinary detail. The idol captures Krishna's serene expression and graceful form, making it a centerpiece of devotion and timeless beauty.",
-    features: [
-      "Detailed hand carving",
-      "Peacock feather crown detail",
-      "Smooth polished finish",
-      "Ideal for home temples",
-    ],
-    inStock: true,
-    badge: "Top Rated",
-    occasion: "Janmashtami & Gifting",
-  },
-  {
-    id: 7,
-    name: "Brass Temple Bell — Medium",
-    category: "Brass Pooja Items",
-    price: 799,
-    originalPrice: 999,
-    rating: 4.4,
-    reviews: 211,
-    image:
-      "https://images.unsplash.com/photo-1650383044645-5d32141ad1a3?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1650383044645-5d32141ad1a3?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "0.4 kg",
-    dimensions: "12 cm height",
-    description:
-      "A traditional brass temple bell with a clear, resonant tone. Crafted for daily puja to invoke auspicious vibrations, this bell is both a spiritual tool and a beautiful decorative piece.",
-    features: [
-      "Resonant clear tone",
-      "Teak wood handle",
-      "Rope attachment included",
-      "Traditional temple shape",
-    ],
-    inStock: true,
-    occasion: "Daily Puja",
-  },
-  {
-    id: 8,
-    name: "Brass Plate — Madhubani Motif",
-    category: "Brass Gifts",
-    price: 1899,
-    rating: 4.7,
-    reviews: 44,
-    image:
-      "https://images.unsplash.com/photo-1765443254037-11cf280461a4?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1765443254037-11cf280461a4?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "0.7 kg",
-    dimensions: "30 cm diameter",
-    description:
-      "A decorative wall plate inspired by Madhubani folk art. Intricately etched with peacocks, lotuses, and geometric borders in traditional Bihari patterns — doubles as wall art and a gifting masterpiece.",
-    features: [
-      "Madhubani folk art motif",
-      "Wall-hanging bracket included",
-      "Antique oxidized finish",
-      "Gift-boxed",
-    ],
-    inStock: true,
-    occasion: "Corporate & Festival Gifts",
-  },
-  {
-    id: 9,
-    name: "Kuthu Vilakku — Antique Brass Lamp",
-    category: "Brass Lamps & Diyas",
-    price: 4499,
-    rating: 5.0,
-    reviews: 32,
-    image:
-      "https://images.unsplash.com/photo-1771257350846-ff4af8ef91cd?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1771257350846-ff4af8ef91cd?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "3.2 kg",
-    dimensions: "60 cm height",
-    description:
-      "The traditional South Indian Kuthu Vilakku lamp — a symbol of divine light and auspiciousness. Features a central column with five spreading arms, each holding an oil cup. A statement piece for temples and premium homes.",
-    features: [
-      "Traditional Kuthu Vilakku form",
-      "5-wick design",
-      "Antique aged finish",
-      "Stable wide base",
-    ],
-    inStock: false,
-    badge: "Limited Stock",
-    occasion: "Weddings & Temples",
-  },
-  {
-    id: 10,
-    name: "Peacock Brass Incense Holder",
-    category: "Brass Pooja Items",
-    price: 599,
-    rating: 4.3,
-    reviews: 178,
-    image:
-      "https://images.unsplash.com/photo-1650383044645-5d32141ad1a3?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1650383044645-5d32141ad1a3?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "0.2 kg",
-    dimensions: "22 cm length",
-    description:
-      "An elegant brass incense holder with a peacock motif. The extended ash-catching tray keeps your altar clean while the intricate peacock design adds a beautiful spiritual accent to your puja space.",
-    features: [
-      "Peacock design detail",
-      "Extended ash tray",
-      "Easy to clean",
-      "Suitable for all agarbatti",
-    ],
-    inStock: true,
-    occasion: "Daily Puja",
-  },
-  {
-    id: 11,
-    name: "Brass Lakshmi Idol — Seated Pose",
-    category: "Brass Statues & Idols",
-    price: 3199,
-    rating: 4.8,
-    reviews: 93,
-    image:
-      "https://images.unsplash.com/photo-1763475944771-702683b1b42c?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1763475944771-702683b1b42c?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "1.8 kg",
-    dimensions: "22 × 14 × 10 cm",
-    description:
-      "Goddess Lakshmi in her classic seated pose, showering gold coins with one hand while blessing with another. Cast in pure brass with fine detailing of lotus throne, ornaments, and garments.",
-    features: [
-      "Traditional seated Lakshmi pose",
-      "Lotus throne base",
-      "Fine jewelry detailing",
-      "Ideal Diwali gift",
-    ],
-    inStock: true,
-    featured: true,
-    occasion: "Diwali & Housewarming",
-  },
-  {
-    id: 12,
-    name: "Mughal Brass Jewelry Box",
-    category: "Antique-Style Collectibles",
-    price: 1799,
-    originalPrice: 2299,
-    rating: 4.6,
-    reviews: 55,
-    image:
-      "https://images.unsplash.com/photo-1765443455193-fb043c1dca8d?w=560&h=640&fit=crop&auto=format",
-    images: [
-      "https://images.unsplash.com/photo-1765443455193-fb043c1dca8d?w=800&h=920&fit=crop&auto=format",
-    ],
-    material: "Pure Brass",
-    weight: "0.9 kg",
-    dimensions: "15 × 10 × 8 cm",
-    description:
-      "A beautifully engraved brass jewelry box with a hinged lid and velvet-lined interior. The exterior features intricate Mughal-inspired floral and geometric patterns, making it both functional and a stunning collectible.",
-    features: [
-      "Velvet-lined interior",
-      "Hinged brass clasp",
-      "Mughal floral engraving",
-      "Collector's piece",
-    ],
-    inStock: true,
-    occasion: "Gifting",
-  },
-]
-
-// ─── Helper Components ────────────────────────────────────────────────────────
-
-function Stars({ rating, size = "sm" }: { rating: number; size?: "sm" | "md" }) {
-  const s = size === "md" ? "text-base" : "text-xs"
-  return (
-    <span className={`inline-flex gap-0.5 ${s}`}>
-      {[1, 2, 3, 4, 5].map((n) => (
-        <span
-          key={n}
-          className={
-            n <= Math.round(rating) ? "text-amber-500" : "text-amber-200"
-          }
-        >
-          ★
-        </span>
-      ))}
-    </span>
-  )
-}
-
-function Divider({ label }: { label?: string }) {
-  return (
-    <div className="flex items-center gap-4 my-2">
-      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
-      {label && (
-        <span className="text-xs tracking-[0.2em] text-brass uppercase font-display italic">
-          {label}
-        </span>
-      )}
-      {!label && <span className="text-brass-light text-sm">◆</span>}
-      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
-    </div>
-  )
-}
-
-function SectionHeader({
-  title,
-  subtitle,
-}: {
-  title: string
-  subtitle?: string
-}) {
-  return (
-    <div className="text-center mb-12">
-      <p className="text-xs tracking-[0.3em] text-brass-light uppercase mb-3 font-medium">
-        MRT Metal Mart
-      </p>
-      <h2 className="font-display text-3xl md:text-4xl text-charcoal mb-3">
-        {title}
-      </h2>
-      <Divider />
-      {subtitle && (
-        <p className="text-brown-mid mt-4 max-w-xl mx-auto leading-relaxed text-sm">
-          {subtitle}
-        </p>
-      )}
-    </div>
-  )
-}
-
-function Badge({ text }: { text: string }) {
-  const colors: Record<string, string> = {
-    Bestseller: "bg-amber-700 text-cream",
-    "New Arrival": "bg-brass-dark text-brass-pale",
-    "Top Rated": "bg-brown text-cream",
-    "Limited Stock": "bg-red-800/80 text-red-100",
-  }
-  return (
-    <span
-      className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded font-semibold ${colors[text] || "bg-brass text-cream"}`}
-    >
-      {text}
-    </span>
-  )
-}
-
-function WishlistBtn({
-  active,
-  onToggle,
-}: {
-  active: boolean
-  onToggle: () => void
-}) {
-  return (
-    <button
-      onClick={(e) => {
-        e.stopPropagation()
-        onToggle()
-      }}
-      className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all ${
-        active
-          ? "bg-red-600 border-red-600 text-white"
-          : "bg-cream/80 border-sand text-brown-mid hover:border-brass hover:text-brass"
-      }`}
-      aria-label="Toggle wishlist"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        className="w-4 h-4"
-        fill={active ? "currentColor" : "none"}
-        stroke="currentColor"
-        strokeWidth="1.8"
-      >
-        <path
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"
-        />
-      </svg>
-    </button>
-  )
-}
-
-// ─── Product Card ─────────────────────────────────────────────────────────────
-
-function ProductCard({
-  product,
-  wishlist,
-  onToggleWishlist,
-  onAddToCart,
-  onSelect,
-}: {
-  product: Product
-  wishlist: number[]
-  onToggleWishlist: (id: number) => void
-  onAddToCart: (p: Product) => void
-  onSelect: (p: Product) => void
-}) {
-  const disc = product.originalPrice
-    ? Math.round((1 - product.price / product.originalPrice) * 100)
-    : 0
-  return (
-    <div
-      className="product-card bg-cream rounded border border-sand/60 overflow-hidden cursor-pointer group"
-      onClick={() => onSelect(product)}
-    >
-      <div className="relative overflow-hidden bg-parchment aspect-[4/5]">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        {product.badge && (
-          <div className="absolute top-3 left-3">
-            <Badge text={product.badge} />
-          </div>
-        )}
-        {!product.inStock && (
-          <div className="absolute inset-0 bg-charcoal/50 flex items-center justify-center">
-            <span className="text-cream text-sm font-display italic">
-              Out of Stock
-            </span>
-          </div>
-        )}
-        <div className="absolute top-3 right-3">
-          <WishlistBtn
-            active={wishlist.includes(product.id)}
-            onToggle={() => onToggleWishlist(product.id)}
-          />
-        </div>
-        {product.inStock && (
-          <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button
-              onClick={(e) => {
-                e.stopPropagation()
-                onAddToCart(product)
-              }}
-              className="w-full bg-brass text-cream text-xs font-semibold tracking-wider uppercase py-2.5 rounded btn-primary"
-            >
-              Add to Cart
-            </button>
-          </div>
-        )}
-      </div>
-      <div className="p-4">
-        <p className="text-[10px] text-brass-light uppercase tracking-widest mb-1">
-          {product.category}
-        </p>
-        <h3 className="font-display text-charcoal text-sm leading-snug mb-2 line-clamp-2">
-          {product.name}
-        </h3>
-        <div className="flex items-center gap-1 mb-3">
-          <Stars rating={product.rating} />
-          <span className="text-[10px] text-brown-light">
-            ({product.reviews})
-          </span>
-        </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-baseline gap-2">
-            <span className="font-display font-semibold text-brass text-base">
-              ₹{product.price.toLocaleString()}
-            </span>
-            {product.originalPrice && (
-              <span className="text-xs text-brown-light line-through">
-                ₹{product.originalPrice.toLocaleString()}
-              </span>
-            )}
-            {disc > 0 && (
-              <span className="text-[10px] text-green-700 font-semibold">
-                {disc}% off
-              </span>
-            )}
-          </div>
-          {!product.inStock && (
-            <span className="text-[10px] text-red-700 font-medium">
-              Sold Out
-            </span>
-          )}
-        </div>
-      </div>
-    </div>
-  )
-}
-
 function normalizeApiProduct(p: any): Product {
+  const image = p.image_url || p.image || ""
+  return { id: Number(p.id), name: p.name || "", category: p.category || p.category_name || "", price: Number(p.price || 0), originalPrice: p.original_price == null ? undefined : Number(p.original_price), rating: Number(p.rating || 0), reviews: Number(p.review_count || p.reviews || 0), image, images: p.images?.length ? p.images.map((x: any) => typeof x === "string" ? x : x.image_url || x.url).filter(Boolean) : (image ? [image] : []), material: p.material || "", weight: p.weight || "", dimensions: p.dimensions || "", description: p.description || "", features: Array.isArray(p.features) ? p.features : [], inStock: Number(p.stock ?? p.stock_quantity ?? 0) > 0, featured: Boolean(p.featured), badge: p.badge || undefined, occasion: p.occasion || undefined }
+}
+
+function normalizeApiCategory(c: any) {
+  return {
+    id: String(c.id ?? c.name ?? ""),
+    name: c.name || c.category_name || "",
+    count: Number(c.product_count ?? c.count ?? 0),
+    img: c.image_url || c.image || "",
+  }
+}
+
+
   const image = p.image_url || p.image || ""
   return { id: Number(p.id), name: p.name, category: p.category || "", price: Number(p.price || 0), originalPrice: p.original_price == null ? undefined : Number(p.original_price), rating: Number(p.rating || 0), reviews: Number(p.review_count || 0), image, images: image ? [image] : [], material: p.material || "", weight: p.weight || "", dimensions: p.dimensions || "", description: p.description || "", features: [], inStock: Number(p.stock || 0) > 0, featured: Boolean(p.featured), badge: p.badge || undefined, occasion: p.occasion || undefined }
 }
@@ -641,7 +59,7 @@ export default function App() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [cart, setCart] = useState<CartItem[]>([])
   const [wishlist, setWishlist] = useState<number[]>([])
-  const [products, setProducts] = useState<Product[]>(PRODUCTS)
+  const [products, setProducts] = useState<Product[]>([])\n  const [categories, setCategories] = useState<{ id: string; name: string; count: number; img: string }[]>([])
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [account, setAccount] = useState<any>(null)
   const [serverOrders, setServerOrders] = useState<any[]>([])
@@ -674,10 +92,21 @@ export default function App() {
   const [customSent, setCustomSent] = useState(false)
 
   useEffect(() => {
-    productApi.list().then(rows => {
-      if (rows.length) setProducts(rows.map(normalizeApiProduct))
-    }).catch(() => {})
+    let cancelled = false
+
+    Promise.all([
+      productApi.list(),
+      categoryApi.list(),
+    ]).then(([productRows, categoryRows]) => {
+      if (cancelled) return
+      setProducts(productRows.map(normalizeApiProduct))
+      setCategories(categoryRows.map(normalizeApiCategory))
+    }).catch((e) => {
+      if (!cancelled) showToast(e instanceof Error ? e.message : "Could not load store data")
+    })
+
     authApi.me().then(async (me) => {
+      if (cancelled) return
       setIsLoggedIn(true)
       setAccount(me)
       const [serverCart, serverWishlist, serverOrderRows] = await Promise.all([
@@ -685,15 +114,20 @@ export default function App() {
         wishlistApi.list().catch(() => []),
         orderApi.list().catch(() => []),
       ])
-      setCart(serverCart.map((item: any) => {
-        const product = products.find(p => p.id === Number(item.product_id)) || normalizeApiProduct(item)
-        return { product, qty: Number(item.quantity || 1) }
-      }))
-      setWishlist(serverWishlist.map((item: any) => Number(item.product_id)))
+      if (cancelled) return
+      setCart(serverCart.map((item: any) => ({
+        product: normalizeApiProduct(item.product || item),
+        qty: Number(item.quantity || 1),
+      })))
+      setWishlist(serverWishlist.map((item: any) => Number(item.product_id ?? item.productId ?? item.id)))
       setServerOrders(serverOrderRows)
-      userApi.profile().then(setAccount).catch(() => {})
+      userApi.profile().then(profile => {
+        if (!cancelled) setAccount(profile)
+      }).catch(() => {})
     }).catch(() => {})
-  }, [])
+
+    return () => { cancelled = true }
+  }, [showToast])
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
   const cartTotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
