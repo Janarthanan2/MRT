@@ -126,6 +126,14 @@ export const notificationApi = {
   markAllRead: () => patch<any>("/notifications/read-all"),
 }
 
+export const addressApi = {
+  list: () => get<any[]>("/user/addresses"),
+  get: (id: number) => get<any>(`/user/addresses/${id}`),
+  create: (payload: unknown) => post<any>("/user/addresses", payload),
+  update: (id: number, payload: unknown) => put<any>(`/user/addresses/${id}`, payload),
+  remove: (id: number) => del<any>(`/user/addresses/${id}`),
+}
+
 export const adminApi = {
   dashboard: () => get<any>("/admin/dashboard"),
   dashboardRevenue: () => get<any[]>("/admin/dashboard/revenue"),
