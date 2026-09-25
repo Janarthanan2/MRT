@@ -19,9 +19,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      # Use npm's persistent cache so dependency downloads are reused between Pages runs.
-      # A lockfile is not committed yet, so npm install is required instead of npm ci.
-      - run: npm install --prefer-offline --no-audit --no-fund --progress=false
+      # Use the committed lockfile for deterministic, cached CI installs.
+      - run: npm ci --prefer-offline --no-audit --no-fund --progress=false
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
