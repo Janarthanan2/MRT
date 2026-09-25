@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from "react"
 import Admin from "./Admin"
-import { authApi, productApi } from "./api/api"
+import { authApi, productApi, cartApi, wishlistApi, customOrderApi } from "./api/api"
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -671,8 +671,21 @@ export default function App() {
   const [customSent, setCustomSent] = useState(false)
 
   useEffect(() => {
-    productApi.list().then(rows => { if (rows.length) setProducts(rows.map(normalizeApiProduct)) }).catch(() => {})
-    authApi.me().then(() => setIsLoggedIn(true)).catch(() => {})
+    productApi.list().then(rows => {
+      if (rows.length) setProducts(rows.map(normalizeApiProduct))
+    }).catch(() => {})
+    authApi.me().then(async () => {
+      setIsLoggedIn(true)
+      const [serverCart, serverWishlist] = await Promise.all([
+        cartApi.list().catch(() => []),
+        wishlistApi.list().catch(() => []),
+      ])
+      setCart(serverCart.map((item: any) => {
+        const product = products.find(p => p.id === Number(item.product_id)) || normalizeApiProduct(item)
+        return { product, qty: Number(item.quantity || 1) }
+      }))
+      setWishlist(serverWishlist.map((item: any) => Number(item.product_id)))
+    }).catch(() => {})
   }, [])
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
@@ -684,25 +697,30 @@ export default function App() {
   }, [])
 
   const addToCart = useCallback(
-    (p: Product) => {
+    async (p: Product) => {
       setCart((prev) => {
         const ex = prev.find((i) => i.product.id === p.id)
-        if (ex)
-          return prev.map((i) =>
-            i.product.id === p.id ? { ...i, qty: i.qty + 1 } : i,
-          )
+        if (ex) return prev.map((i) => i.product.id === p.id ? { ...i, qty: i.qty + 1 } : i)
         return [...prev, { product: p, qty: 1 }]
       })
+      if (localStorage.getItem("mrt_access_token")) {
+        try { await cartApi.add(p.id, 1) } catch (e) { showToast(e instanceof Error ? e.message : "Could not sync cart") }
+      }
       showToast(`${p.name} added to cart`)
     },
     [showToast],
   )
 
-  const toggleWishlist = useCallback((id: number) => {
-    setWishlist((prev) =>
-      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
-    )
-  }, [])
+  const toggleWishlist = useCallback(async (id: number) => {
+    const active = wishlist.includes(id)
+    setWishlist((prev) => active ? prev.filter((x) => x !== id) : [...prev, id])
+    if (localStorage.getItem("mrt_access_token")) {
+      try {
+        if (active) await wishlistApi.remove(id)
+        else await wishlistApi.add(id)
+      } catch (e) { showToast(e instanceof Error ? e.message : "Could not sync wishlist") }
+    }
+  }, [wishlist, showToast])
 
   const goToProduct = useCallback((p: Product) => {
     setSelectedProduct(p)
@@ -1993,14 +2011,13 @@ export default function App() {
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center border border-sand rounded">
                       <button
-                        onClick={() =>
-                          setCart((prev) =>
-                            prev.map((i) =>
-                              i.product.id === item.product.id
-                                ? { ...i, qty: Math.max(1, i.qty - 1) }
-                                : i,
-                            ),
-                          )
+                        onClick={async () => {
+                          const nextQty = Math.max(1, item.qty - 1)
+                          setCart((prev) => prev.map((i) => i.product.id === item.product.id ? { ...i, qty: nextQty } : i))
+                          if (localStorage.getItem("mrt_access_token")) {
+                            const serverItem = await cartApi.list().then(rows => rows.find((x: any) => Number(x.product_id) === item.product.id)).catch(() => null)
+                            if (serverItem) await cartApi.update(Number(serverItem.id), nextQty).catch(() => {})
+                          }
                         }
                         className="px-3 py-1.5 text-sm hover:bg-ivory"
                       >
@@ -2009,14 +2026,13 @@ export default function App() {
                       <span className="px-3 py-1.5 text-sm border-x border-sand">                        {item.qty}
                       </span>
                       <button
-                        onClick={() =>
-                          setCart((prev) =>
-                            prev.map((i) =>
-                              i.product.id === item.product.id
-                                ? { ...i, qty: i.qty + 1 }
-                                : i,
-                            ),
-                          )
+                        onClick={async () => {
+                          const nextQty = item.qty + 1
+                          setCart((prev) => prev.map((i) => i.product.id === item.product.id ? { ...i, qty: nextQty } : i))
+                          if (localStorage.getItem("mrt_access_token")) {
+                            const serverItem = await cartApi.list().then(rows => rows.find((x: any) => Number(x.product_id) === item.product.id)).catch(() => null)
+                            if (serverItem) await cartApi.update(Number(serverItem.id), nextQty).catch(() => {})
+                          }
                         }
                         className="px-3 py-1.5 text-sm hover:bg-ivory"
                       >
@@ -2028,12 +2044,12 @@ export default function App() {
                         ₹{(item.product.price * item.qty).toLocaleString()}
                       </span>
                       <button
-                        onClick={() =>
-                          setCart((prev) =>
-                            prev.filter(
-                              (i) => i.product.id !== item.product.id,
-                            ),
-                          )
+                        onClick={async () => {
+                          setCart((prev) => prev.filter(i => i.product.id !== item.product.id))
+                          if (localStorage.getItem("mrt_access_token")) {
+                            const serverItem = await cartApi.list().then(rows => rows.find((x: any) => Number(x.product_id) === item.product.id)).catch(() => null)
+                            if (serverItem) await cartApi.remove(Number(serverItem.id)).catch(() => {})
+                          }
                         }
                         className="text-red-700 text-xs hover:text-red-900"
                       >
@@ -2272,7 +2288,15 @@ export default function App() {
                 />
               </div>
               <button
-                onClick={() => setCustomSent(true)}
+                onClick={async () => {
+                  try {
+                    await customOrderApi.create(customForm)
+                    setCustomSent(true)
+                    showToast("Custom order request submitted")
+                  } catch (e) {
+                    showToast(e instanceof Error ? e.message : "Could not submit request")
+                  }
+                }}
                 className="w-full bg-brass text-cream py-3.5 text-sm font-semibold tracking-wide rounded btn-primary"
               >
                 Submit Request
