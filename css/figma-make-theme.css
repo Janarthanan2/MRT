@@ -1,0 +1,67 @@
+/* MRT Metal Mart — Figma Make visual layer
+   Adapts the existing storefront to the supplied Figma Make frontend style. */
+:root {
+  --color-warm-ivory: #F7F0DF;
+  --color-cream: #FDF8EE;
+  --color-off-white: #FFFDF8;
+  --color-white: #FFFFFF;
+  --color-charcoal: #1C1308;
+  --color-deep-brown: #4A2E0E;
+  --color-dark-gray: #5B4630;
+  --color-light-gray: #7A5530;
+  --color-muted-gray: #A67C52;
+  --color-border-gray: #D6C9A6;
+  --color-border-subtle: #EDE4CF;
+  --color-brass: #8B6318;
+  --color-brass-gold: #D4A843;
+  --color-brass-hover: #6B4C12;
+  --color-brass-dark: #6B4C12;
+  --color-brass-light: #C4991E;
+  --color-brass-tint: #E8D48B;
+  --color-brass-border: #D6C9A6;
+  --font-family-serif: 'Playfair Display', Georgia, serif;
+  --font-family-sans: 'Outfit', system-ui, sans-serif;
+  --shadow-sm: 0 4px 16px rgba(139, 99, 24, .08);
+  --shadow-md: 0 12px 40px rgba(139, 99, 24, .15);
+}
+body { font-family: var(--font-family-sans); background: var(--color-warm-ivory); color: var(--color-charcoal); }
+.brand-name, .hero-title, .section-title, .section-heading, h1, h2, h3 { font-family: var(--font-family-serif); }
+.promo-strip { background: #1C1308; border-bottom-color: rgba(212,168,67,.45); }
+.site-header { background: rgba(255,253,248,.96); backdrop-filter: blur(12px); }
+.brand-monogram { background: var(--color-cream); border-color: var(--color-brass-gold); box-shadow: inset 0 0 12px rgba(196,153,30,.18); }
+.nav-link:hover, .nav-link.active { color: var(--color-brass); }
+.nav-link.active::after { background: linear-gradient(90deg,var(--color-brass-light),var(--color-brass-gold)); }
+.header-search-btn { background: var(--color-cream); border-color: var(--color-border-gray); }
+.header-search-btn:hover { border-color: var(--color-brass-light); box-shadow: var(--shadow-sm); }
+.hero-section { background: var(--color-cream); background-image: radial-gradient(circle at 80% 30%, rgba(196,153,30,.12), transparent 60%); }
+.hero-kicker { background: var(--color-off-white); border-color: var(--color-border-gray); color: var(--color-brass-dark); }
+.hero-kicker-dot { background: var(--color-brass-gold); }
+.hero-title { color: var(--color-charcoal); }
+.hero-description { color: #7A5530; }
+.hero-image-frame { border-color: var(--color-border-gray); box-shadow: 0 20px 55px rgba(74,46,14,.14); }
+.hero-floating-card { border-color: var(--color-border-gray); background: rgba(255,253,248,.96); }
+.btn-primary { background: var(--color-brass); border-color: var(--color-brass); color: var(--color-white); }
+.btn-primary:hover { background: var(--color-brass-dark); border-color: var(--color-brass-dark); box-shadow: 0 4px 16px rgba(139,99,24,.35); }
+.btn-secondary, .btn-outline { border-color: var(--color-brass); color: var(--color-brass-dark); background: transparent; }
+.btn-secondary:hover, .btn-outline:hover { background: var(--color-brass-tint); }
+.product-card, .category-card, .collection-card, .main-cat-card, .kpi-card, .dashboard-card {
+  border-color: var(--color-border-gray);
+  background: var(--color-off-white);
+  box-shadow: 0 2px 12px rgba(74,46,14,.05);
+}
+.product-card:hover, .category-card:hover, .collection-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-md); }
+.product-card img, .category-card img, .collection-card img { transition: transform .35s ease; }
+.product-card:hover img, .category-card:hover img, .collection-card:hover img { transform: scale(1.025); }
+.section { background: transparent; }
+.section-header .eyebrow, .section-kicker { color: var(--color-brass-light); letter-spacing: .3em; text-transform: uppercase; }
+.festive-banner { background: linear-gradient(135deg,#4A2E0E,#8B6318); color: #FDF8EE; }
+.footer { background: #1C1308; }
+@media (max-width: 1199px) { .site-header { box-shadow: 0 2px 14px rgba(74,46,14,.08); } }
+@media (max-width: 480px) {
+  .hero-title { letter-spacing: -.02em; }
+  .product-card, .category-card, .collection-card { border-radius: 12px; }
+  .product-card:hover, .category-card:hover, .collection-card:hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .product-card, .category-card, .collection-card, .product-card img, .category-card img, .collection-card img { transition: none !important; }
+}

@@ -1,0 +1,28 @@
+/* MRT Metal Mart — Product image manager */
+.image-upload-panel {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-xl);
+  border-top: 1px solid var(--color-border-gray);
+}
+.image-dropzone {
+  border: 2px dashed var(--color-brass-border);
+  background: var(--color-brass-tint);
+  border-radius: var(--radius-md);
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: var(--transition-normal);
+}
+.image-dropzone:hover, .image-dropzone.dragover { border-color: var(--color-brass); box-shadow: var(--shadow-brass); }
+.image-dropzone input { display: none; }
+.image-dropzone-icon { font-size: 30px; margin-bottom: 8px; }
+.image-dropzone-title { font-weight: 800; color: var(--color-deep-brown); }
+.image-dropzone-help { margin-top: 5px; color: var(--color-light-gray); font-size: 12px; }
+.image-manager-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--space-md); margin-top: var(--space-lg); }
+.image-manager-card { border: 1px solid var(--color-border-gray); border-radius: var(--radius-md); overflow: hidden; background: var(--color-white); }
+.image-manager-thumb { aspect-ratio: 1 / 1; width: 100%; object-fit: cover; display: block; background: var(--color-cream); }
+.image-manager-meta { padding: 10px; }
+.image-manager-actions { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+.image-manager-status { display: none; margin-top: 10px; padding: 9px 11px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 700; }
+.image-manager-status.show { display: block; }
+@media (max-width: 768px) { .image-manager-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }

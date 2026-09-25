@@ -100,17 +100,51 @@ const App = {
 
   bindViewportControls() {
     const wrapper = document.getElementById('viewport-frame-wrapper');
-    document.querySelectorAll('.viewport-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.viewport-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const mode = btn.dataset.viewport;
-        this.state.currentViewport = mode;
+    const buttons = document.querySelectorAll('.viewport-btn');
 
-        if (wrapper) {
-          wrapper.className = `viewport-frame-wrapper mode-${mode}`;
-        }
+    const getDeviceMode = () => {
+      const width = window.innerWidth;
+      if (width <= 480) return 'mobile';
+      if (width < 1200) return 'tablet';
+      return 'desktop';
+    };
+
+    const applyMode = (mode, updateControls = true) => {
+      this.state.currentViewport = mode;
+
+      if (wrapper) {
+        wrapper.className = `viewport-frame-wrapper mode-${mode}`;
+        wrapper.dataset.device = mode;
+      }
+
+      document.documentElement.dataset.device = mode;
+      document.body.dataset.device = mode;
+
+      if (updateControls) {
+        buttons.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.viewport === mode);
+        });
+      }
+    };
+
+    // Automatically adapt the layout to the real device width.
+    // Reference widths: 1440px desktop, 768px tablet, 390px mobile.
+    applyMode(getDeviceMode());
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        applyMode(btn.dataset.viewport);
       });
+    });
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => applyMode(getDeviceMode()), 100);
+    });
+
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => applyMode(getDeviceMode()), 150);
     });
   },
 

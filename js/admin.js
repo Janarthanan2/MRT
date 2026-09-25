@@ -6,6 +6,7 @@ const AdminConsole = {
   init() {
     this.bindAdminForms();
     this.bindEnquiryStatuses();
+    if (window.ProductImageManager) window.ProductImageManager.init();
   },
 
   bindAdminForms() {
@@ -21,6 +22,8 @@ const AdminConsole = {
         productForm.reset();
       });
     }
+
+    this.bindImageUpload();
 
     // AI Categorizer buttons
     const runBtn = document.getElementById('run-ai-categorizer-btn');
@@ -40,6 +43,97 @@ const AdminConsole = {
         }
       });
     }
+  },
+
+  bindImageUpload() {
+    const fileInput = document.getElementById('admin-prod-images');
+    const preview = document.getElementById('admin-image-preview');
+    const uploadBtn = document.getElementById('admin-upload-images-btn');
+    const clearBtn = document.getElementById('admin-clear-images-btn');
+    const productIdInput = document.getElementById('admin-prod-id');
+    const status = document.getElementById('admin-image-upload-status');
+
+    if (!fileInput || !preview || !uploadBtn) return;
+
+    const renderPreview = () => {
+      preview.innerHTML = '';
+      Array.from(fileInput.files || []).forEach((file, index) => {
+        const url = URL.createObjectURL(file);
+        const card = document.createElement('div');
+        card.className = 'image-preview-card';
+        card.innerHTML = `
+          <img src="${url}" alt="Preview of ${file.name}">
+          <div class="image-preview-meta">
+            <strong>${file.name}</strong>
+            <span>${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+          </div>
+          <label class="image-primary-toggle">
+            <input type="radio" name="admin-primary-image" value="${index}" ${index === 0 ? 'checked' : ''}>
+            Primary image
+          </label>
+        `;
+        preview.appendChild(card);
+      });
+    };
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 10) {
+        fileInput.value = '';
+        preview.innerHTML = '';
+        if (window.App) window.App.showToast('Maximum 10 images can be uploaded at once.', 'info');
+        return;
+      }
+      renderPreview();
+    });
+
+    clearBtn?.addEventListener('click', () => {
+      fileInput.value = '';
+      preview.innerHTML = '';
+      if (status) status.textContent = '';
+    });
+
+    uploadBtn.addEventListener('click', async () => {
+      const productId = productIdInput?.value?.trim();
+      const files = Array.from(fileInput.files || []);
+      const primaryIndex = Number(document.querySelector('input[name="admin-primary-image"]:checked')?.value || 0);
+
+      if (!productId) {
+        if (window.App) window.App.showToast('Enter the existing Product ID before uploading images.', 'info');
+        return;
+      }
+      if (!files.length) {
+        if (window.App) window.App.showToast('Select at least one product image.', 'info');
+        return;
+      }
+
+      uploadBtn.disabled = true;
+      uploadBtn.textContent = 'Uploading…';
+      if (status) status.textContent = 'Uploading product images…';
+
+      try {
+        for (let index = 0; index < files.length; index++) {
+          await window.MRTApi.uploadProductImage(
+            productId,
+            files[index],
+            index === primaryIndex,
+            (progress) => {
+              if (status) status.textContent = `Uploading ${index + 1}/${files.length}: ${progress}%`;
+            }
+          );
+        }
+
+        if (status) status.textContent = `${files.length} image(s) uploaded successfully.`;
+        if (window.App) window.App.showToast(`✓ ${files.length} product image(s) uploaded.`, 'success');
+        fileInput.value = '';
+        preview.innerHTML = '';
+      } catch (error) {
+        if (status) status.textContent = error.message;
+        if (window.App) window.App.showToast(`Image upload failed: ${error.message}`, 'info');
+      } finally {
+        uploadBtn.disabled = false;
+        uploadBtn.textContent = 'Upload Images to Product →';
+      }
+    });
   },
 
   bindEnquiryStatuses() {
