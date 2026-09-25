@@ -50,6 +50,106 @@ function normalizeApiProduct(p: any): Product {
 function normalizeApiCategory(c: any) {
   return { id: String(c.id ?? c.name ?? ""), name: c.name || c.category_name || "", count: Number(c.product_count ?? c.count ?? 0), img: c.image_url || c.image || "" }
 }
+// ─── Helper Components ────────────────────────────────────────────────────────
+
+function Stars({ rating, size = "sm" }: { rating: number; size?: "sm" | "md" }) {
+  const s = size === "md" ? "text-base" : "text-xs"
+  return (
+    <span className={`inline-flex gap-0.5 ${s}`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <span key={n} className={n <= Math.round(rating) ? "text-amber-500" : "text-amber-200"}>★</span>
+      ))}
+    </span>
+  )
+}
+
+function Divider({ label }: { label?: string }) {
+  return (
+    <div className="flex items-center gap-4 my-2">
+      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
+      {label && <span className="text-xs tracking-[0.2em] text-brass uppercase font-display italic">{label}</span>}
+      {!label && <span className="text-brass-light text-sm">◆</span>}
+      <div className="flex-1 h-px bg-gradient-to-r from-transparent via-amber-400/40 to-transparent" />
+    </div>
+  )
+}
+
+function SectionHeader({ title, subtitle }: { title: string; subtitle?: string }) {
+  return (
+    <div className="text-center mb-12">
+      <p className="text-xs tracking-[0.3em] text-brass-light uppercase mb-3 font-medium">MRT Metal Mart</p>
+      <h2 className="font-display text-3xl md:text-4xl text-charcoal mb-3">{title}</h2>
+      <Divider />
+      {subtitle && <p className="text-brown-mid mt-4 max-w-xl mx-auto leading-relaxed text-sm">{subtitle}</p>}
+    </div>
+  )
+}
+
+function Badge({ text }: { text: string }) {
+  const colors: Record<string, string> = {
+    Bestseller: "bg-amber-700 text-cream",
+    "New Arrival": "bg-brass-dark text-brass-pale",
+    "Top Rated": "bg-brown text-cream",
+    "Limited Stock": "bg-red-800/80 text-red-100",
+  }
+  return <span className={`text-[10px] uppercase tracking-widest px-2 py-0.5 rounded font-semibold ${colors[text] || "bg-brass text-cream"}`}>{text}</span>
+}
+
+function WishlistBtn({ active, onToggle }: { active: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={(e) => { e.stopPropagation(); onToggle() }}
+      className={`w-8 h-8 flex items-center justify-center rounded-full border transition-all ${active ? "bg-red-600 border-red-600 text-white" : "bg-cream/80 border-sand text-brown-mid hover:border-brass hover:text-brass"}`}
+      aria-label="Toggle wishlist"
+    >
+      <svg viewBox="0 0 24 24" className="w-4 h-4" fill={active ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    </button>
+  )
+}
+
+function ProductCard({
+  product, wishlist, onToggleWishlist, onAddToCart, onSelect,
+}: {
+  product: Product
+  wishlist: number[]
+  onToggleWishlist: (id: number) => void
+  onAddToCart: (p: Product) => void
+  onSelect: (p: Product) => void
+}) {
+  const disc = product.originalPrice ? Math.round((1 - product.price / product.originalPrice) * 100) : 0
+  return (
+    <div className="product-card bg-cream rounded border border-sand/60 overflow-hidden cursor-pointer group" onClick={() => onSelect(product)}>
+      <div className="relative overflow-hidden bg-parchment aspect-[4/5]">
+        <img src={product.image} alt={product.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        <div className="absolute inset-0 bg-gradient-to-t from-charcoal/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        {product.badge && <div className="absolute top-3 left-3"><Badge text={product.badge} /></div>}
+        {!product.inStock && <div className="absolute inset-0 bg-charcoal/50 flex items-center justify-center"><span className="text-cream text-sm font-display italic">Out of Stock</span></div>}
+        <div className="absolute top-3 right-3"><WishlistBtn active={wishlist.includes(product.id)} onToggle={() => onToggleWishlist(product.id)} /></div>
+        {product.inStock && (
+          <div className="absolute bottom-3 left-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button onClick={(e) => { e.stopPropagation(); onAddToCart(product) }} className="w-full bg-brass text-cream text-xs font-semibold tracking-wider uppercase py-2.5 rounded btn-primary">Add to Cart</button>
+          </div>
+        )}
+      </div>
+      <div className="p-4">
+        <p className="text-[10px] text-brass-light uppercase tracking-widest mb-1">{product.category}</p>
+        <h3 className="font-display text-charcoal text-sm leading-snug mb-2 line-clamp-2">{product.name}</h3>
+        <div className="flex items-center gap-1 mb-3"><Stars rating={product.rating} /><span className="text-[10px] text-brown-light">({product.reviews})</span></div>
+        <div className="flex items-center justify-between">
+          <div className="flex items-baseline gap-2">
+            <span className="font-display font-semibold text-brass text-base">₹{product.price.toLocaleString()}</span>
+            {product.originalPrice && <span className="text-xs text-brown-light line-through">₹{product.originalPrice.toLocaleString()}</span>}
+            {disc > 0 && <span className="text-[10px] text-green-700 font-semibold">{disc}% off</span>}
+          </div>
+          {!product.inStock && <span className="text-[10px] text-red-700 font-medium">Sold Out</span>}
+        </div>
+      </div>
+    </div>
+  )
+}
+
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
@@ -90,6 +190,11 @@ export default function App() {
   })
   const [customSent, setCustomSent] = useState(false)
 
+  const showToast = useCallback((msg: string) => {
+    setToast(msg)
+    setTimeout(() => setToast(null), 3000)
+  }, [])
+
   useEffect(() => {
     let cancelled = false
     Promise.all([productApi.list(), categoryApi.list()])
@@ -118,11 +223,6 @@ export default function App() {
 
   const cartCount = cart.reduce((s, i) => s + i.qty, 0)
   const cartTotal = cart.reduce((s, i) => s + i.product.price * i.qty, 0)
-
-  const showToast = useCallback((msg: string) => {
-    setToast(msg)
-    setTimeout(() => setToast(null), 3000)
-  }, [])
 
   const addToCart = useCallback(
     async (p: Product) => {
