@@ -1,4 +1,5 @@
-import { useState, useCallback, useMemo, useEffect } from 'react'\nimport { adminApi, authApi } from './api/api'
+import { useState, useCallback, useMemo, useEffect } from 'react'
+import { adminApi, authApi } from './api/api'
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend
