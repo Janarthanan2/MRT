@@ -434,14 +434,6 @@ export default function App() {
             </svg>
             {cartCount > 0 && <span className="absolute top-1 right-1 w-4 h-4 bg-brass text-cream text-[9px] rounded-full flex items-center justify-center font-bold">{cartCount}</span>}
           </button>
-          {/* Admin Portal */}
-          <button
-            onClick={openAdmin}
-            className="hidden lg:flex items-center gap-1.5 px-3 py-1.5 bg-charcoal text-cream text-xs font-semibold rounded hover:bg-brass transition-colors"
-            aria-label="Open Admin Portal"
-          >
-            Admin
-          </button>
           {/* Account */}
           <button
             onClick={() => isLoggedIn ? navTo('profile') : setShowAuth(true)}
@@ -1344,7 +1336,18 @@ export default function App() {
 
       <div className="border-t border-sand/10">
         <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
-          <p className="text-[10px] text-sand/40">© 2025 MRT Metal Mart. All rights reserved. GST: 27AAFCM1234A1Z5</p>
+          <div className="flex items-center gap-3">
+            <p className="text-[10px] text-sand/40">© 2025 MRT Metal Mart. All rights reserved. GST: 27AAFCM1234A1Z5</p>
+            <span className="text-sand/20 text-[10px]">•</span>
+            <button
+              type="button"
+              onClick={openAdmin}
+              className="text-[10px] text-sand/45 hover:text-brass-light transition-colors"
+              aria-label="Open Admin Portal"
+            >
+              Admin Portal
+            </button>
+          </div>
           <div className="flex items-center gap-2">
             {['Visa', 'Mastercard', 'UPI', 'Paytm', 'NetBanking'].map(p => (
               <span key={p} className="text-[9px] text-sand/35 border border-sand/15 rounded px-1.5 py-0.5">{p}</span>
