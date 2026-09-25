@@ -998,3 +998,525 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <StatCard icon="₹" label="Monthly Revenue" value="₹4.21L" trend="+8.4%" color="brass" />
         <StatCard icon="📦" label="Orders This Month" value="211" trend="+11.2%" color="green" />
         <StatCard icon="🛒" label="Avg. Order Value" value="₹1,995" trend="+2.1%" color="blue" />
+        <StatCard icon="↩️" label="Return Rate" value="2.4%" trend="-0.3%" color="amber" />
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-5">
+        {/* Revenue trend */}
+        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+          <h3 className="font-semibold text-stone-700 text-sm mb-5">Revenue Trend — 6 Months</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <AreaChart data={REVENUE_DATA}>
+              <defs>
+                <linearGradient id="rev2" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor={BRASS} stopOpacity={0.2}/>
+                  <stop offset="95%" stopColor={BRASS} stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f5f1e8" />
+              <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#78716c' }} />
+              <YAxis tickFormatter={v => `₹${v/1000}k`} tick={{ fontSize: 10, fill: '#78716c' }} />
+              <Tooltip formatter={(v: unknown) => [`₹${Number(v).toLocaleString()}`, "Revenue"]} />
+              <Area type="monotone" dataKey="revenue" stroke={BRASS} strokeWidth={2.5} fill="url(#rev2)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Daily orders */}
+        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+          <h3 className="font-semibold text-stone-700 text-sm mb-5">Daily Orders — This Week</h3>
+          <ResponsiveContainer width="100%" height={200}>
+            <BarChart data={DAILY_ORDERS} barSize={28}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#f5f1e8" />
+              <XAxis dataKey="day" tick={{ fontSize: 11, fill: '#78716c' }} />
+              <YAxis tick={{ fontSize: 10, fill: '#78716c' }} />
+              <Tooltip formatter={(v: unknown) => [v as number, "Orders"]} />
+              <Bar dataKey="orders" fill={GOLD} radius={[4,4,0,0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Bestsellers */}
+        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+          <h3 className="font-semibold text-stone-700 text-sm mb-5">🏆 Bestselling Products</h3>
+          <div className="space-y-3">
+            {BESTSELLERS.map((p, i) => (
+              <div key={p.name}>
+                <div className="flex items-center justify-between mb-1">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-bold w-4" style={{ color: i < 3 ? GOLD : '#78716c' }}>#{i+1}</span>
+                    <span className="text-xs text-stone-700">{p.name}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-semibold text-stone-700">{p.sold} sold</span>
+                    <p className="text-[10px] text-stone-400">₹{p.revenue.toLocaleString()}</p>
+                  </div>
+                </div>
+                <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full" style={{ width: `${(p.sold / 312) * 100}%`, background: i === 0 ? BRASS : GOLD }} />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Category breakdown */}
+        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+          <h3 className="font-semibold text-stone-700 text-sm mb-5">Category Revenue Share</h3>
+          <ResponsiveContainer width="100%" height={160}>
+            <PieChart>
+              <Pie data={CATEGORY_DATA} dataKey="value" cx="50%" cy="50%" outerRadius={70} innerRadius={30} paddingAngle={2}>
+                {CATEGORY_DATA.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+              </Pie>
+              <Tooltip formatter={(v: unknown) => [`${v}%`, "Share"]} />
+              <Legend formatter={(value) => <span style={{ fontSize: 11, color: '#78716c' }}>{value}</span>} />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Inventory performance */}
+      <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+        <h3 className="font-semibold text-stone-700 text-sm mb-4">Inventory Performance</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <TableHeader cols={['Product', 'Stock', 'Units Sold', 'Turnover Rate', 'Status']} />
+            <tbody>
+              {PRODUCTS.slice(0, 6).map(p => {
+                const sold = Math.floor(Math.random() * 200 + 50)
+                const turnover = ((sold / (p.stock + sold)) * 100).toFixed(1)
+                return (
+                  <tr key={p.id} className="border-b border-stone-100">
+                    <td className="py-2.5 px-3 pl-5 text-sm text-stone-700">{p.name}</td>
+                    <td className="py-2.5 px-3 text-sm">{p.stock}</td>
+                    <td className="py-2.5 px-3 text-sm text-stone-600">{sold}</td>
+                    <td className="py-2.5 px-3">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-16 bg-stone-100 rounded-full overflow-hidden">
+                          <div className="h-full rounded-full" style={{ width: `${turnover}%`, background: BRASS }} />
+                        </div>
+                        <span className="text-xs text-stone-600">{turnover}%</span>
+                      </div>
+                    </td>
+                    <td className="py-2.5 px-3 pr-5"><StatusBadge status={p.stock === 0 ? 'Inactive' : p.stock < 5 ? 'Draft' : 'Active'} /></td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── Page: Reviews ─────────────────────────────────────────────────────────
+
+  const ReviewsPage = (
+    <div>
+      <SectionHeader title="Customer Reviews" />
+      <div className="space-y-4">
+        {REVIEWS.map(r => (
+          <div key={r.id} className="bg-white rounded-xl border border-stone-200 shadow-sm p-5">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold" style={{ background: BRASS }}>{r.customer[0]}</div>
+                <div>
+                  <p className="text-sm font-semibold text-stone-700">{r.customer}</p>
+                  <p className="text-[10px] text-stone-400">{r.product} · {r.date}</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex text-amber-400 text-sm">{Array.from({length: r.rating}).map((_,i) => <span key={i}>★</span>)}</div>
+                <StatusBadge status={r.status} />
+              </div>
+            </div>
+            <p className="text-sm text-stone-600 mt-3 leading-relaxed italic">"{r.comment}"</p>
+            <div className="flex gap-2 mt-3">
+              {r.status === 'Flagged' && <button className="text-xs text-green-600 hover:underline font-medium">Approve</button>}
+              {r.status === 'Published' && <button className="text-xs text-red-600 hover:underline">Remove</button>}
+              <button className="text-xs text-stone-500 hover:underline">Reply</button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // ── Page: Offers ──────────────────────────────────────────────────────────
+
+  const OffersPage = (
+    <div>
+      <SectionHeader title="Offers & Discount Codes" action="Create Offer" />
+      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <table className="w-full">
+          <TableHeader cols={['Code', 'Discount', 'Type', 'Min. Order', 'Times Used', 'Validity', 'Status', 'Actions']} />
+          <tbody>
+            {OFFERS.map(o => (
+              <tr key={o.id} className="border-b border-stone-100 hover:bg-amber-50/30">
+                <td className="py-3 px-3 pl-5 font-mono text-sm font-bold" style={{ color: BRASS }}>{o.code}</td>
+                <td className="py-3 px-3 text-sm font-semibold text-stone-700">{o.discount}</td>
+                <td className="py-3 px-3 text-xs text-stone-500">{o.type}</td>
+                <td className="py-3 px-3 text-xs text-stone-600">₹{o.minOrder.toLocaleString()}</td>
+                <td className="py-3 px-3 text-sm text-stone-600">{o.used}</td>
+                <td className="py-3 px-3 text-xs text-stone-500">{o.validity}</td>
+                <td className="py-3 px-3"><StatusBadge status={o.status} /></td>
+                <td className="py-3 px-3 pr-5">
+                  <div className="flex gap-2">
+                    <button className="text-xs font-medium hover:underline" style={{ color: BRASS }}>Edit</button>
+                    <button className="text-xs text-red-600 hover:underline">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+
+  // ── Page: Notifications ───────────────────────────────────────────────────
+
+  const NotificationsPage = (
+    <div>
+      <SectionHeader title={`Notifications (${unreadCount} unread)`} />
+      <div className="space-y-3">
+        {NOTIFS.map(n => (
+          <div key={n.id} className={`flex items-start gap-4 p-4 rounded-xl border transition-colors ${n.read ? 'bg-white border-stone-200' : 'bg-amber-50/40 border-amber-200/60'}`}>
+            <span className="text-xl flex-shrink-0">{n.type}</span>
+            <div className="flex-1">
+              <p className={`text-sm ${n.read ? 'text-stone-600' : 'text-stone-800 font-medium'}`}>{n.msg}</p>
+              <p className="text-[10px] text-stone-400 mt-1">{n.time}</p>
+            </div>
+            {!n.read && <div className="w-2 h-2 rounded-full bg-amber-500 mt-1 flex-shrink-0" />}
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // ── Page: Admin Users ─────────────────────────────────────────────────────
+
+  const AdminUsersPage = (
+    <div>
+      <SectionHeader title="Admin Users & Roles" action="Add Admin" />
+      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <table className="w-full">
+          <TableHeader cols={['Admin', 'Email', 'Role', 'Last Login', 'Status', 'Actions']} />
+          <tbody>
+            {ADMIN_USERS.map(u => (
+              <tr key={u.id} className="border-b border-stone-100 hover:bg-amber-50/30">
+                <td className="py-3 px-3 pl-5">
+                  <div className="flex items-center gap-2">
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: u.id === 1 ? BRASS : '#78716c' }}>{u.name[0]}</div>
+                    <span className="text-sm font-medium text-stone-700">{u.name}</span>
+                    {u.id === 1 && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-semibold">YOU</span>}
+                  </div>
+                </td>
+                <td className="py-3 px-3 text-xs text-stone-500">{u.email}</td>
+                <td className="py-3 px-3">
+                  <span className="text-[11px] font-semibold px-2 py-0.5 rounded" style={{ background: u.role === 'Super Admin' ? '#fef3c7' : '#f5f5f4', color: u.role === 'Super Admin' ? BRASS : '#57534e' }}>
+                    {u.role}
+                  </span>
+                </td>
+                <td className="py-3 px-3 text-xs text-stone-500">{u.lastLogin}</td>
+                <td className="py-3 px-3"><StatusBadge status={u.status} /></td>
+                <td className="py-3 px-3 pr-5">
+                  {u.id !== 1 && (
+                    <div className="flex gap-2">
+                      <button className="text-xs hover:underline" style={{ color: BRASS }}>Edit</button>
+                      <button className="text-xs text-red-600 hover:underline">Remove</button>
+                    </div>
+                  )}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Roles legend */}
+      <div className="mt-6 bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+        <h3 className="text-sm font-semibold text-stone-700 mb-4">Role Permissions</h3>
+        <div className="grid md:grid-cols-3 gap-4">
+          {[
+            { role: 'Super Admin', perms: ['Full system access','User management','Settings','All modules'] },
+            { role: 'Manager', perms: ['Products & Inventory','Orders & Customers','Custom orders','Analytics'] },
+            { role: 'Order Manager', perms: ['View & update orders','Customer communication','Shipping management'] },
+          ].map(r => (
+            <div key={r.role} className="bg-stone-50 rounded-lg p-4">
+              <p className="text-xs font-bold text-stone-700 mb-2">{r.role}</p>
+              <ul className="space-y-1">
+                {r.perms.map(p => <li key={p} className="text-[11px] text-stone-500 flex items-center gap-1"><span className="text-green-500">✓</span> {p}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── Page: Settings ────────────────────────────────────────────────────────
+
+  const SettingsPage = (
+    <div>
+      <SectionHeader title="Settings" />
+      <div className="grid md:grid-cols-2 gap-5">
+        {[
+          { title: 'Store Information', fields: [{ label: 'Store Name', value: 'MRT Metal Mart' }, { label: 'GST Number', value: '27AAFCM1234A1Z5' }, { label: 'Contact Email', value: 'orders@mrtmetalmart.in' }, { label: 'Contact Phone', value: '+91 98765 43210' }] },
+          { title: 'Shipping Settings', fields: [{ label: 'Free Shipping Threshold (₹)', value: '2000' }, { label: 'Standard Shipping Rate (₹)', value: '120' }, { label: 'Express Shipping Rate (₹)', value: '299' }, { label: 'Estimated Delivery Days', value: '5-7' }] },
+        ].map(section => (
+          <div key={section.title} className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+            <h3 className="text-sm font-semibold text-stone-700 mb-4">{section.title}</h3>
+            <div className="space-y-3">
+              {section.fields.map(f => (
+                <div key={f.label}>
+                  <label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1">{f.label}</label>
+                  <input type="text" defaultValue={f.value} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600" />
+                </div>
+              ))}
+            </div>
+            <button className="mt-4 px-4 py-2 text-xs font-semibold text-white rounded-lg" style={{ background: BRASS }}>Save Changes</button>
+          </div>
+        ))}
+        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+          <h3 className="text-sm font-semibold text-stone-700 mb-4">Security Settings</h3>
+          <div className="space-y-3">
+            {[{ label: 'Current Password', type: 'password' }, { label: 'New Password', type: 'password' }, { label: 'Confirm New Password', type: 'password' }].map(f => (
+              <div key={f.label}>
+                <label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1">{f.label}</label>
+                <input type={f.type} placeholder="••••••••" className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600" />
+              </div>
+            ))}
+          </div>
+          <button className="mt-4 px-4 py-2 text-xs font-semibold text-white rounded-lg" style={{ background: BRASS }}>Update Password</button>
+        </div>
+        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+          <h3 className="text-sm font-semibold text-stone-700 mb-4">Notifications</h3>
+          {[['New order received','Email & SMS'],['Low stock alert','Email'],['Custom order request','Email & SMS'],['Payment failures','Email & SMS'],['New review posted','Email']].map(([event, channel]) => (
+            <div key={event} className="flex items-center justify-between py-2.5 border-b border-stone-100 last:border-0">
+              <div>
+                <p className="text-xs font-medium text-stone-700">{event}</p>
+                <p className="text-[10px] text-stone-400">{channel}</p>
+              </div>
+              <div className="w-10 h-5 rounded-full relative cursor-pointer" style={{ background: BRASS }}>
+                <div className="absolute right-0.5 top-0.5 w-4 h-4 rounded-full bg-white shadow" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+
+  // ── Page: Inventory ───────────────────────────────────────────────────────
+
+  const InventoryPage = (
+    <div>
+      <SectionHeader title="Inventory Management" action="Update Stock" />
+      <div className="grid grid-cols-3 gap-4 mb-6">
+        <StatCard icon="📦" label="Total SKUs" value="128" color="brass" />
+        <StatCard icon="⚠️" label="Low Stock" value="6" sub="Below 10 units" color="amber" />
+        <StatCard icon="🚫" label="Out of Stock" value="2" color="red" />
+      </div>
+      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <table className="w-full">
+          <TableHeader cols={['SKU', 'Product', 'Category', 'Current Stock', 'Stock Status', 'Last Updated', 'Actions']} />
+          <tbody>
+            {products.map(p => {
+              const stockStatus = p.stock === 0 ? 'Out of Stock' : p.stock <= 5 ? 'Critical' : p.stock <= 10 ? 'Low' : 'Healthy'
+              const stockColor = p.stock === 0 ? 'text-red-600' : p.stock <= 5 ? 'text-orange-600' : p.stock <= 10 ? 'text-amber-600' : 'text-green-600'
+              return (
+                <tr key={p.id} className="border-b border-stone-100 hover:bg-amber-50/30">
+                  <td className="py-2.5 px-3 pl-5 font-mono text-[10px] text-stone-400">{p.sku}</td>
+                  <td className="py-2.5 px-3 text-sm text-stone-700">{p.name}</td>
+                  <td className="py-2.5 px-3 text-xs text-stone-500">{p.category}</td>
+                  <td className="py-2.5 px-3">
+                    <span className={`text-sm font-bold ${stockColor}`}>{p.stock}</span>
+                  </td>
+                  <td className="py-2.5 px-3">
+                    <span className={`text-[10px] font-semibold ${stockColor}`}>{stockStatus}</span>
+                  </td>
+                  <td className="py-2.5 px-3 text-[10px] text-stone-400">Sep 24, 2025</td>
+                  <td className="py-2.5 px-3 pr-5">
+                    <button className="text-xs font-medium hover:underline" style={{ color: BRASS }}>Update</button>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  )
+
+  // ── Page: Activity Log ────────────────────────────────────────────────────
+
+  const ActivityLogPage = (
+    <div>
+      <SectionHeader title="Activity Log" />
+      <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5 space-y-0">
+        {[...ACTIVITY_LOG, ...ACTIVITY_LOG.slice(0, 3).map((a, i) => ({ ...a, id: a.id + 10, time: `${i + 1} day ago` }))].map((a, idx) => (
+          <div key={`${a.id}-${idx}`} className="flex items-start gap-4 py-3.5 border-b border-stone-100 last:border-0">
+            <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0" style={{ background: a.type === 'delete' ? '#dc2626' : a.type === 'add' ? '#16a34a' : BRASS }}>
+              {a.type === 'login' ? '→' : a.type === 'delete' ? '✕' : a.type === 'add' ? '+' : '✎'}
+            </div>
+            <div className="flex-1">
+              <p className="text-sm text-stone-700"><span className="font-semibold">{a.user}</span> — {a.action}</p>
+              <p className="text-[10px] text-stone-400 mt-0.5">{a.time}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+
+  // ── Simple placeholder for remaining pages ─────────────────────────────────
+
+  const PlaceholderPage = ({ title }: { title: string }) => (
+    <div>
+      <SectionHeader title={title} />
+      <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-16 text-center">
+        <p className="text-stone-400 text-sm">This section is under development.</p>
+      </div>
+    </div>
+  )
+
+  const renderAdminPage = () => {
+    switch (page) {
+      case 'dashboard':    return DashboardPage
+      case 'products':     return ProductsPage
+      case 'categories':   return <PlaceholderPage title="Categories" />
+      case 'inventory':    return InventoryPage
+      case 'orders':       return OrdersPage
+      case 'customers':    return CustomersPage
+      case 'custom-orders':return CustomOrdersPage
+      case 'quotations':   return <PlaceholderPage title="Quotations" />
+      case 'reviews':      return ReviewsPage
+      case 'offers':       return OffersPage
+      case 'notifications':return NotificationsPage
+      case 'analytics':    return AnalyticsPage
+      case 'admin-users':  return AdminUsersPage
+      case 'settings':     return SettingsPage
+      case 'activity-log': return ActivityLogPage
+      default:             return DashboardPage
+    }
+  }
+
+  // ── Full Dashboard Layout ─────────────────────────────────────────────────
+
+  return (
+    <div className="relative flex h-screen w-full min-w-0 bg-stone-50 font-body overflow-hidden">
+      {/* Mobile sidebar backdrop */}
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close admin navigation"
+          onClick={() => setSidebarOpen(false)}
+          className="fixed inset-0 z-40 bg-black/40 md:hidden"
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed md:relative inset-y-0 left-0 z-50 flex-shrink-0 flex flex-col transition-all duration-200 overflow-y-auto overflow-x-hidden ${sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} w-64 ${sidebarOpen ? 'md:w-56' : 'md:w-14'}`}
+        style={{ background: '#1C1308' }}>
+        {/* Sidebar header */}
+        <div className={`flex items-center ${sidebarOpen ? 'justify-between px-4' : 'justify-center'} py-4 border-b border-white/10 flex-shrink-0`}>
+          {sidebarOpen && (
+            <div>
+              <div className="text-white font-bold text-sm leading-none">MRT Metal Mart</div>
+              <div className="text-[9px] tracking-widest uppercase mt-0.5" style={{ color: GOLD }}>Admin Portal</div>
+            </div>
+          )}
+          <button onClick={() => setSidebarOpen(o => !o)} className="text-stone-400 hover:text-white p-1.5 rounded-lg hover:bg-white/5">
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d={sidebarOpen ? "M15 19l-7-7 7-7" : "M9 5l7 7-7 7"}/></svg>
+          </button>
+        </div>
+
+        {/* Brass accent strip */}
+        <div className="h-0.5 flex-shrink-0" style={{ background: `linear-gradient(90deg, ${BRASS}, ${GOLD}, ${BRASS})` }} />
+
+        {/* Nav items */}
+        <nav className="flex-1 py-3 px-2 space-y-0.5 overflow-y-auto">
+          {navItem('dashboard', 'Dashboard', '◈')}
+
+          {sidebarOpen && <div className="text-[8px] text-stone-600 uppercase tracking-widest px-4 pt-3 pb-1">Catalog</div>}
+          {navItem('products', 'Products', '⊞')}
+          {navItem('categories', 'Categories', '⊟')}
+          {navItem('inventory', 'Inventory', '◫')}
+
+          {sidebarOpen && <div className="text-[8px] text-stone-600 uppercase tracking-widest px-4 pt-3 pb-1">Commerce</div>}
+          {navItem('orders', 'Orders', '◷')}
+          {navItem('customers', 'Customers', '◎')}
+          {navItem('custom-orders', 'Custom & Bulk', '◈', requests.filter(r => r.status === 'New').length)}
+          {navItem('quotations', 'Quotations', '◈')}
+
+          {sidebarOpen && <div className="text-[8px] text-stone-600 uppercase tracking-widest px-4 pt-3 pb-1">Engagement</div>}
+          {navItem('reviews', 'Reviews', '★')}
+          {navItem('offers', 'Offers & Discounts', '%')}
+          {navItem('notifications', 'Notifications', '◉', unreadCount)}
+          {navItem('analytics', 'Analytics', '◌')}
+
+          {sidebarOpen && <div className="text-[8px] text-stone-600 uppercase tracking-widest px-4 pt-3 pb-1">Admin</div>}
+          {navItem('admin-users', 'Admin Users', '◍')}
+          {navItem('settings', 'Settings', '⊙')}
+          {navItem('activity-log', 'Activity Log', '◈')}
+        </nav>
+
+        {/* Sidebar footer */}
+        <div className="border-t border-white/10 p-3 flex-shrink-0">
+          <button
+            onClick={() => setLoggedIn(false)}
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-stone-400 hover:text-red-400 hover:bg-red-900/20 transition-all"
+          >
+            <span className="text-base flex-shrink-0 w-5 text-center">→</span>
+            {sidebarOpen && <span className="text-[13px]">Logout</span>}
+          </button>
+          {sidebarOpen && (
+            <div className="mt-2 flex items-center gap-2 px-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ background: BRASS }}>S</div>
+              <div>
+                <p className="text-[11px] text-stone-300 font-medium leading-none">Suresh Kumar</p>
+                <p className="text-[9px] text-stone-500 mt-0.5">Super Admin</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </aside>
+
+      {/* Main content */}
+      {/* Main content */}
+      <div className="flex-1 min-w-0 flex flex-col overflow-hidden">
+        {/* Top bar */}
+        <header className="bg-white border-b border-stone-200 px-3 sm:px-6 py-3.5 flex items-center justify-between gap-2 flex-shrink-0 shadow-sm">
+          <div className="flex items-center gap-3 min-w-0">
+            <button type="button" onClick={() => setSidebarOpen(true)} className="md:hidden p-2 rounded-lg text-stone-500 hover:bg-stone-100" aria-label="Open admin navigation">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+            </button>
+            <div className="text-xs text-stone-400 truncate">
+              {NAV.find(n => n.id === page)?.label || 'Dashboard'}
+            </div>
+          </div>
+          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+            <div className="hidden sm:flex items-center gap-2 bg-stone-50 border border-stone-200 rounded-lg px-3 py-2">
+              <svg className="w-3.5 h-3.5 text-stone-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input placeholder="Quick search…" className="bg-transparent text-xs outline-none w-32 text-stone-600" />
+            </div>
+            <button className="relative p-2 text-stone-500 hover:text-stone-700">
+              <svg className="w-4.5 h-4.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+              {unreadCount > 0 && <span className="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 text-white text-[8px] font-bold rounded-full flex items-center justify-center">{unreadCount}</span>}
+            </button>
+            <button onClick={onBack} className="text-[11px] sm:text-xs font-medium px-2 sm:px-3 py-1.5 rounded-lg border border-stone-200 text-stone-600 hover:bg-stone-50 whitespace-nowrap">
+              ← Back to Store
+            </button>
+          </div>
+        </header>
+
+        {/* Page content */}
+        <main className="flex-1 min-w-0 overflow-y-auto p-3 sm:p-4 lg:p-6">
+          {renderAdminPage()}
+        </main>
+      </div>
+    </div>
+  )
+}
