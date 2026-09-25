@@ -21,6 +21,8 @@ jobs:
           cache: npm
       # Use the committed lockfile for deterministic, cached CI installs.
       - run: npm ci --prefer-offline --no-audit --no-fund --progress=false
+      # Validate TypeScript/JSX before invoking Vite.
+      - run: npm run typecheck
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
