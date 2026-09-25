@@ -535,7 +535,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
               <CartesianGrid strokeDasharray="3 3" stroke="#f0ece4" />
               <XAxis dataKey="month" tick={{ fontSize: 11, fill: '#9e8a70' }} />
               <YAxis tick={{ fontSize: 10, fill: '#9e8a70' }} tickFormatter={v => `₹${(v/1000).toFixed(0)}k`} />
-              <Tooltip formatter={(v) => [`₹${Number(v).toLocaleString()}`]} />
+              <Tooltip formatter={(v: unknown) => [`₹${Number(v).toLocaleString()}`, "Revenue"] as [string, string]} />
               <Area type="monotone" dataKey="revenue" stroke={BRASS} strokeWidth={2} fill="url(#rev)" />
               <Line type="monotone" dataKey="orders" stroke={GOLD} strokeWidth={2} dot={false} />
             </AreaChart>
@@ -548,7 +548,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
               <Pie data={CATEGORY_DATA} dataKey="value" cx="50%" cy="50%" outerRadius={65} innerRadius={35}>
                 {CATEGORY_DATA.map((entry, i) => <Cell key={i} fill={entry.color} />)}
               </Pie>
-              <Tooltip formatter={(v: unknown) => [`${v}%`, "Share"]} />
+              <Tooltip formatter={(v: unknown) => [`${v}%`, "Share"] as [string, string]} />
             </PieChart>
           </ResponsiveContainer>
           <div className="space-y-1.5 mt-2">
