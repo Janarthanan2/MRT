@@ -997,4 +997,1640 @@ export default function App() {
               </div>
             ))
           )}
+        </div>        {cart.length > 0 && (
+          <div className="p-4 border-t border-sand space-y-3">
+            <div className="flex justify-between text-sm">
+              <span className="text-brown-mid">Subtotal</span>
+              <span className="font-display font-semibold text-charcoal">
+                ₹{cartTotal.toLocaleString()}
+              </span>
+            </div>
+            {cartTotal < 2000 && (
+              <p className="text-[10px] text-brown-light">
+                Add ₹{(2000 - cartTotal).toLocaleString()} more for free
+                shipping
+              </p>
+            )}
+            <button
+              onClick={() => {
+                setCartOpen(false)
+                navTo("cart")
+              }}
+              className="w-full bg-brass text-cream py-3 text-sm font-semibold tracking-wide rounded btn-primary"
+            >
+              View Cart & Checkout
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+
+  // ── Auth Modal ──────────────────────────────────────────────────────────────
+
+  const AuthModal = showAuth && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div
+        className="absolute inset-0 bg-charcoal/60"
+        onClick={() => setShowAuth(false)}
+      />
+      <div className="relative bg-cream rounded-lg w-full max-w-md p-8 shadow-2xl fade-in">
+        <button
+          onClick={() => setShowAuth(false)}
+          className="absolute top-4 right-4 text-brown-light hover:text-charcoal"
+        >
+          ✕
+        </button>
+        <div className="text-center mb-6">
+          <p className="font-display text-xs text-brass-light tracking-widest uppercase mb-1">
+            Welcome to
+          </p>
+          <h2 className="font-display text-2xl text-charcoal">
+            MRT Metal Mart
+          </h2>
+          <Divider />
         </div>
+        <div className="flex border border-sand rounded mb-6">
+          {(["login", "register"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setAuthTab(tab)}
+              className={`flex-1 py-2 text-xs font-semibold uppercase tracking-wider rounded transition-colors ${
+                authTab === tab
+                  ? "bg-brass text-cream"
+                  : "text-brown-mid hover:bg-ivory"
+              }`}
+            >
+              {tab === "login" ? "Sign In" : "Register"}
+            </button>
+          ))}
+        </div>
+        <div className="space-y-3">
+          {authTab === "register" && (
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={authForm.name}
+              onChange={(e) =>
+                setAuthForm((f) => ({ ...f, name: e.target.value }))
+              }
+              className="w-full border border-sand bg-ivory rounded px-3 py-2.5 text-sm text-charcoal placeholder-brown-light outline-none focus:border-brass transition-colors"
+            />
+          )}
+          <input
+            type="email"
+            placeholder="Email address"
+            value={authForm.email}
+            onChange={(e) =>
+              setAuthForm((f) => ({ ...f, email: e.target.value }))
+            }
+            className="w-full border border-sand bg-ivory rounded px-3 py-2.5 text-sm text-charcoal placeholder-brown-light outline-none focus:border-brass transition-colors"
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={authForm.password}
+            onChange={(e) =>
+              setAuthForm((f) => ({ ...f, password: e.target.value }))
+            }
+            className="w-full border border-sand bg-ivory rounded px-3 py-2.5 text-sm text-charcoal placeholder-brown-light outline-none focus:border-brass transition-colors"
+          />
+          <button
+            onClick={() => {
+              setIsLoggedIn(true)
+              setShowAuth(false)
+              showToast(
+                authTab === "login"
+                  ? "Welcome back!"
+                  : "Account created successfully!",
+              )
+            }}
+            className="w-full bg-brass text-cream py-3 text-sm font-semibold tracking-wide rounded btn-primary mt-2"
+          >
+            {authTab === "login" ? "Sign In" : "Create Account"}
+          </button>
+        </div>
+        {authTab === "login" && (
+          <p className="text-center text-[11px] text-brown-light mt-4">
+            Don't have an account?{" "}
+            <button
+              onClick={() => setAuthTab("register")}
+              className="text-brass hover:underline"
+            >
+              Register now
+            </button>
+          </p>
+        )}
+      </div>
+    </div>
+  )
+
+  // ── Home Page ───────────────────────────────────────────────────────────────
+
+  const HomePage = (
+    <main className="fade-in">
+      {/* Hero */}
+      <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-charcoal">
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1763475944771-702683b1b42c?w=1600&h=1000&fit=crop&auto=format"
+            alt="Collection of brass Hindu deities"
+            className="w-full h-full object-cover opacity-50"
+          />
+          <div className="hero-overlay absolute inset-0" />
+        </div>
+
+        {/* Decorative corner ornaments */}
+        <div className="absolute top-8 left-8 w-16 h-16 border-t-2 border-l-2 border-brass-light/40 opacity-60" />
+        <div className="absolute top-8 right-8 w-16 h-16 border-t-2 border-r-2 border-brass-light/40 opacity-60" />
+        <div className="absolute bottom-8 left-8 w-16 h-16 border-b-2 border-l-2 border-brass-light/40 opacity-60" />
+        <div className="absolute bottom-8 right-8 w-16 h-16 border-b-2 border-r-2 border-brass-light/40 opacity-60" />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-20 md:py-32 grid md:grid-cols-2 gap-12 items-center">
+          <div>
+            <p className="text-brass-pale text-xs tracking-[0.4em] uppercase mb-5">
+              Heritage Craftsmanship Since 1978
+            </p>
+            <h1 className="font-display text-4xl md:text-6xl text-cream leading-tight mb-6">
+              Heritage
+              <br />
+              <em className="text-brass-light">Crafted</em>
+              <br />
+              in Brass
+            </h1>
+            <p className="text-sand text-base leading-relaxed mb-8 max-w-md">
+              Authentic Indian brassware — sacred idols, traditional lamps, and
+              antique collectibles — handcrafted by master artisans using
+              centuries-old techniques.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={() => navTo("shop")}
+                className="bg-brass text-cream px-8 py-3.5 text-sm font-semibold tracking-wider uppercase rounded btn-primary"
+              >
+                Explore Collection
+              </button>
+              <button
+                onClick={() => navTo("custom")}
+                className="border border-brass-light text-brass-pale px-8 py-3.5 text-sm font-semibold tracking-wider uppercase rounded hover:bg-brass-light/10 transition-colors"
+              >
+                Custom Orders
+              </button>
+            </div>
+
+            {/* Trust badges */}
+            <div className="flex flex-wrap gap-6 mt-10 pt-8 border-t border-brass-light/20">
+              {[
+                "10,000+ Products Sold",
+                "Master Artisans",
+                "Free Shipping ₹2000+",
+              ].map((t) => (
+                <div
+                  key={t}
+                  className="text-xs text-sand/70 tracking-wide flex items-center gap-1.5"
+                >
+                  <span className="text-brass-light">◆</span> {t}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Hero product highlight */}
+          <div className="hidden md:flex justify-end">
+            <div className="relative">
+              <div className="w-72 h-80 border border-brass-light/30 rounded-sm overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1767184122148-544404ead960?w=600&h=700&fit=crop&auto=format"
+                  alt="Golden Ganesha idol"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="absolute -bottom-4 -left-4 bg-cream/95 rounded border border-sand p-4 max-w-[180px] shadow-xl">
+                <p className="text-[10px] text-brass uppercase tracking-widest mb-1">
+                  Bestseller
+                </p>
+                <p className="font-display text-charcoal text-sm leading-tight">
+                  Dancing Ganesha Idol
+                </p>
+                <p className="text-brass font-semibold text-base mt-1">
+                  ₹2,499
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Categories */}
+      <section className="py-20 max-w-7xl mx-auto px-6">
+        <SectionHeader
+          title="Explore Collections"
+          subtitle="Discover our curated range of authentic brass products, each handcrafted to preserve India's rich metalware tradition."
+        />
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {CATEGORIES.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => {
+                setFilterCat(cat.id)
+                navTo("shop")
+              }}
+              className="category-card relative rounded overflow-hidden aspect-[3/4] text-left group"
+            >
+              <img
+                src={cat.img}
+                alt={cat.name}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              <div className="cat-overlay absolute inset-0 bg-charcoal/55 transition-colors duration-300" />
+              <div className="absolute inset-0 flex flex-col justify-end p-4">
+                <p className="text-cream font-display text-sm leading-snug">
+                  {cat.name}
+                </p>
+                <p className="text-brass-pale text-[10px] mt-1">
+                  {cat.count} items
+                </p>
+              </div>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      {/* Featured Products */}
+      <section className="py-16 indian-pattern-bg">
+        <div className="max-w-7xl mx-auto px-6">
+          <SectionHeader
+            title="Featured Pieces"
+            subtitle="Handpicked by our curators — each piece reflects the finest in Indian brass craftsmanship."
+          />
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-5">
+            {featuredProducts.map((p) => (
+              <ProductCard
+                key={p.id}
+                product={p}
+                wishlist={wishlist}
+                onToggleWishlist={toggleWishlist}
+                onAddToCart={addToCart}
+                onSelect={goToProduct}
+              />
+            ))}
+          </div>
+          <div className="text-center mt-10">
+            <button
+              onClick={() => navTo("shop")}
+              className="border border-brass text-brass px-10 py-3 text-sm font-semibold tracking-wider uppercase rounded hover:bg-brass hover:text-cream transition-colors"
+            >
+              View All Products
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Heritage Story */}
+      <section className="py-20 bg-charcoal-light">
+        <div className="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-14 items-center">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="aspect-[3/4] rounded overflow-hidden">
+              <img
+                src="https://images.unsplash.com/photo-1750847009743-e0281d1bca7d?w=500&h=700&fit=crop&auto=format"
+                alt="Brass pots in market"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="space-y-3 mt-6">
+              <div className="aspect-square rounded overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1766399654235-a6793895422d?w=400&h=400&fit=crop&auto=format"
+                  alt="Antique brass pot"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="aspect-[4/3] rounded overflow-hidden">
+                <img
+                  src="https://images.unsplash.com/photo-1771257350846-ff4af8ef91cd?w=400&h=300&fit=crop&auto=format"
+                  alt="Brass shrine"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+          <div>
+            <p className="text-brass-light text-xs tracking-[0.35em] uppercase mb-4">
+              Our Heritage
+            </p>
+            <h2 className="font-display text-3xl md:text-4xl text-cream leading-tight mb-5">
+              Four Decades of
+              <br />
+              <em className="text-gold">Artisanal Mastery</em>
+            </h2>
+            <Divider />
+            <p className="text-sand/80 leading-relaxed text-sm mt-4 mb-5">
+              Since 1978, MRT Metal Mart has been the custodian of India's
+              brass-making tradition. We partner directly with master artisans
+              from Moradabad, Aligarh, and Thanjavur — communities that have
+              shaped metal with fire and skill for generations.
+            </p>
+            <p className="text-sand/70 leading-relaxed text-sm mb-8">
+              Each piece is crafted using the traditional <em>dhokra</em> and
+              lost-wax casting techniques, ensuring that every idol, lamp, and
+              vessel you receive carries not just brass — but centuries of
+              living craft.
+            </p>
+            <div className="grid grid-cols-3 gap-4 pt-6 border-t border-brass-light/20">
+              {[
+                ["48+", "Years of Craft"],
+                ["200+", "Master Artisans"],
+                ["10,000+", "Happy Customers"],
+              ].map(([n, l]) => (
+                <div key={n}>
+                  <p className="font-display text-2xl text-brass-light">{n}</p>
+                  <p className="text-[10px] text-sand/60 tracking-wide uppercase mt-0.5">
+                    {l}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials */}
+      <section className="py-20 max-w-7xl mx-auto px-6">
+        <SectionHeader title="What Our Customers Say" />
+        <div className="grid md:grid-cols-3 gap-6">
+          {[
+            {
+              name: "Priya Nair",
+              loc: "Kochi, Kerala",
+              rating: 5,
+              review:
+                "The Kuthu Vilakku lamp I ordered is absolutely exquisite. The quality far exceeded my expectations — solid brass, beautifully finished. It now holds pride of place in our puja room.",
+            },
+            {
+              name: "Rajesh Sharma",
+              loc: "Jaipur, Rajasthan",
+              rating: 5,
+              review:
+                "Ordered a Ganesha idol as a housewarming gift. The packaging was beautiful, the craftsmanship superb, and delivery was swift. Everyone at the ceremony was amazed. Will definitely order again.",
+            },
+            {
+              name: "Ananya Krishnan",
+              loc: "Chennai, Tamil Nadu",
+              rating: 5,
+              review:
+                "I've been searching for an authentic brass urli for years. MRT Metal Mart delivered exactly what I envisioned — traditional design, excellent weight, and a warm patina. Truly heritage quality.",
+            },
+          ].map((t) => (
+            <div
+              key={t.name}
+              className="bg-cream rounded border border-sand/60 p-6"
+            >
+              <Stars rating={t.rating} size="md" />
+              <p className="text-charcoal/80 text-sm leading-relaxed mt-3 mb-5 font-display italic">
+                "{t.review}"
+              </p>
+              <div className="flex items-center gap-3 border-t border-sand pt-4">
+                <div className="w-9 h-9 rounded-full bg-brass/20 flex items-center justify-center font-display text-brass font-semibold text-sm">
+                  {t.name[0]}
+                </div>
+                <div>
+                  <p className="text-charcoal text-xs font-semibold">
+                    {t.name}
+                  </p>
+                  <p className="text-brown-light text-[10px]">{t.loc}</p>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Custom Orders Banner */}
+      <section className="bg-brass py-16 relative overflow-hidden">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-brass-dark via-gold to-brass-dark opacity-80" />
+        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-brass-dark via-gold to-brass-dark opacity-80" />
+        <div className="max-w-4xl mx-auto px-6 text-center">
+          <p className="text-brass-pale text-xs tracking-[0.4em] uppercase mb-3">
+            For Business & Events
+          </p>
+          <h2 className="font-display text-3xl md:text-4xl text-cream mb-4">
+            Custom & Bulk Orders
+          </h2>
+          <Divider />
+          <p className="text-brass-pale/90 text-sm leading-relaxed mt-4 mb-8 max-w-xl mx-auto">
+            Need personalized brass products for corporate gifting, weddings,
+            temples, or events? Our artisans craft bespoke pieces with custom
+            engravings, sizes, and finishes — at wholesale pricing for bulk
+            orders.
+          </p>
+          <button
+            onClick={() => navTo("custom")}
+            className="bg-cream text-brass px-10 py-3.5 text-sm font-semibold tracking-wider uppercase rounded hover:bg-brass-pale transition-colors"
+          >
+            Request a Quote
+          </button>
+        </div>
+      </section>
+
+      {/* Newsletter */}
+      <section className="py-16 max-w-3xl mx-auto px-6 text-center">
+        <p className="text-brass text-xs tracking-[0.3em] uppercase mb-2">
+          Stay Connected
+        </p>
+        <h3 className="font-display text-2xl text-charcoal mb-2">
+          Heritage in Your Inbox
+        </h3>
+        <p className="text-brown-mid text-sm mb-6">
+          New arrivals, festival collections, artisan stories, and exclusive
+          member offers.
+        </p>
+        <div className="flex gap-2 max-w-md mx-auto">
+          <input
+            type="email"
+            placeholder="Your email address"
+            className="flex-1 border border-sand bg-cream rounded px-4 py-3 text-sm text-charcoal placeholder-brown-light outline-none focus:border-brass transition-colors"
+          />
+          <button className="bg-brass text-cream px-6 py-3 text-xs font-semibold tracking-wider uppercase rounded btn-primary flex-shrink-0">
+            Subscribe
+          </button>
+        </div>
+        <p className="text-[10px] text-brown-light mt-3">
+          No spam. Unsubscribe anytime.
+        </p>
+      </section>
+    </main>
+  )
+
+  // ── Shop Page ───────────────────────────────────────────────────────────────
+
+  const ShopPage = (
+    <main className="fade-in max-w-7xl mx-auto px-4 py-10">
+      <div className="mb-6 flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl text-charcoal">
+            {filterCat || "All Brass Products"}
+          </h1>
+          <p className="text-xs text-brown-light mt-1">
+            {filteredProducts.length} products found
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs text-brown-mid">Sort by</label>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="border border-sand bg-cream rounded px-2 py-1.5 text-xs text-charcoal outline-none focus:border-brass"
+          >
+            <option value="featured">Featured</option>
+            <option value="price-asc">Price: Low to High</option>
+            <option value="price-desc">Price: High to Low</option>
+            <option value="rating">Top Rated</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="flex gap-6">
+        {/* Filters sidebar */}
+        <aside className="hidden md:block w-56 flex-shrink-0">
+          <div className="bg-cream rounded border border-sand/60 p-5 sticky top-36 space-y-6">
+            <div>
+              <h3 className="text-[10px] uppercase tracking-widest text-brass mb-3 font-semibold">
+                Category
+              </h3>
+              <div className="space-y-1.5">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="cat"
+                    checked={filterCat === ""}
+                    onChange={() => setFilterCat("")}
+                    className="accent-amber-700"
+                  />
+                  <span className="text-xs text-brown-mid">All Categories</span>
+                </label>
+                {CATEGORIES.map((c) => (
+                  <label
+                    key={c.id}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <input
+                      type="radio"
+                      name="cat"
+                      checked={filterCat === c.id}
+                      onChange={() => setFilterCat(c.id)}
+                      className="accent-amber-700"
+                    />
+                    <span className="text-xs text-brown-mid">{c.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-[10px] uppercase tracking-widest text-brass mb-3 font-semibold">
+                Max Price
+              </h3>
+              <input
+                type="range"
+                min={500}
+                max={10000}
+                step={250}
+                value={filterMax}
+                onChange={(e) => setFilterMax(+e.target.value)}
+                className="w-full"
+              />
+              <div className="flex justify-between text-[10px] text-brown-light mt-1">
+                <span>₹500</span>
+                <span className="font-semibold text-brass">
+                  ₹{filterMax.toLocaleString()}
+                </span>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="text-[10px] uppercase tracking-widest text-brass mb-3 font-semibold">
+                Min Rating
+              </h3>
+              <div className="space-y-1">
+                {[0, 3, 4, 4.5].map((r) => (
+                  <label
+                    key={r}
+                    className="flex items-center gap-2 cursor-pointer"
+                  >
+                    <input
+                      type="radio"
+                      name="rating"
+                      checked={filterRating === r}
+                      onChange={() => setFilterRating(r)}
+                      className="accent-amber-700"
+                    />
+                    <span className="text-xs text-brown-mid">
+                      {r === 0 ? "Any" : `${r}+ ★`}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={filterStock}
+                  onChange={(e) => setFilterStock(e.target.checked)}
+                  className="accent-amber-700"
+                />
+                <span className="text-xs text-brown-mid">In Stock Only</span>
+              </label>
+            </div>
+
+            <button
+              onClick={() => {
+                setFilterCat("")
+                setFilterMax(10000)
+                setFilterRating(0)
+                setFilterStock(false)
+                setSearchQuery("")
+              }}
+              className="w-full text-xs text-brass-dark border border-brass/30 py-2 rounded hover:bg-ivory transition-colors"
+            >
+              Clear Filters
+            </button>
+          </div>
+        </aside>
+
+        {/* Product grid */}
+        <div className="flex-1">
+          {/* Mobile search */}
+          <div className="md:hidden flex items-center border border-sand bg-cream rounded px-3 py-2 gap-2 mb-4">
+            <svg
+              className="w-4 h-4 text-brown-light"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search products…"
+              className="flex-1 bg-transparent text-sm text-charcoal placeholder-brown-light outline-none"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {filteredProducts.length === 0 ? (
+            <div className="text-center py-20">
+              <p className="font-display text-xl text-charcoal mb-2">
+                No products found
+              </p>
+              <p className="text-brown-light text-sm">
+                Try adjusting your filters
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              {filteredProducts.map((p) => (
+                <ProductCard
+                  key={p.id}
+                  product={p}
+                  wishlist={wishlist}
+                  onToggleWishlist={toggleWishlist}
+                  onAddToCart={addToCart}
+                  onSelect={goToProduct}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+    </main>
+  )
+
+  // ── Product Detail Page ─────────────────────────────────────────────────────
+
+  const ProductDetailPage = selectedProduct && (
+    <main className="fade-in max-w-6xl mx-auto px-4 py-10">
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-2 text-[11px] text-brown-light mb-6">
+        <button onClick={() => navTo("home")} className="hover:text-brass">
+          Home
+        </button>
+        <span>/</span>
+        <button onClick={() => navTo("shop")} className="hover:text-brass">
+          Shop
+        </button>
+        <span>/</span>
+        <button
+          onClick={() => {
+            setFilterCat(selectedProduct.category)
+            navTo("shop")
+          }}
+          className="hover:text-brass"
+        >
+          {selectedProduct.category}
+        </button>
+        <span>/</span>
+        <span className="text-charcoal">{selectedProduct.name}</span>
+      </div>
+
+      <div className="grid md:grid-cols-2 gap-10">
+        {/* Image gallery */}
+        <div>
+          <div className="aspect-square bg-parchment rounded overflow-hidden mb-3">
+            <img
+              src={selectedProduct.images[selectedImg] || selectedProduct.image}
+              alt={selectedProduct.name}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          {selectedProduct.images.length > 1 && (
+            <div className="flex gap-2">
+              {selectedProduct.images.map((img, i) => (
+                <button
+                  key={i}
+                  onClick={() => setSelectedImg(i)}
+                  className={`w-16 h-20 rounded overflow-hidden border-2 transition-all ${
+                    selectedImg === i
+                      ? "border-brass"
+                      : "border-sand/60 opacity-60 hover:opacity-100"
+                  }`}
+                >
+                  <img
+                    src={img}
+                    alt={`View ${i + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Product info */}
+        <div>
+          {selectedProduct.badge && (
+            <div className="mb-3">
+              <Badge text={selectedProduct.badge} />
+            </div>
+          )}
+          <p className="text-[10px] text-brass uppercase tracking-widest mb-2">
+            {selectedProduct.category}
+          </p>
+          <h1 className="font-display text-2xl md:text-3xl text-charcoal leading-tight mb-3">
+            {selectedProduct.name}
+          </h1>
+
+          <div className="flex items-center gap-3 mb-4">
+            <Stars rating={selectedProduct.rating} size="md" />
+            <span className="text-xs text-brown-light">
+              {selectedProduct.rating} ({selectedProduct.reviews} reviews)
+            </span>
+          </div>
+
+          <div className="flex items-baseline gap-3 mb-5">
+            <span className="font-display text-3xl font-bold text-brass">
+              ₹{selectedProduct.price.toLocaleString()}
+            </span>
+            {selectedProduct.originalPrice && (
+              <>
+                <span className="text-brown-light line-through text-lg">
+                  ₹{selectedProduct.originalPrice.toLocaleString()}
+                </span>
+                <span className="text-sm text-green-700 font-semibold">
+                  {Math.round(
+                    (1 -
+                      selectedProduct.price / selectedProduct.originalPrice) *
+                      100,
+                  )}
+                  % OFF
+                </span>
+              </>
+            )}
+          </div>
+
+          <p
+            className={`text-xs font-semibold mb-4 ${
+              selectedProduct.inStock ? "text-green-700" : "text-red-700"
+            }`}
+          >
+            {selectedProduct.inStock
+              ? "✓ In Stock — Ready to Ship"
+              : "✕ Currently Out of Stock"}
+          </p>
+
+          <Divider />
+
+          <div className="mt-4 mb-5">
+            <p className="text-sm text-charcoal/80 leading-relaxed">
+              {selectedProduct.description}
+            </p>
+          </div>
+
+          {/* Specs */}
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            {[
+              ["Material", selectedProduct.material],
+              ["Weight", selectedProduct.weight],
+              ["Dimensions", selectedProduct.dimensions],
+            ].map(([l, v]) => (
+              <div key={l} className="bg-ivory rounded p-3 text-center">
+                <p className="text-[9px] text-brown-light uppercase tracking-wider">
+                  {l}
+                </p>
+                <p className="text-xs text-charcoal font-semibold mt-1">{v}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Features */}
+          <div className="mb-6">
+            <h3 className="text-[10px] uppercase tracking-widest text-brass font-semibold mb-3">
+              Craftsmanship Details
+            </h3>
+            <ul className="space-y-1.5">
+              {selectedProduct.features.map((f) => (
+                <li
+                  key={f}
+                  className="flex items-start gap-2 text-xs text-charcoal/75"
+                >
+                  <span className="text-brass-light mt-0.5 flex-shrink-0">
+                    ◆
+                  </span>{" "}
+                  {f}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Quantity & actions */}
+          {selectedProduct.inStock && (
+            <>
+              <div className="flex items-center gap-3 mb-4">
+                <span className="text-xs text-brown-mid">Quantity:</span>
+                <div className="flex items-center border border-sand rounded">
+                  <button
+                    onClick={() => setProductQty((q) => Math.max(1, q - 1))}
+                    className="px-3 py-2 text-sm hover:bg-ivory transition-colors"
+                  >
+                    −
+                  </button>
+                  <span className="px-4 py-2 text-sm border-x border-sand">
+                    {productQty}
+                  </span>
+                  <button
+                    onClick={() => setProductQty((q) => q + 1)}
+                    className="px-3 py-2 text-sm hover:bg-ivory transition-colors"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+              <div className="flex gap-3 mb-4">
+                <button
+                  onClick={() => {
+                    for (let i = 0; i < productQty; i++)
+                      addToCart(selectedProduct)
+                    setCartOpen(true)
+                  }}
+                  className="flex-1 bg-brass text-cream py-3.5 text-sm font-semibold tracking-wide rounded btn-primary"
+                >
+                  Add to Cart
+                </button>
+                <button
+                  onClick={() => {
+                    for (let i = 0; i < productQty; i++)
+                      addToCart(selectedProduct)
+                    navTo("cart")
+                  }}
+                  className="flex-1 border border-brass text-brass py-3.5 text-sm font-semibold tracking-wide rounded hover:bg-brass hover:text-cream transition-colors"
+                >
+                  Buy Now
+                </button>
+                <WishlistBtn
+                  active={wishlist.includes(selectedProduct.id)}
+                  onToggle={() => toggleWishlist(selectedProduct.id)}
+                />
+              </div>
+            </>
+          )}
+
+          {/* Delivery info */}
+          <div className="bg-ivory rounded p-4 space-y-2">
+            {[
+              ["🚚", "Free delivery on orders above ₹2,000"],
+              ["📦", "Packed with premium velvet wrapping"],
+              ["↩️", "15-day hassle-free returns"],
+              ["✅", "Authenticity certificate included"],
+            ].map(([icon, text]) => (
+              <div
+                key={text as string}
+                className="flex items-center gap-2 text-xs text-brown-mid"
+              >
+                <span>{icon}</span> {text as string}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Reviews section */}
+      <section className="mt-14">
+        <h2 className="font-display text-xl text-charcoal mb-6">
+          Customer Reviews
+        </h2>
+        <Divider />
+        <div className="mt-6 space-y-5">
+          {[
+            {
+              name: "Sunita Patel",
+              date: "August 2025",
+              rating: 5,
+              review:
+                "Absolutely stunning quality. The craftsmanship is incredible — every detail is perfect. This will be treasured for generations.",
+            },
+            {
+              name: "Arjun Mehta",
+              date: "July 2025",
+              rating: 5,
+              review:
+                "Purchased as a gift for my parents' anniversary. They were overwhelmed by the quality and beauty. Packaging was also exceptional.",
+            },
+            {
+              name: "Deepa Reddy",
+              date: "June 2025",
+              rating: 4,
+              review:
+                "Beautiful piece, very well made. Delivery was slightly delayed but customer service was responsive and helpful.",
+            },
+          ].map((r) => (
+            <div key={r.name} className="border-b border-sand/50 pb-5">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-brass/20 flex items-center justify-center font-display text-brass text-sm font-semibold">
+                    {r.name[0]}
+                  </div>
+                  <span className="text-sm font-semibold text-charcoal">
+                    {r.name}
+                  </span>
+                  <Stars rating={r.rating} />
+                </div>
+                <span className="text-[10px] text-brown-light">{r.date}</span>
+              </div>
+              <p className="text-sm text-charcoal/75 leading-relaxed font-display italic ml-11">
+                "{r.review}"
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+  )
+
+  // ── Cart Page ───────────────────────────────────────────────────────────────
+
+  const CartPage = (
+    <main className="fade-in max-w-5xl mx-auto px-4 py-10">
+      <h1 className="font-display text-2xl text-charcoal mb-2">
+        Shopping Cart
+      </h1>
+      <Divider />
+      {cart.length === 0 ? (
+        <div className="text-center py-24">
+          <div className="text-6xl mb-4">🛒</div>
+          <h2 className="font-display text-xl text-charcoal mb-2">
+            Your cart is empty
+          </h2>
+          <p className="text-brown-mid text-sm mb-6">
+            Explore our brass collections and find something beautiful.
+          </p>
+          <button
+            onClick={() => navTo("shop")}
+            className="bg-brass text-cream px-8 py-3 text-sm font-semibold rounded btn-primary"
+          >
+            Browse Products
+          </button>
+        </div>
+      ) : (
+        <div className="grid md:grid-cols-3 gap-8 mt-6">
+          <div className="md:col-span-2 space-y-4">
+            {cart.map((item) => (
+              <div
+                key={item.product.id}
+                className="flex gap-4 bg-cream rounded border border-sand/60 p-4"
+              >
+                <img
+                  src={item.product.image}
+                  alt={item.product.name}
+                  className="w-24 h-28 object-cover rounded flex-shrink-0"
+                />
+                <div className="flex-1">
+                  <p className="text-[10px] text-brass uppercase tracking-widest">
+                    {item.product.category}
+                  </p>
+                  <h3 className="font-display text-charcoal text-sm leading-snug mt-0.5">
+                    {item.product.name}
+                  </h3>
+                  <p className="text-xs text-brown-light mt-1">
+                    {item.product.material} · {item.product.weight}
+                  </p>
+                  <div className="flex items-center justify-between mt-3">
+                    <div className="flex items-center border border-sand rounded">
+                      <button
+                        onClick={() =>
+                          setCart((prev) =>
+                            prev.map((i) =>
+                              i.product.id === item.product.id
+                                ? { ...i, qty: Math.max(1, i.qty - 1) }
+                                : i,
+                            ),
+                          )
+                        }
+                        className="px-3 py-1.5 text-sm hover:bg-ivory"
+                      >
+                        −
+                      </button>
+                      <span className="px-3 py-1.5 text-sm border-x border-sand">                        {item.qty}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setCart((prev) =>
+                            prev.map((i) =>
+                              i.product.id === item.product.id
+                                ? { ...i, qty: i.qty + 1 }
+                                : i,
+                            ),
+                          )
+                        }
+                        className="px-3 py-1.5 text-sm hover:bg-ivory"
+                      >
+                        +
+                      </button>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <span className="font-display font-semibold text-brass">
+                        ₹{(item.product.price * item.qty).toLocaleString()}
+                      </span>
+                      <button
+                        onClick={() =>
+                          setCart((prev) =>
+                            prev.filter(
+                              (i) => i.product.id !== item.product.id,
+                            ),
+                          )
+                        }
+                        className="text-red-700 text-xs hover:text-red-900"
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div>
+            <div className="bg-cream rounded border border-sand/60 p-5 sticky top-36">
+              <h3 className="font-display text-lg text-charcoal mb-4">
+                Order Summary
+              </h3>
+              <div className="space-y-2 text-sm mb-4">
+                <div className="flex justify-between text-brown-mid">
+                  <span>Subtotal</span>
+                  <span>₹{cartTotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between text-brown-mid">
+                  <span>Shipping</span>
+                  <span>
+                    {cartTotal >= 2000 ? (
+                      <span className="text-green-700">Free</span>
+                    ) : (
+                      "₹120"
+                    )}
+                  </span>
+                </div>
+                <div className="h-px bg-sand my-2" />
+                <div className="flex justify-between font-semibold text-charcoal">
+                  <span>Total</span>
+                  <span className="font-display text-brass text-lg">
+                    ₹
+                    {(
+                      cartTotal + (cartTotal >= 2000 ? 0 : 120)
+                    ).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+              {cartTotal < 2000 && (
+                <p className="text-[10px] text-brown-light mb-3">
+                  Add ₹{(2000 - cartTotal).toLocaleString()} more for free
+                  shipping
+                </p>
+              )}
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  placeholder="Coupon code"
+                  className="flex-1 border border-sand bg-ivory rounded px-3 py-2 text-xs outline-none focus:border-brass"
+                />
+                <button className="text-xs bg-parchment border border-sand px-3 py-2 rounded hover:bg-brass hover:text-cream transition-colors">
+                  Apply
+                </button>
+              </div>
+              <button
+                onClick={() => {
+                  if (!isLoggedIn) {
+                    setShowAuth(true)
+                  } else {
+                    showToast("Proceeding to checkout…")
+                  }
+                }}
+                className="w-full bg-brass text-cream py-3.5 text-sm font-semibold tracking-wide rounded btn-primary"
+              >
+                Proceed to Checkout
+              </button>
+              <p className="text-[10px] text-brown-light text-center mt-3">
+                Secure payment · GST included
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+    </main>
+  )
+
+  // ── Wishlist Page ───────────────────────────────────────────────────────────
+
+  const WishlistPage = (
+    <main className="fade-in max-w-6xl mx-auto px-4 py-10">
+      <h1 className="font-display text-2xl text-charcoal mb-2">
+        My Wishlist ({wishlistProducts.length})
+      </h1>
+      <Divider />
+      {wishlistProducts.length === 0 ? (
+        <div className="text-center py-24">
+          <div className="text-6xl mb-4">♡</div>
+          <h2 className="font-display text-xl text-charcoal mb-2">
+            Your wishlist is empty
+          </h2>
+          <p className="text-brown-mid text-sm mb-6">
+            Save items you love and find them here anytime.
+          </p>
+          <button
+            onClick={() => navTo("shop")}
+            className="bg-brass text-cream px-8 py-3 text-sm font-semibold rounded btn-primary"
+          >
+            Browse Products
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-5 mt-6">
+          {wishlistProducts.map((p) => (
+            <ProductCard
+              key={p.id}
+              product={p}
+              wishlist={wishlist}
+              onToggleWishlist={toggleWishlist}
+              onAddToCart={addToCart}
+              onSelect={goToProduct}
+            />
+          ))}
+        </div>
+      )}
+    </main>
+  )
+
+  // ── Custom Orders Page ──────────────────────────────────────────────────────
+
+  const CustomOrdersPage = (
+    <main className="fade-in">
+      {/* Hero */}
+      <section className="relative bg-charcoal py-20 overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="https://images.unsplash.com/photo-1765443455193-fb043c1dca8d?w=1400&h=600&fit=crop&auto=format"
+            alt="Antique collectibles"
+            className="w-full h-full object-cover opacity-25"
+          />
+          <div className="hero-overlay absolute inset-0" />
+        </div>
+        <div className="relative z-10 text-center max-w-2xl mx-auto px-6">
+          <p className="text-brass-light text-xs tracking-[0.4em] uppercase mb-4">
+            Bespoke Brassware
+          </p>
+          <h1 className="font-display text-4xl text-cream mb-4">
+            Custom & Bulk Orders
+          </h1>
+          <Divider />
+          <p className="text-sand/80 text-sm leading-relaxed mt-4">
+            Commission personalized brass pieces with custom engravings, sizes,
+            and finishes. Ideal for corporate gifting, temple donations,
+            weddings, and bulk procurement.
+          </p>
+        </div>
+      </section>
+
+      <div className="max-w-5xl mx-auto px-6 py-16 grid md:grid-cols-2 gap-12">
+        {/* Form */}
+        <div>
+          <h2 className="font-display text-2xl text-charcoal mb-6">
+            Request a Quote
+          </h2>
+          {customSent ? (
+            <div className="bg-green-50 border border-green-200 rounded p-8 text-center">
+              <div className="text-4xl mb-3">✓</div>
+              <h3 className="font-display text-lg text-green-800 mb-2">
+                Request Submitted!
+              </h3>
+              <p className="text-green-700 text-sm">
+                Our team will contact you within 24 hours with a customized
+                quote and design proposal.
+              </p>
+              <button
+                onClick={() => setCustomSent(false)}
+                className="mt-4 text-xs text-brass hover:underline"
+              >
+                Submit another request
+              </button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {[
+                {
+                  label: "Your Name",
+                  key: "name",
+                  type: "text",
+                  placeholder: "Full name",
+                },
+                {
+                  label: "Email Address",
+                  key: "email",
+                  type: "email",
+                  placeholder: "your@email.com",
+                },
+                {
+                  label: "Phone Number",
+                  key: "phone",
+                  type: "tel",
+                  placeholder: "+91 98765 43210",
+                },
+                {
+                  label: "Product / Item Required",
+                  key: "product",
+                  type: "text",
+                  placeholder: "e.g., Engraved Ganesha Idols, Custom Diyas…",
+                },
+                {
+                  label: "Quantity Required",
+                  key: "qty",
+                  type: "number",
+                  placeholder: "e.g., 50 pieces",
+                },
+              ].map(({ label, key, type, placeholder }) => (
+                <div key={key}>
+                  <label className="block text-[10px] text-brass uppercase tracking-widest mb-1.5 font-semibold">
+                    {label}
+                  </label>
+                  <input
+                    type={type}
+                    placeholder={placeholder}
+                    value={customForm[(key as keyof typeof customForm)]}
+                    onChange={(e) =>
+                      setCustomForm((f) => ({ ...f, [key]: e.target.value }))
+                    }
+                    className="w-full border border-sand bg-cream rounded px-3 py-2.5 text-sm text-charcoal placeholder-brown-light outline-none focus:border-brass transition-colors"
+                  />
+                </div>
+              ))}
+              <div>
+                <label className="block text-[10px] text-brass uppercase tracking-widest mb-1.5 font-semibold">
+                  Additional Details
+                </label>
+                <textarea
+                  rows={4}
+                  placeholder="Describe customizations — engravings, size, finish, occasion, delivery timeline…"
+                  value={customForm.details}
+                  onChange={(e) =>
+                    setCustomForm((f) => ({ ...f, details: e.target.value }))
+                  }
+                  className="w-full border border-sand bg-cream rounded px-3 py-2.5 text-sm text-charcoal placeholder-brown-light outline-none focus:border-brass transition-colors resize-none"
+                />
+              </div>
+              <button
+                onClick={() => setCustomSent(true)}
+                className="w-full bg-brass text-cream py-3.5 text-sm font-semibold tracking-wide rounded btn-primary"
+              >
+                Submit Request
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Info */}
+        <div>
+          <h2 className="font-display text-2xl text-charcoal mb-6">
+            Why Choose MRT for Custom Orders?
+          </h2>
+          <div className="space-y-6">
+            {[
+              {
+                title: "Corporate Gifting",
+                desc: "Premium branded brass gifts — ideal for Diwali, client appreciation, and employee recognition. Custom packaging with your logo.",
+              },
+              {
+                title: "Wedding & Events",
+                desc: "Traditional brass return gifts, decorative pieces, and ceremonial items crafted for your special occasions.",
+              },
+              {
+                title: "Temple & Religious Orders",
+                desc: "Sacred idols, lamps, and ritual items crafted to exact specifications for temples and religious institutions.",
+              },
+              {
+                title: "Bulk Discounts",
+                desc: "Attractive pricing for orders of 25+ pieces. Volume discounts up to 40% based on quantity and order value.",
+              },
+            ].map(({ title, desc }) => (
+              <div key={title} className="flex gap-4">
+                <div className="w-8 h-8 flex-shrink-0 rounded bg-brass/15 flex items-center justify-center mt-0.5">
+                  <span className="text-brass text-sm">◆</span>
+                </div>
+                <div>
+                  <h3 className="font-display text-base text-charcoal">
+                    {title}
+                  </h3>
+                  <p className="text-xs text-brown-mid leading-relaxed mt-1">
+                    {desc}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 bg-ivory rounded border border-sand p-5">
+            <h3 className="font-display text-base text-charcoal mb-3">
+              Contact Our Team
+            </h3>
+            <div className="space-y-2 text-xs text-brown-mid">
+              <p>📧 orders@mrtmetalmart.in</p>
+              <p>📞 +91 98765 43210 (Mon–Sat, 9am–7pm)</p>
+              <p>💬 WhatsApp orders accepted</p>
+              <p>⏱ Quote delivery within 24 hours</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  )
+
+  // ── Profile Page ────────────────────────────────────────────────────────────
+
+  const ProfilePage = (
+    <main className="fade-in max-w-4xl mx-auto px-4 py-10">
+      <h1 className="font-display text-2xl text-charcoal mb-2">My Account</h1>
+      <Divider />
+      <div className="mt-6 grid md:grid-cols-3 gap-6">
+        <div className="bg-cream rounded border border-sand/60 p-5 text-center">
+          <div className="w-16 h-16 rounded-full bg-brass/20 mx-auto flex items-center justify-center font-display text-brass text-2xl font-semibold mb-3">
+            {isLoggedIn ? "A" : "?"}
+          </div>
+          <h3 className="font-display text-charcoal">Ananya Sharma</h3>
+          <p className="text-xs text-brown-light mt-1">ananya@example.com</p>
+          <p className="text-xs text-brown-light">Member since August 2024</p>
+          <button
+            onClick={() => {
+              setIsLoggedIn(false)
+              navTo("home")
+            }}
+            className="mt-4 text-xs text-red-700 hover:underline"
+          >
+            Sign Out
+          </button>
+        </div>
+        <div className="md:col-span-2 space-y-4">
+          {[
+            {
+              icon: "📦",
+              label: "My Orders",
+              desc: "3 orders · 1 pending delivery",
+              action: () => navTo("orders"),
+            },
+            {
+              icon: "♡",
+              label: "Wishlist",
+              desc: `${wishlist.length} items saved`,
+              action: () => navTo("wishlist"),
+            },
+            {
+              icon: "📍",
+              label: "Saved Addresses",
+              desc: "2 addresses saved",
+              action: () => {},
+            },
+            {
+              icon: "🔔",
+              label: "Notifications",
+              desc: "Manage email & SMS preferences",
+              action: () => {},
+            },
+          ].map(({ icon, label, desc, action }) => (
+            <button
+              key={label}
+              onClick={action}
+              className="w-full flex items-center gap-4 bg-cream rounded border border-sand/60 p-4 hover:border-brass transition-colors text-left"
+            >
+              <span className="text-2xl">{icon}</span>
+              <div>
+                <p className="text-sm font-semibold text-charcoal">{label}</p>
+                <p className="text-xs text-brown-light">{desc}</p>
+              </div>
+              <svg
+                className="w-4 h-4 text-brown-light ml-auto"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M9 5l7 7-7 7"
+                />
+              </svg>
+            </button>
+          ))}
+        </div>
+      </div>
+    </main>
+  )
+
+  // ── Orders Page ─────────────────────────────────────────────────────────────
+
+  const OrdersPage = (
+    <main className="fade-in max-w-4xl mx-auto px-4 py-10">
+      <h1 className="font-display text-2xl text-charcoal mb-2">My Orders</h1>
+      <Divider />
+      <div className="mt-6 space-y-4">
+        {[
+          {
+            id: "MRT-2025-1834",
+            date: "Sep 18, 2025",
+            status: "Delivered",
+            total: 4398,
+            items: ["Dancing Ganesha Brass Idol", "Brass Temple Bell"],
+          },
+          {
+            id: "MRT-2025-1621",
+            date: "Aug 29, 2025",
+            status: "In Transit",
+            total: 2899,
+            items: ["Brass Krishna Flute Player Idol"],
+          },
+          {
+            id: "MRT-2025-1390",
+            date: "Jul 14, 2025",
+            status: "Delivered",
+            total: 1899,
+            items: ["Traditional Brass Puja Thali Set"],
+          },
+        ].map((order) => (
+          <div
+            key={order.id}
+            className="bg-cream rounded border border-sand/60 p-5"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div>
+                <p className="text-xs font-mono text-brown-mid">{order.id}</p>
+                <p className="text-[10px] text-brown-light mt-0.5">
+                  Ordered: {order.date}
+                </p>
+              </div>
+              <span
+                className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded ${
+                  order.status === "Delivered"
+                    ? "bg-green-100 text-green-700"
+                    : "bg-amber-100 text-amber-700"
+                }`}
+              >
+                {order.status}
+              </span>
+            </div>
+            {order.items.map((i) => (
+              <p key={i} className="text-xs text-charcoal/80 mb-0.5">
+                · {i}
+              </p>
+            ))}
+            <div className="flex items-center justify-between mt-3 pt-3 border-t border-sand/50">
+              <span className="font-display text-brass font-semibold">
+                ₹{order.total.toLocaleString()}
+              </span>
+              <button className="text-xs text-brass hover:underline">
+                View Details
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </main>
+  )
+
+  // ── Footer ──────────────────────────────────────────────────────────────────
+
+  const Footer = (
+    <footer className="bg-charcoal mt-20">
+      <div className="brass-strip" />
+      <div className="max-w-7xl mx-auto px-6 py-14 grid grid-cols-2 md:grid-cols-4 gap-10">
+        <div className="col-span-2 md:col-span-1">
+          <div className="font-display text-xl text-cream mb-1">
+            MRT <span className="text-brass-light">Metal Mart</span>
+          </div>
+          <div className="text-[10px] tracking-[0.25em] text-sand/50 uppercase mb-4">
+            Crafted in Pure Brass
+          </div>
+          <p className="text-xs text-sand/60 leading-relaxed">
+            Authentic Indian brassware and antique collectibles, sourced
+            directly from master artisans. Preserving tradition since 1978.
+          </p>
+          <div className="flex gap-3 mt-5">
+            {["F", "I", "W", "Y"].map((s) => (
+              <div
+                key={s}
+                className="w-8 h-8 rounded-full border border-sand/20 flex items-center justify-center text-sand/50 text-xs hover:border-brass hover:text-brass transition-colors cursor-pointer"
+              >
+                {s}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {[
+          {
+            title: "Collections",
+            links: [
+              "Brass Idols & Statues",
+              "Lamps & Diyas",
+              "Puja Items",
+              "Home Décor",
+              "Antiques & Collectibles",
+              "Gift Sets",
+            ],
+          },
+          {
+            title: "Customer Care",
+            links: [
+              "Track Your Order",
+              "Returns & Exchanges",
+              "Shipping Policy",
+              "Custom Orders",
+              "Wholesale Enquiry",
+              "Contact Us",
+            ],
+          },
+          {
+            title: "Company",
+            links: [
+              "About MRT",
+              "Our Artisans",
+              "Sustainability",
+              "Press & Media",
+              "Careers",
+              "Terms & Privacy",
+            ],
+          },
+        ].map((col) => (
+          <div key={col.title}>
+            <h4 className="text-[10px] uppercase tracking-widest text-brass-light font-semibold mb-4">
+              {col.title}
+            </h4>
+            <ul className="space-y-2">
+              {col.links.map((l) => (
+                <li key={l}>
+                  <a
+                    href="#"
+                    className="text-xs text-sand/55 hover:text-brass-light transition-colors"
+                  >
+                    {l}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <div className="border-t border-sand/10">
+        <div className="max-w-7xl mx-auto px-6 py-5 flex flex-col md:flex-row items-center justify-between gap-3">
+          <p className="text-[10px] text-sand/40">
+            © 2025 MRT Metal Mart. All rights reserved. GST: 27AAFCM1234A1Z5 ·{" "}
+            <button
+              onClick={() => setShowAdmin(true)}
+              className="hover:text-sand/70 underline underline-offset-2"
+            >
+              Admin Portal
+            </button>
+          </p>
+          <div className="flex items-center gap-2">
+            {["Visa", "Mastercard", "UPI", "Paytm", "NetBanking"].map((p) => (
+              <span
+                key={p}
+                className="text-[9px] text-sand/35 border border-sand/15 rounded px-1.5 py-0.5"
+              >
+                {p}
+              </span>
+            ))}
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+
+  // ── Render ──────────────────────────────────────────────────────────────────
+
+  const renderPage = () => {
+    switch (page) {
+      case "home":
+        return HomePage
+      case "shop":
+        return ShopPage
+      case "product":
+        return ProductDetailPage
+      case "cart":
+        return CartPage
+      case "wishlist":
+        return WishlistPage
+      case "custom":
+        return CustomOrdersPage
+      case "profile":
+        return ProfilePage
+      case "orders":
+        return OrdersPage
+      default:
+        return HomePage
+    }
+  }
+
+  if (showAdmin) return <Admin onBack={() => setShowAdmin(false)} />
+
+  return (
+    <div className="min-h-screen flex flex-col">
+      {Header}
+      <div className="flex-1">{renderPage()}</div>
+      {Footer}
+      {CartDrawer}
+      {AuthModal}
+
+      {/* Toast notification */}
+      {toast && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 toast">
+          <div className="bg-charcoal text-cream text-xs px-5 py-3 rounded shadow-xl flex items-center gap-2">
+            <span className="text-brass-light">✓</span> {toast}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
