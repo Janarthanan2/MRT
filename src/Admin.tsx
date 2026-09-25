@@ -1322,7 +1322,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     <div>
       <SectionHeader title="Activity Log" />
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5 space-y-0">
-        {[...ACTIVITY_LOG, ...activityLog.slice(0, 3).map((a, i) => ({ ...a, id: a.id + 10, time: `${i + 1} day ago` }))].map((a, idx) => (
+        {activityLog.map((a, idx) => (
           <div key={`${a.id}-${idx}`} className="flex items-start gap-4 py-3.5 border-b border-stone-100 last:border-0">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0" style={{ background: a.type === 'delete' ? '#dc2626' : a.type === 'add' ? '#16a34a' : BRASS }}>
               {a.type === 'login' ? '→' : a.type === 'delete' ? '✕' : a.type === 'add' ? '+' : '✎'}
