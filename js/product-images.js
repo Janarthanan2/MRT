@@ -109,8 +109,8 @@ const ProductImageManager = {
         '<div style="font-weight:800;font-size:12px;">' + (primary ? '★ Primary image' : 'Product image') + '</div>' +
         '<div style="font-size:11px;color:var(--color-light-gray);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + url + '">' + url + '</div>' +
         '<div class="image-manager-actions">' +
-        (primary ? '' : '<button class="btn btn-sm btn-outline-brass" onclick="ProductImageManager.setPrimary(\\'' + id + '\\')">Set Primary</button>') +
-        '<button class="btn btn-sm btn-secondary" onclick="ProductImageManager.remove(\\'' + id + '\\')">Delete</button>' +
+        (primary ? '' : `<button class="btn btn-sm btn-outline-brass" onclick="ProductImageManager.setPrimary('${id}')">Set Primary</button>`) +
+        `<button class="btn btn-sm btn-secondary" onclick="ProductImageManager.remove('${id}')">Delete</button>` +
         '</div></div></article>';
     }).join('');
   }
