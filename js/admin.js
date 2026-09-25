@@ -6,6 +6,7 @@ const AdminConsole = {
   init() {
     this.bindAdminForms();
     this.bindEnquiryStatuses();
+    if (window.ProductImageManager) window.ProductImageManager.init();
   },
 
   bindAdminForms() {
