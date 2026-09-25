@@ -1478,7 +1478,7 @@ export default function App() {
                             const serverItem = await cartApi.list().then(rows => rows.find((x: any) => Number(x.product_id) === item.product.id)).catch(() => null)
                             if (serverItem) await cartApi.remove(Number(serverItem.id)).catch(() => {})
                           }
-                        }
+                        }}
                         className="text-red-700 text-xs hover:text-red-900"
                       >
                         Remove
