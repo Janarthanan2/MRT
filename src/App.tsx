@@ -1446,7 +1446,7 @@ export default function App() {
                             const serverItem = await cartApi.list().then(rows => rows.find((x: any) => Number(x.product_id) === item.product.id)).catch(() => null)
                             if (serverItem) await cartApi.update(Number(serverItem.id), nextQty).catch(() => {})
                           }
-                        }
+                        }}
                         className="px-3 py-1.5 text-sm hover:bg-ivory"
                       >
                         −
@@ -1461,7 +1461,7 @@ export default function App() {
                             const serverItem = await cartApi.list().then(rows => rows.find((x: any) => Number(x.product_id) === item.product.id)).catch(() => null)
                             if (serverItem) await cartApi.update(Number(serverItem.id), nextQty).catch(() => {})
                           }
-                        }
+                        }}
                         className="px-3 py-1.5 text-sm hover:bg-ivory"
                       >
                         +
