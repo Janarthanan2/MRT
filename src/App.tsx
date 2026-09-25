@@ -35,27 +35,29 @@ type Page = "home" | "shop" | "product" | "cart" | "wishlist" | "custom" | "prof
 
 function normalizeApiProduct(p: any): Product {
   const image = p.image_url || p.image || ""
-  return { id: Number(p.id), name: p.name || "", category: p.category || p.category_name || "", price: Number(p.price || 0), originalPrice: p.original_price == null ? undefined : Number(p.original_price), rating: Number(p.rating || 0), reviews: Number(p.review_count || p.reviews || 0), image, images: p.images?.length ? p.images.map((x: any) => typeof x === "string" ? x : x.image_url || x.url).filter(Boolean) : (image ? [image] : []), material: p.material || "", weight: p.weight || "", dimensions: p.dimensions || "", description: p.description || "", features: Array.isArray(p.features) ? p.features : [], inStock: Number(p.stock ?? p.stock_quantity ?? 0) > 0, featured: Boolean(p.featured), badge: p.badge || undefined, occasion: p.occasion || undefined }
-}
-
-function normalizeApiCategory(c: any) {
+  const images = Array.isArray(p.images) ? p.images.map((x: any) => typeof x === "string" ? x : x.image_url || x.url).filter(Boolean) : []
   return {
-    id: String(c.id ?? c.name ?? ""),
-    name: c.name || c.category_name || "",
-    count: Number(c.product_count ?? c.count ?? 0),
-    img: c.image_url || c.image || "",
+    id: Number(p.id), name: p.name || "", category: p.category || p.category_name || "",
+    price: Number(p.price || 0), originalPrice: p.original_price == null ? undefined : Number(p.original_price),
+    rating: Number(p.rating || 0), reviews: Number(p.review_count || p.reviews || 0), image,
+    images: images.length ? images : (image ? [image] : []), material: p.material || "", weight: p.weight || "",
+    dimensions: p.dimensions || "", description: p.description || "", features: Array.isArray(p.features) ? p.features : [],
+    inStock: Number(p.stock ?? p.stock_quantity ?? 0) > 0, featured: Boolean(p.featured),
+    badge: p.badge || undefined, occasion: p.occasion || undefined,
   }
 }
 
+function normalizeApiCategory(c: any) {
+  return { id: String(c.id ?? c.name ?? ""), name: c.name || c.category_name || "", count: Number(c.product_count ?? c.count ?? 0), img: c.image_url || c.image || "" }
+}
 // ─── App ──────────────────────────────────────────────────────────────────────
 
 export default function App() {
   const [page, setPage] = useState<Page>("home")
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [cart, setCart] = useState<CartItem[]>([])
-  const [wishlist, setWishlist] = useState<number[]>([])
+  const [wishlist, setWishlist] = useState<number[]>([])\n  const [categories, setCategories] = useState<{ id: string; name: string; count: number; img: string }[]>([])
   const [products, setProducts] = useState<Product[]>([])
-  const [categories, setCategories] = useState<{ id: string; name: string; count: number; img: string }[]>([])
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [account, setAccount] = useState<any>(null)
   const [serverOrders, setServerOrders] = useState<any[]>([])
@@ -89,39 +91,27 @@ export default function App() {
 
   useEffect(() => {
     let cancelled = false
-
-    Promise.all([
-      productApi.list(),
-      categoryApi.list(),
-    ]).then(([productRows, categoryRows]) => {
-      if (cancelled) return
-      setProducts(productRows.map(normalizeApiProduct))
-      setCategories(categoryRows.map(normalizeApiCategory))
-    }).catch((e) => {
-      if (!cancelled) showToast(e instanceof Error ? e.message : "Could not load store data")
-    })
+    Promise.all([productApi.list(), categoryApi.list()])
+      .then(([productRows, categoryRows]) => {
+        if (cancelled) return
+        setProducts(productRows.map(normalizeApiProduct))
+        setCategories(categoryRows.map(normalizeApiCategory))
+      })
+      .catch((e) => { if (!cancelled) showToast(e instanceof Error ? e.message : "Could not load store data") })
 
     authApi.me().then(async (me) => {
       if (cancelled) return
       setIsLoggedIn(true)
       setAccount(me)
       const [serverCart, serverWishlist, serverOrderRows] = await Promise.all([
-        cartApi.list().catch(() => []),
-        wishlistApi.list().catch(() => []),
-        orderApi.list().catch(() => []),
+        cartApi.list().catch(() => []), wishlistApi.list().catch(() => []), orderApi.list().catch(() => []),
       ])
       if (cancelled) return
-      setCart(serverCart.map((item: any) => ({
-        product: normalizeApiProduct(item.product || item),
-        qty: Number(item.quantity || 1),
-      })))
+      setCart(serverCart.map((item: any) => ({ product: normalizeApiProduct(item.product || item), qty: Number(item.quantity || 1) })))
       setWishlist(serverWishlist.map((item: any) => Number(item.product_id ?? item.productId ?? item.id)))
       setServerOrders(serverOrderRows)
-      userApi.profile().then(profile => {
-        if (!cancelled) setAccount(profile)
-      }).catch(() => {})
+      userApi.profile().then(profile => { if (!cancelled) setAccount(profile) }).catch(() => {})
     }).catch(() => {})
-
     return () => { cancelled = true }
   }, [showToast])
 
@@ -346,7 +336,7 @@ export default function App() {
           >
             All Products
           </button>
-          {CATEGORIES.map((c) => (
+          {categories.map((c) => (
             <button
               key={c.id}
               onClick={() => {
@@ -693,7 +683,7 @@ export default function App() {
           subtitle="Discover our curated range of authentic brass products, each handcrafted to preserve India's rich metalware tradition."
         />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {CATEGORIES.map((cat) => (
+          {categories.map((cat) => (
             <button
               key={cat.id}
               onClick={() => {
@@ -973,7 +963,7 @@ export default function App() {
                   />
                   <span className="text-xs text-brown-mid">All Categories</span>
                 </label>
-                {CATEGORIES.map((c) => (
+                {categories.map((c) => (
                   <label
                     key={c.id}
                     className="flex items-center gap-2 cursor-pointer"
