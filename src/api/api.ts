@@ -90,6 +90,12 @@ export const orderApi = {
   tracking: (id: number) => get<any>(`/orders/${id}/tracking`),
 }
 
+export const paymentApi = {
+  create: (payload: unknown) => post<any>("/payments/create", payload),
+  verify: (payload: unknown) => post<any>("/payments/verify", payload),
+  status: (orderId: number) => get<any>(`/payments/${orderId}`),
+}
+
 export const customOrderApi = {
   create: (payload: unknown) => post<any>("/custom-orders", payload),
   list: () => get<any[]>("/custom-orders"),
@@ -140,6 +146,8 @@ export const adminApi = {
   createCategory: (payload: unknown) => post<any>("/admin/categories", payload),
   updateCategory: (id: number, payload: unknown) => put<any>(`/admin/categories/${id}`, payload),
   deleteCategory: (id: number) => del<any>(`/admin/categories/${id}`),
+  addCategoryImage: (id: number, imageUrl: string) => post<any>(`/admin/categories/${id}/image`, { imageUrl }),
+  deleteCategoryImage: (id: number) => del<any>(`/admin/categories/${id}/image`),
 
   inventory: () => get<any[]>("/admin/inventory"),
   lowStock: () => get<any[]>("/admin/inventory/low-stock"),
