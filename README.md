@@ -10,7 +10,7 @@
 The website primarily centers around **Brass Products** as its dominant visual and commercial category, with **Trophies and Medals** as important secondary categories.
 
 ### 1. Primary Category: Brass Products (Visually Dominant)
-* **Pooja & Spiritual**: Traditional Kerala Temple Nilavilakku (18"), Ashta Lakshmi Kamakshi Deepam lamps, resonant hand-cast pooja bells with Nandi finials, Panchapatra & Pali spoon sets.
+* **Pooja & Spiritual**: Traditional Kerala Temple Nilavilakku (18"), Ashta Lakshmi Kamakshi Deepam lamps, resonant hand-cast pooja bells with Nandi finials, Panchapatra & Pali spoon sets
 * **Home Décor**: Handcrafted decorative floral urlis with peacock handles, brass statues, Ganesha idols, and traditional urns.
 * **Traditional Brassware**: Heirloom dining thalis, vessels, containers, and bell-metal cookware.
 * **Brass Gifts**: Auspicious mementos curated for weddings, housewarmings (Griha Pravesh), and festive gifting.
