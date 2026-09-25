@@ -21,6 +21,7 @@
   <link rel="stylesheet" href="css/dashboard.css">
   <link rel="stylesheet" href="css/design-system.css">
   <link rel="stylesheet" href="css/responsive.css">
+  <link rel="stylesheet" href="css/product-images.css">
 </head>
 <body>
 
@@ -1300,6 +1301,43 @@
                 </label>
               </div>
 
+
+              <!-- Product Image Manager -->
+              <div class="image-upload-panel">
+                <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:10px;">
+                  <div>
+                    <h4 style="font-size:16px; margin-bottom:4px;">Product Images</h4>
+                    <p style="font-size:12px; color:var(--color-light-gray);">
+                      Upload product photos to the backend, choose a primary image, or remove an existing image.
+                    </p>
+                  </div>
+                  <button type="button" class="btn btn-secondary btn-sm" id="load-product-images-btn">↻ Load Images</button>
+                </div>
+
+                <div class="form-grid-2" style="margin-bottom:var(--space-md);">
+                  <div class="form-group">
+                    <label class="form-label">Backend Product ID</label>
+                    <input type="text" id="admin-prod-id" class="form-input" value="1" placeholder="Example: 101" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Upload Rules</label>
+                    <div style="font-size:12px; color:var(--color-light-gray); padding:11px 0;">
+                      JPG, PNG, WebP • Maximum 10 MB per image • Multiple images supported
+                    </div>
+                  </div>
+                </div>
+
+                <label class="image-dropzone" id="product-image-dropzone" for="product-image-input">
+                  <input id="product-image-input" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+                  <div class="image-dropzone-icon">🖼️</div>
+                  <div class="image-dropzone-title">Drop product images here or click to browse</div>
+                  <div class="image-dropzone-help">The first image becomes primary when the product has no images.</div>
+                </label>
+
+                <div id="product-image-status" class="image-manager-status"></div>
+                <div id="product-image-grid" class="image-manager-grid"></div>
+              </div>
+
               <button type="submit" class="btn btn-primary btn-lg">Publish Product to Showroom →</button>
             </form>
           </div>
@@ -1627,6 +1665,8 @@
   <script src="js/customizer.js"></script>
   <script src="js/search.js"></script>
   <script src="js/rfq.js"></script>
+  <script src="js/api.js"></script>
+  <script src="js/product-images.js"></script>
   <script src="js/admin.js"></script>
   <script src="js/app.js"></script>
 </body>
