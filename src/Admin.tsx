@@ -601,7 +601,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
             </PieChart>
           </ResponsiveContainer>
           <div className="space-y-1.5 mt-2">
-            {CATEGORY_DATA.slice(0, 4).map(c => (
+            {categoryData.slice(0, 4).map(c => (
               <div key={c.name} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1.5">
                   <div className="w-2 h-2 rounded-full" style={{ background: c.color }} />
@@ -654,7 +654,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
             <h3 className="font-semibold text-stone-700 text-sm mb-4">Recent Activity</h3>
             <div className="space-y-2.5">
-              {ACTIVITY_LOG.slice(0, 4).map(a => (
+              {activityLog.slice(0, 4).map(a => (
                 <div key={a.id} className="text-xs text-stone-600">
                   <span className="font-medium text-stone-700">{a.user}</span> — {a.action}
                   <p className="text-[10px] text-stone-400">{a.time}</p>
@@ -1404,7 +1404,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     <div>
       <SectionHeader title="Activity Log" />
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5 space-y-0">
-        {[...ACTIVITY_LOG, ...ACTIVITY_LOG.slice(0, 3).map((a, i) => ({ ...a, id: a.id + 10, time: `${i + 1} day ago` }))].map((a, idx) => (
+        {[...ACTIVITY_LOG, ...activityLog.slice(0, 3).map((a, i) => ({ ...a, id: a.id + 10, time: `${i + 1} day ago` }))].map((a, idx) => (
           <div key={`${a.id}-${idx}`} className="flex items-start gap-4 py-3.5 border-b border-stone-100 last:border-0">
             <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0" style={{ background: a.type === 'delete' ? '#dc2626' : a.type === 'add' ? '#16a34a' : BRASS }}>
               {a.type === 'login' ? '→' : a.type === 'delete' ? '✕' : a.type === 'add' ? '+' : '✎'}
