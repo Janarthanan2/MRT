@@ -1,0 +1,9 @@
+#!/bin/sh
+MAVEN_VERSION="3.9.11"
+BASE_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
+MAVEN_HOME="$BASE_DIR/.mvn/wrapper/apache-maven-$MAVEN_VERSION"
+if [ ! -x "$MAVEN_HOME/bin/mvn" ]; then
+  echo "Maven $MAVEN_VERSION is not downloaded. Use mvnw.cmd on Windows or install Maven."
+  exit 1
+fi
+exec "$MAVEN_HOME/bin/mvn" "$@"
