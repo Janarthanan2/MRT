@@ -28,6 +28,7 @@ public class MrtBackendApplication {
 }
 
 @RestController
+@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:4173"})
 @RequestMapping("/api")
 class MrtController {
  private final JdbcTemplate db; private final PasswordEncoder enc; private final Map<String,Long> tokens=new ConcurrentHashMap<>(); private final String adminEmail,adminPassword;
