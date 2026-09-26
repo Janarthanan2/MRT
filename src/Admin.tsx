@@ -507,7 +507,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Dashboard ───────────────────────────────────────────────────────
 
-  const DashboardPage = (
+  const DashboardPage = () => (
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-stone-800">Dashboard</h1>
@@ -629,7 +629,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Products ────────────────────────────────────────────────────────
 
-  const ProductsPage = (
+  const ProductsPage = () => (
     <div>
       <SectionHeader title="Product Management" action="Add Product" onAction={() => { setEditProduct(null); setProductForm({ name:'',category:'Brass Statues & Idols',price:'',stock:'',material:'Pure Brass',dimensions:'',weight:'',sku:'',status:'Active',antique:false,customizable:false,description:'' }); setShowProductForm(true) }} />
 
@@ -762,7 +762,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Orders ──────────────────────────────────────────────────────────
 
-  const OrdersPage = (
+  const OrdersPage = () => (
     <div>
       <SectionHeader title="Order Management" />
       <div className="flex items-center gap-3 mb-4 flex-wrap">
@@ -875,7 +875,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Categories ─────────────────────────────────────────────────────
 
-  const CategoriesPage = (
+  const CategoriesPage = () => (
     <div>
       <SectionHeader title="Categories" action="Add Category" onAction={() => { setEditCategory(null); setCategoryForm({ name: '', imageUrl: '', description: '', active: true }); setShowCategoryForm(true) }} />
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
@@ -929,7 +929,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Customers ───────────────────────────────────────────────────────
 
-  const CustomersPage = (
+  const CustomersPage = () => (
     <div>
       <SectionHeader title="Customer Management" />
       <input type="text" placeholder="Search customers…" value={custSearch} onChange={e => setCustSearch(e.target.value)} className="border border-stone-200 rounded-lg px-4 py-2 text-sm outline-none focus:border-amber-600 mb-4 w-full max-w-xs" />
@@ -969,7 +969,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Custom Orders ───────────────────────────────────────────────────
 
-  const CustomOrdersPage = (
+  const CustomOrdersPage = () => (
     <div>
       <SectionHeader title="Custom & Bulk Order Requests" />
       <div className="grid gap-4">
@@ -1052,7 +1052,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Analytics ───────────────────────────────────────────────────────
 
-  const AnalyticsPage = (
+  const AnalyticsPage = () => (
     <div className="space-y-6">
       <SectionHeader title="Analytics & Insights" />
 
@@ -1174,7 +1174,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Reviews ─────────────────────────────────────────────────────────
 
-  const ReviewsPage = (
+  const ReviewsPage = () => (
     <div>
       <SectionHeader title="Customer Reviews" />
       <div className="space-y-4">
@@ -1207,7 +1207,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Offers ──────────────────────────────────────────────────────────
 
-  const OffersPage = (
+  const OffersPage = () => (
     <div>
       <SectionHeader title="Offers & Discount Codes" action="Create Offer" />
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
@@ -1239,7 +1239,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Notifications ───────────────────────────────────────────────────
 
-  const NotificationsPage = (
+  const NotificationsPage = () => (
     <div>
       <SectionHeader title={`Notifications (${unreadCount} unread)`} />
       <div className="space-y-3">
@@ -1259,7 +1259,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Admin Users ─────────────────────────────────────────────────────
 
-  const AdminUsersPage = (
+  const AdminUsersPage = () => (
     <div>
       <SectionHeader title="Admin Users & Roles" action="Add Admin" />
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
@@ -1320,7 +1320,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Settings ────────────────────────────────────────────────────────
 
-  const SettingsPage = (
+  const SettingsPage = () => (
     <div>
       <SectionHeader title="Settings" />
       <div className="grid md:grid-cols-2 gap-5">
@@ -1373,7 +1373,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Inventory ───────────────────────────────────────────────────────
 
-  const InventoryPage = (
+  const InventoryPage = () => (
     <div>
       <SectionHeader title="Inventory Management" action="Update Stock" />
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -1414,7 +1414,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Activity Log ────────────────────────────────────────────────────
 
-  const ActivityLogPage = (
+  const ActivityLogPage = () => (
     <div>
       <SectionHeader title="Activity Log" />
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-5 space-y-0">
