@@ -1174,7 +1174,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
               <tr key={u.id} className="border-b border-stone-100 hover:bg-amber-50/30">
                 <td className="py-3 px-3 pl-5">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: u.id === 1 ? BRASS : '#78716c' }}>{u.name[0]}</div>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: u.id === 1 ? BRASS : '#78716c' }}>{(u.name || u.email || 'A')[0]}</div>
                     <span className="text-sm font-medium text-stone-700">{u.name}</span>
                     {u.id === 1 && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-semibold">YOU</span>}
                   </div>
