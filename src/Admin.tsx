@@ -1435,6 +1435,213 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Simple placeholder for remaining pages ─────────────────────────────────
 
+
+  const QuotationsPage = () => {
+    const [quotationSearch, setQuotationSearch] = useState('')
+    const [quotationStatus, setQuotationStatus] = useState('')
+    const [showQuotationForm, setShowQuotationForm] = useState(false)
+    const [editQuotation, setEditQuotation] = useState<any | null>(null)
+    const [quotationForm, setQuotationForm] = useState({
+      customOrderId: '', userId: '', amount: '', notes: '', status: 'Draft',
+    })
+    const [quotationData, setQuotationData] = useState<any[]>([])
+
+    useEffect(() => {
+      let active = true
+      adminApi.quotations().then((rows: any[]) => {
+        if (active) setQuotationData(Array.isArray(rows) ? rows : [])
+      }).catch(() => {})
+      return () => { active = false }
+    }, [])
+
+    const filteredQuotations = quotationData.filter((q: any) => {
+      const term = quotationSearch.toLowerCase()
+      const matchesSearch = !term ||
+        String(q.id || '').includes(term) ||
+        String(q.custom_order_id || '').includes(term) ||
+        String(q.user_id || '').includes(term) ||
+        String(q.notes || '').toLowerCase().includes(term)
+      const matchesStatus = !quotationStatus || String(q.status || '') === quotationStatus
+      return matchesSearch && matchesStatus
+    })
+
+    const openCreateQuotation = () => {
+      setEditQuotation(null)
+      setQuotationForm({ customOrderId: '', userId: '', amount: '', notes: '', status: 'Draft' })
+      setShowQuotationForm(true)
+    }
+
+    const openEditQuotation = (q: any) => {
+      setEditQuotation(q)
+      setQuotationForm({
+        customOrderId: q.custom_order_id == null ? '' : String(q.custom_order_id),
+        userId: q.user_id == null ? '' : String(q.user_id),
+        amount: q.amount == null ? '' : String(q.amount),
+        notes: q.notes || '',
+        status: q.status || 'Draft',
+      })
+      setShowQuotationForm(true)
+    }
+
+    const saveQuotation = async () => {
+      try {
+        const payload = {
+          customOrderId: quotationForm.customOrderId ? Number(quotationForm.customOrderId) : null,
+          userId: quotationForm.userId ? Number(quotationForm.userId) : null,
+          amount: quotationForm.amount ? Number(quotationForm.amount) : null,
+          notes: quotationForm.notes,
+          status: quotationForm.status,
+        }
+        const saved = editQuotation
+          ? await adminApi.updateQuotation(editQuotation.id, payload)
+          : await adminApi.createQuotation(payload)
+        const rows = Array.isArray(saved) ? saved : null
+        if (rows) setQuotationData(rows)
+        else setQuotationData(await adminApi.quotations())
+        setShowQuotationForm(false)
+        setEditQuotation(null)
+      } catch (error) {
+        setLoginError(error instanceof Error ? error.message : 'Could not save quotation.')
+      }
+    }
+
+    const changeQuotationStatus = async (id: number, status: string) => {
+      try {
+        const updated = await adminApi.quotationStatus(id, status)
+        if (updated && typeof updated === 'object' && 'id' in updated) {
+          setQuotationData(prev => prev.map(q => q.id === id ? { ...q, ...updated } : q))
+        } else {
+          setQuotationData(await adminApi.quotations())
+        }
+      } catch (error) {
+        setLoginError(error instanceof Error ? error.message : 'Could not update quotation status.')
+      }
+    }
+
+    return (
+      <div>
+        <SectionHeader title="Quotations" action="New Quotation" onAction={openCreateQuotation} />
+        <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              value={quotationSearch}
+              onChange={e => setQuotationSearch(e.target.value)}
+              placeholder="Search quotations..."
+              className="flex-1 px-3 py-2 text-xs border border-stone-200 rounded-lg outline-none focus:border-stone-400"
+            />
+            <select
+              value={quotationStatus}
+              onChange={e => setQuotationStatus(e.target.value)}
+              className="px-3 py-2 text-xs border border-stone-200 rounded-lg bg-white outline-none"
+            >
+              <option value="">All statuses</option>
+              <option value="Draft">Draft</option>
+              <option value="Sent">Sent</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Expired">Expired</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+          {filteredQuotations.length === 0 ? (
+            <div className="p-16 text-center">
+              <div className="text-3xl mb-3">◈</div>
+              <p className="text-sm font-semibold text-stone-700">No quotations found</p>
+              <p className="text-xs text-stone-400 mt-1">Create a quotation or wait for quotation data from the API.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <TableHeader cols={['ID', 'Custom Order', 'Customer', 'Amount', 'Status', 'Created', 'Actions']} />
+                <tbody>
+                  {filteredQuotations.map((q: any) => (
+                    <tr key={q.id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50">
+                      <td className="py-3 px-3 first:pl-5 text-xs font-semibold text-stone-700">#{q.id}</td>
+                      <td className="py-3 px-3 text-xs text-stone-600">{q.custom_order_id ?? '—'}</td>
+                      <td className="py-3 px-3 text-xs text-stone-600">{q.user_id ?? '—'}</td>
+                      <td className="py-3 px-3 text-xs font-semibold text-stone-800">
+                        {q.amount == null ? '—' : '₹' + Number(q.amount).toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-3 px-3"><StatusBadge status={q.status || 'Draft'} /></td>
+                      <td className="py-3 px-3 text-xs text-stone-500">
+                        {q.created_at ? new Date(q.created_at).toLocaleDateString('en-IN') : '—'}
+                      </td>
+                      <td className="py-3 px-3 last:pr-5">
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => openEditQuotation(q)} className="text-[11px] font-semibold text-stone-600 hover:text-stone-900">Edit</button>
+                          <select
+                            value={q.status || 'Draft'}
+                            onChange={e => changeQuotationStatus(Number(q.id), e.target.value)}
+                            className="text-[10px] border border-stone-200 rounded px-1.5 py-1 bg-white"
+                            aria-label={'Change status for quotation ' + q.id}
+                          >
+                            <option value="Draft">Draft</option>
+                            <option value="Sent">Sent</option>
+                            <option value="Accepted">Accepted</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Expired">Expired</option>
+                          </select>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {showQuotationForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-stone-900/50" onClick={() => setShowQuotationForm(false)} />
+            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-bold text-stone-800">{editQuotation ? 'Edit Quotation' : 'New Quotation'}</h3>
+                <button onClick={() => setShowQuotationForm(false)} className="text-stone-400 hover:text-stone-700 text-lg">×</button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="text-xs font-medium text-stone-600">
+                  Custom Order ID
+                  <input value={quotationForm.customOrderId} onChange={e => setQuotationForm(v => ({ ...v, customOrderId: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg" />
+                </label>
+                <label className="text-xs font-medium text-stone-600">
+                  User ID
+                  <input value={quotationForm.userId} onChange={e => setQuotationForm(v => ({ ...v, userId: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg" />
+                </label>
+                <label className="text-xs font-medium text-stone-600">
+                  Amount
+                  <input type="number" min="0" step="0.01" value={quotationForm.amount} onChange={e => setQuotationForm(v => ({ ...v, amount: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg" />
+                </label>
+                <label className="text-xs font-medium text-stone-600">
+                  Status
+                  <select value={quotationForm.status} onChange={e => setQuotationForm(v => ({ ...v, status: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg bg-white">
+                    <option value="Draft">Draft</option>
+                    <option value="Sent">Sent</option>
+                    <option value="Accepted">Accepted</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Expired">Expired</option>
+                  </select>
+                </label>
+                <label className="text-xs font-medium text-stone-600 sm:col-span-2">
+                  Notes
+                  <textarea value={quotationForm.notes} onChange={e => setQuotationForm(v => ({ ...v, notes: e.target.value }))} rows={4} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg resize-none" />
+                </label>
+              </div>
+              <div className="flex justify-end gap-3 mt-6">
+                <button onClick={() => setShowQuotationForm(false)} className="px-4 py-2 text-xs font-semibold text-stone-600 border border-stone-200 rounded-lg">Cancel</button>
+                <button onClick={saveQuotation} className="px-4 py-2 text-xs font-semibold text-white rounded-lg" style={{ background: BRASS }}>
+                  {editQuotation ? 'Save Changes' : 'Create Quotation'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   const PlaceholderPage = ({ title }: { title: string }) => (
     <div>
       <SectionHeader title={title} />
@@ -1453,7 +1660,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       case 'orders':       return OrdersPage
       case 'customers':    return CustomersPage
       case 'custom-orders':return CustomOrdersPage
-      case 'quotations':   return <PlaceholderPage title="Quotations" />
+      case 'quotations':   return QuotationsPage
       case 'reviews':      return ReviewsPage
       case 'offers':       return OffersPage
       case 'notifications':return NotificationsPage
