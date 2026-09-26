@@ -1653,22 +1653,22 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   const renderAdminPage = () => {
     switch (page) {
-      case 'dashboard':    return DashboardPage
-      case 'products':     return ProductsPage
-      case 'categories':   return CategoriesPage
-      case 'inventory':    return InventoryPage
-      case 'orders':       return OrdersPage
-      case 'customers':    return CustomersPage
-      case 'custom-orders':return CustomOrdersPage
-      case 'quotations':   return QuotationsPage
-      case 'reviews':      return ReviewsPage
-      case 'offers':       return OffersPage
-      case 'notifications':return NotificationsPage
-      case 'analytics':    return AnalyticsPage
-      case 'admin-users':  return AdminUsersPage
-      case 'settings':     return SettingsPage
-      case 'activity-log': return ActivityLogPage
-      default:             return DashboardPage
+      case 'dashboard':    return <DashboardPage />
+      case 'products':     return <ProductsPage />
+      case 'categories':   return <CategoriesPage />
+      case 'inventory':    return <InventoryPage />
+      case 'orders':       return <OrdersPage />
+      case 'customers':    return <CustomersPage />
+      case 'custom-orders':return <CustomOrdersPage />
+      case 'quotations':   return <QuotationsPage />
+      case 'reviews':      return <ReviewsPage />
+      case 'offers':       return <OffersPage />
+      case 'notifications':return <NotificationsPage />
+      case 'analytics':    return <AnalyticsPage />
+      case 'admin-users':  return <AdminUsersPage />
+      case 'settings':     return <SettingsPage />
+      case 'activity-log': return <ActivityLogPage />
+      default:             return <DashboardPage />
     }
   }
 
