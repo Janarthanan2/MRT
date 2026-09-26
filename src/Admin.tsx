@@ -26,6 +26,8 @@ interface Order {
   city: string
 }
 
+interface Category { id: number; name: string; image_url?: string; description?: string; active?: boolean; status?: string; product_count?: number }
+
 interface Customer {
   id: number; name: string; email: string; phone: string
   orders: number; totalSpent: number; joined: string; status: 'Active' | 'Inactive'
@@ -185,6 +187,10 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // Products state
   const [products, setProducts] = useState<Product[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [showCategoryForm, setShowCategoryForm] = useState(false)
+  const [editCategory, setEditCategory] = useState<Category | null>(null)
+  const [categoryForm, setCategoryForm] = useState({ name: '', imageUrl: '', description: '', active: true })
   const [productSearch, setProductSearch] = useState('')
   const [showProductForm, setShowProductForm] = useState(false)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
@@ -245,6 +251,41 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     [orders, orderSearch, orderFilter]
   )
 
+  const openEditCategory = (c: Category) => {
+    setEditCategory(c)
+    setCategoryForm({ name: c.name || '', imageUrl: c.image_url || '', description: c.description || '', active: c.active !== false })
+    setShowCategoryForm(true)
+  }
+
+  const saveCategory = async () => {
+    try {
+      const payload = { name: categoryForm.name, imageUrl: categoryForm.imageUrl, description: categoryForm.description, active: categoryForm.active }
+      const saved = editCategory
+        ? await adminApi.updateCategory(editCategory.id, payload)
+        : await adminApi.createCategory(payload)
+      const rows = Array.isArray(saved) ? saved : []
+      if (rows.length) setCategories(rows)
+      else {
+        const refreshed = await adminApi.categories()
+        setCategories(refreshed)
+      }
+      setShowCategoryForm(false)
+      setEditCategory(null)
+      setCategoryForm({ name: '', imageUrl: '', description: '', active: true })
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Could not save category.')
+    }
+  }
+
+  const deleteCategory = async (id: number) => {
+    try {
+      await adminApi.deleteCategory(id)
+      setCategories(prev => prev.filter(c => c.id !== id))
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Could not delete category.')
+    }
+  }
+
   const openEditProduct = (p: Product) => {
     setEditProduct(p)
     setProductForm({ name: p.name, category: p.category, price: String(p.price), stock: String(p.stock), material: p.material, dimensions: p.dimensions, weight: p.weight, sku: p.sku, status: p.status, antique: p.antique, customizable: p.customizable, description: '' })
@@ -297,6 +338,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       loader().then(setter).catch(() => {})
     }
 
+    load(adminApi.categories, (rows: any[]) => setCategories(rows.map((c: any) => ({ id: Number(c.id), name: c.name || '', image_url: c.image_url || '', description: c.description || '', active: c.active !== false, status: c.status || '', product_count: Number(c.product_count || 0) }))))
     load(adminApi.products, (rows: any[]) => setProducts(rows.map((p: any) => ({
       id: Number(p.id), name: p.name || '', category: p.category || '', price: Number(p.price || 0),
       stock: Number(p.stock || 0), status: (p.status || 'Active') as Product['status'],
@@ -831,6 +873,60 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     </div>
   )
 
+  // ── Page: Categories ─────────────────────────────────────────────────────
+
+  const CategoriesPage = (
+    <div>
+      <SectionHeader title="Categories" action="Add Category" onAction={() => { setEditCategory(null); setCategoryForm({ name: '', imageUrl: '', description: '', active: true }); setShowCategoryForm(true) }} />
+      <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+        <table className="w-full">
+          <TableHeader cols={['Category', 'Description', 'Products', 'Status', 'Actions']} />
+          <tbody>
+            {categories.map(c => (
+              <tr key={c.id} className="border-b border-stone-100 hover:bg-amber-50/30">
+                <td className="py-3 px-3 pl-5">
+                  <div className="flex items-center gap-3">
+                    {c.image_url ? <img src={c.image_url} alt="" className="w-10 h-10 rounded-lg object-cover border border-stone-100" /> : <div className="w-10 h-10 rounded-lg bg-stone-100 flex items-center justify-center text-stone-400">◫</div>}
+                    <span className="text-sm font-semibold text-stone-700">{c.name}</span>
+                  </div>
+                </td>
+                <td className="py-3 px-3 text-xs text-stone-500 max-w-md">{c.description || '—'}</td>
+                <td className="py-3 px-3 text-sm text-stone-600">{c.product_count ?? 0}</td>
+                <td className="py-3 px-3"><StatusBadge status={c.active === false ? 'Inactive' : 'Active'} /></td>
+                <td className="py-3 px-3 pr-5">
+                  <div className="flex gap-3">
+                    <button onClick={() => openEditCategory(c)} className="text-xs font-medium hover:underline" style={{ color: BRASS }}>Edit</button>
+                    <button onClick={() => deleteCategory(c.id)} className="text-xs text-red-600 hover:underline">Delete</button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {!categories.length && <tr><td colSpan={5} className="py-12 text-center text-sm text-stone-400">No categories found.</td></tr>}
+          </tbody>
+        </table>
+      </div>
+
+      {showCategoryForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-stone-900/40" onClick={() => setShowCategoryForm(false)} />
+          <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <h3 className="font-bold text-stone-800 mb-5">{editCategory ? 'Edit Category' : 'Add Category'}</h3>
+            <div className="space-y-4">
+              <input value={categoryForm.name} onChange={e => setCategoryForm(x => ({ ...x, name: e.target.value }))} placeholder="Category name" className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-amber-600" />
+              <input value={categoryForm.imageUrl} onChange={e => setCategoryForm(x => ({ ...x, imageUrl: e.target.value }))} placeholder="Image URL" className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-amber-600" />
+              <textarea rows={3} value={categoryForm.description} onChange={e => setCategoryForm(x => ({ ...x, description: e.target.value }))} placeholder="Description" className="w-full border border-stone-200 rounded-lg px-3 py-2.5 text-sm outline-none focus:border-amber-600 resize-none" />
+              <label className="flex items-center gap-2 text-xs text-stone-600"><input type="checkbox" checked={categoryForm.active} onChange={e => setCategoryForm(x => ({ ...x, active: e.target.checked }))} /> Active</label>
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => setShowCategoryForm(false)} className="flex-1 py-2.5 text-sm border border-stone-300 rounded-lg text-stone-700">Cancel</button>
+                <button onClick={saveCategory} disabled={!categoryForm.name.trim()} className="flex-1 py-2.5 text-sm font-semibold text-white rounded-lg disabled:opacity-50" style={{ background: BRASS }}>{editCategory ? 'Save Changes' : 'Add Category'}</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  )
+
   // ── Page: Customers ───────────────────────────────────────────────────────
 
   const CustomersPage = (
@@ -1352,7 +1448,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     switch (page) {
       case 'dashboard':    return DashboardPage
       case 'products':     return ProductsPage
-      case 'categories':   return <PlaceholderPage title="Categories" />
+      case 'categories':   return CategoriesPage
       case 'inventory':    return InventoryPage
       case 'orders':       return OrdersPage
       case 'customers':    return CustomersPage
