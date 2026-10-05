@@ -160,34 +160,78 @@ const AdminConsole = {
     });
   },
 
-  runCategorization(title) {
+  async runCategorization(title) {
     if (!title) return;
 
-    // Simulate intelligent metadata extraction
-    const results = {
-      productType: title.toLowerCase().includes('lamp') || title.toLowerCase().includes('vilakku') ? 'Temple Oil Lamp' : 'Traditional Brassware',
-      category: 'Brass Products (Primary)',
-      material: '100% Virgin Bell Metal Brass',
-      finish: 'Hand-Buffed Antique Patina',
-      weight: '3.2 kg (Heavy Gauge Sand Cast)',
-      occasion: 'Pooja, Temple & Housewarming',
-      customization: 'Available (Custom Inscription)'
-    };
-
-    const resGrid = document.getElementById('ai-categorizer-results');
-    if (resGrid) {
-      resGrid.style.display = 'grid';
-      document.getElementById('ai-res-type').textContent = results.productType;
-      document.getElementById('ai-res-category').textContent = results.category;
-      document.getElementById('ai-res-sport').textContent = results.material;
-      document.getElementById('ai-res-finish').textContent = results.finish;
-      document.getElementById('ai-res-height').textContent = results.weight;
-      document.getElementById('ai-res-purpose').textContent = results.occasion;
-      document.getElementById('ai-res-custom').textContent = results.customization;
+    const runBtn = document.getElementById('run-ai-categorizer-btn');
+    if (runBtn) {
+      runBtn.disabled = true;
+      runBtn.textContent = 'Classifying…';
     }
 
-    if (window.App) {
-      window.App.showToast('✓ Brass taxonomy & metallurgical specs extracted!', 'info');
+    try {
+      const result = await window.MRTApi.predictProductHsn(title, 3);
+      const top = result.topPredictions || [];
+      const resGrid = document.getElementById('ai-categorizer-results');
+
+      if (resGrid) {
+        resGrid.style.display = 'grid';
+
+        const setText = (id, value) => {
+          const element = document.getElementById(id);
+          if (element) element.textContent = value;
+        };
+
+        setText('ai-res-type', 'HSN Classification');
+        setText('ai-res-category', result.hsnCode || '—');
+        setText('ai-res-hsn', result.hsnCode || '—');
+        setText('ai-res-confidence', ((Number(result.confidence || 0)) * 100).toFixed(2) + '%');
+        setText(
+          'ai-res-status',
+          result.reviewRequired ? 'Manual review recommended' : 'High-confidence suggestion'
+        );
+
+        setText(
+          'ai-res-sport',
+          top.map((item, index) => (index + 1) + '. ' + item.hsnCode).join('  •  ') || '—'
+        );
+
+        setText(
+          'ai-res-finish',
+          top.map(item => (Number(item.confidence || 0) * 100).toFixed(1) + '%').join('  •  ') || '—'
+        );
+
+        setText('ai-res-height', 'ML model: TF-IDF + Logistic Regression');
+        setText('ai-res-purpose', result.modelVersion || 'hsn-tfidf-logreg-v1');
+        setText('ai-res-custom', result.reviewRequired ? 'Review before saving' : 'Prediction ready');
+      }
+
+      if (window.App) {
+        window.App.showToast(
+          result.reviewRequired
+            ? '⚠ HSN prediction returned with low confidence. Please review it.'
+            : '✓ HSN classification completed.',
+          result.reviewRequired ? 'info' : 'success'
+        );
+      }
+    } catch (error) {
+      const resGrid = document.getElementById('ai-categorizer-results');
+      if (resGrid) resGrid.style.display = 'grid';
+
+      const status = document.getElementById('ai-res-status');
+      if (status) status.textContent = 'ML service unavailable';
+
+      if (window.App) {
+        window.App.showToast(
+          'ML classification failed: ' + error.message,
+          'info'
+        );
+      }
+    } finally {
+      if (runBtn) {
+        runBtn.disabled = false;
+        runBtn.textContent = 'Run AI Classification';
+      }
     }
   }
 };
