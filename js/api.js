@@ -4,6 +4,7 @@
  *   window.MRT_API_BASE_URL = 'http://localhost:8080/api';
  */
 window.MRT_API_BASE_URL = window.MRT_API_BASE_URL || '/api';
+window.MRT_ML_API_BASE_URL = window.MRT_ML_API_BASE_URL || 'http://localhost:8000';
 
 const MRTApi = {
   baseUrl() {
@@ -57,6 +58,20 @@ const MRTApi = {
   },
   deleteProductImage(productId, imageId) {
     return this.request('/admin/products/' + encodeURIComponent(productId) + '/images/' + encodeURIComponent(imageId), { method: 'DELETE' });
+  },
+  async predictProductHsn(itemName, topK = 3) {
+    const base = String(window.MRT_ML_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+    const response = await fetch(base + '/predict-category', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ itemName, topK })
+    });
+    if (!response.ok) {
+      let message = 'ML prediction failed (' + response.status + ')';
+      try { const body = await response.json(); message = body.detail || body.message || message; } catch (_) {}
+      throw new Error(message);
+    }
+    return response.json();
   },
   setPrimaryProductImage(productId, imageId) {
     return this.request('/admin/products/' + encodeURIComponent(productId) + '/images/' + encodeURIComponent(imageId) + '/primary', { method: 'PATCH' });
