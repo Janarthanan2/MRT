@@ -1,0 +1,10 @@
+{
+  "description": "Explore a premium e-commerce platform for authentic Indian brass products and collectibles, offering a seamless shopping experience with rich heritage.",
+  "robots": {
+    "index": false
+  },
+  "accessibility": {
+    "addBypassLinks": false,
+    "ignoreReducedMotion": false
+  }
+}
