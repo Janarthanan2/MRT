@@ -192,6 +192,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [editCategory, setEditCategory] = useState<Category | null>(null)
   const [categoryForm, setCategoryForm] = useState({ name: '', imageUrl: '', description: '', active: true })
   const [productSearch, setProductSearch] = useState('')
+  const [productCategoryFilter, setProductCategoryFilter] = useState('')
   const [showProductForm, setShowProductForm] = useState(false)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
@@ -239,8 +240,11 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   }
 
   const filteredProducts = useMemo(() =>
-    products.filter(p => p.name.toLowerCase().includes(productSearch.toLowerCase()) || p.sku.toLowerCase().includes(productSearch.toLowerCase())),
-    [products, productSearch]
+    products.filter(p =>
+      (!productCategoryFilter || p.category === productCategoryFilter) &&
+      (p.name.toLowerCase().includes(productSearch.toLowerCase()) || p.sku.toLowerCase().includes(productSearch.toLowerCase()))
+    ),
+    [products, productSearch, productCategoryFilter]
   )
 
   const filteredOrders = useMemo(() =>
@@ -342,10 +346,18 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     load(adminApi.dashboard, setDashboardSummary)
     load(adminApi.categories, (rows: any[]) => setCategories(rows.map((c: any) => ({ id: Number(c.id), name: c.name || '', image_url: c.image_url || '', description: c.description || '', active: c.active !== false, status: c.status || '', product_count: Number(c.product_count || 0) }))))
     load(adminApi.products, (rows: any[]) => setProducts(rows.map((p: any) => ({
-      id: Number(p.id), name: p.name || '', category: p.category || '', price: Number(p.price || 0),
-      stock: Number(p.stock || 0), status: (p.status || 'Active') as Product['status'],
-      material: p.material || '', weight: p.weight || '', dimensions: p.dimensions || '',
-      sku: p.sku || '', antique: Boolean(p.antique), customizable: Boolean(p.customizable),
+      id: Number(p.id ?? p.product_id ?? 0),
+      name: String(p.name ?? p.product_name ?? p.productName ?? ''),
+      category: String(p.category ?? p.category_name ?? p.categoryName ?? p.category?.name ?? ''),
+      price: Number(p.price ?? p.sale_price ?? p.selling_price ?? p.unit_price ?? 0),
+      stock: Number(p.stock ?? p.stock_quantity ?? p.quantity ?? p.available_stock ?? 0),
+      status: String(p.status ?? (p.active === false || p.is_active === false ? 'Inactive' : 'Active')) as Product['status'],
+      material: String(p.material ?? ''),
+      weight: String(p.weight ?? ''),
+      dimensions: String(p.dimensions ?? ''),
+      sku: String(p.sku ?? p.product_sku ?? ''),
+      antique: Boolean(p.antique ?? p.is_antique),
+      customizable: Boolean(p.customizable ?? p.is_customizable ?? p.isCustomizable),
     }))))
     load(adminApi.orders, (rows: any[]) => setOrders(rows.map((o: any) => ({
       id: o.order_number || String(o.id), customer: o.customer || '', date: o.created_at || '',
@@ -354,9 +366,14 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       status: (o.status || 'Processing') as Order['status'], city: o.city || '',
     }))))
     load(adminApi.customers, (rows: any[]) => setCustomers(rows.map((c: any) => ({
-      id: Number(c.id), name: c.name || '', email: c.email || '', phone: c.phone || '',
-      orders: Number(c.orders || c.order_count || 0), totalSpent: Number(c.total_spent || c.totalSpent || 0),
-      joined: c.joined || c.created_at || '', status: (c.status || 'Active') as Customer['status'],
+      id: Number(c.id ?? c.user_id ?? 0),
+      name: String(c.name ?? c.full_name ?? [c.first_name ?? c.firstName, c.last_name ?? c.lastName].filter(Boolean).join(' ') ?? ''),
+      email: String(c.email ?? c.email_address ?? ''),
+      phone: String(c.phone ?? c.phone_number ?? ''),
+      orders: Number(c.orders ?? c.order_count ?? c.total_orders ?? 0),
+      totalSpent: Number(c.total_spent ?? c.totalSpent ?? c.total_spend ?? c.spend ?? 0),
+      joined: String(c.joined ?? c.created_at ?? c.createdAt ?? ''),
+      status: String(c.status ?? (c.active === false || c.is_active === false || c.account_locked ? 'Inactive' : 'Active')) as Customer['status'],
     }))))
     load(adminApi.customOrders, (rows: any[]) => setRequests(rows.map((r: any) => ({
       id: String(r.id || r.request_number || ''), name: r.name || r.customer_name || '',
@@ -368,7 +385,15 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     load(adminApi.reviews, setReviews)
     load(adminApi.offers, setOffers)
     load(adminApi.notifications, setNotifications)
-    load(adminApi.users, setAdminUsers)
+    load(adminApi.users, (rows: any[]) => setAdminUsers(rows.map((u: any) => ({
+      ...u,
+      id: Number(u.id ?? u.user_id ?? 0),
+      name: String(u.name ?? u.full_name ?? [u.first_name ?? u.firstName, u.last_name ?? u.lastName].filter(Boolean).join(' ') ?? u.email ?? ''),
+      email: String(u.email ?? u.email_address ?? ''),
+      role: String(u.role ?? u.user_role ?? 'Unknown').replaceAll('_', ' '),
+      lastLogin: String(u.last_login ?? u.lastLogin ?? u.last_login_at ?? '—'),
+      status: String(u.status ?? (u.active === false || u.is_active === false || u.account_locked ? 'Inactive' : 'Active')),
+    }))))
     load(adminApi.activityLog, setActivityLog)
     load(adminApi.revenue, (rows: any[]) => setRevenueData(rows.map((r: any) => ({
       month: r.report_date ? new Date(r.report_date).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }) : '',
@@ -646,9 +671,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
       <div className="flex items-center gap-3 mb-4">
         <input type="text" placeholder="Search products or SKU…" value={productSearch} onChange={e => setProductSearch(e.target.value)} className="border border-stone-200 rounded-lg px-4 py-2 text-sm outline-none focus:border-amber-600 flex-1 max-w-xs" />
-        <select className="border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600">
-          <option>All Categories</option>
-          {['Brass Statues & Idols','Brass Lamps & Diyas','Brass Pooja Items','Brass Home Décor','Antique-Style Collectibles'].map(c => <option key={c}>{c}</option>)}
+        <select value={productCategoryFilter} onChange={e => setProductCategoryFilter(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600">
+          <option value="">All Categories</option>
+          {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
         </select>
         <select className="border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600">
           <option>All Status</option>
