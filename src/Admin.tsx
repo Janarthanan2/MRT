@@ -46,6 +46,30 @@ interface CustomRequest {
 const BRASS = '#8B6318'
 const GOLD = '#C4991E'
 
+const STORE_SETTING_FIELDS = [
+  { key: 'store_name', label: 'Store Name', section: 'Store Information', type: 'text' },
+  { key: 'gst_number', label: 'GST Number', section: 'Store Information', type: 'text' },
+  { key: 'contact_email', label: 'Contact Email', section: 'Store Information', type: 'email' },
+  { key: 'contact_phone', label: 'Contact Phone', section: 'Store Information', type: 'tel' },
+  { key: 'free_shipping_threshold', label: 'Free Shipping Threshold (₹)', section: 'Shipping Settings', type: 'number' },
+  { key: 'standard_shipping_rate', label: 'Standard Shipping Rate (₹)', section: 'Shipping Settings', type: 'number' },
+  { key: 'express_shipping_rate', label: 'Express Shipping Rate (₹)', section: 'Shipping Settings', type: 'number' },
+  { key: 'estimated_delivery_days', label: 'Estimated Delivery Days', section: 'Shipping Settings', type: 'text' },
+] as const
+
+function normalizeSettings(raw: any): Record<string, string> {
+  const source = raw?.settings ?? raw
+  if (Array.isArray(source)) {
+    return Object.fromEntries(source
+      .map((entry: any) => [String(entry.key ?? entry.setting_key ?? ''), String(entry.value ?? entry.setting_value ?? '')])
+      .filter(([key]) => Boolean(key)))
+  }
+  if (source && typeof source === 'object') {
+    return Object.fromEntries(Object.entries(source).map(([key, value]) => [key, value == null ? '' : String(value)]))
+  }
+  return {}
+}
+
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, string> = {
     'Active': 'bg-green-100 text-green-800',
@@ -426,6 +450,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [notifications, setNotifications] = useState<any[]>([])
   const [adminUsers, setAdminUsers] = useState<any[]>([])
   const [activityLog, setActivityLog] = useState<any[]>([])
+  const [storeSettings, setStoreSettings] = useState<Record<string, string>>({})
+  const [settingsSaving, setSettingsSaving] = useState(false)
+  const [settingsMessage, setSettingsMessage] = useState('')
   const [revenueData, setRevenueData] = useState<any[]>([])
   const [dailyOrders, setDailyOrders] = useState<any[]>([])
   const [bestSellers, setBestSellers] = useState<any[]>([])
@@ -433,6 +460,20 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [selectedReq, setSelectedReq] = useState<CustomRequest | null>(null)
   const [showQuoteForm, setShowQuoteForm] = useState(false)
   const [quoteForm, setQuoteForm] = useState({ amount: '', validity: '30', notes: '', deliveryDays: '45' })
+
+  const saveSettings = async () => {
+    setSettingsSaving(true)
+    setSettingsMessage('')
+    const payload = Object.fromEntries(STORE_SETTING_FIELDS.map(field => [field.key, storeSettings[field.key] ?? '']))
+    try {
+      await adminApi.updateSettings(payload)
+      setSettingsMessage('Settings saved successfully.')
+    } catch (error) {
+      setSettingsMessage(error instanceof Error ? error.message : 'Could not save settings.')
+    } finally {
+      setSettingsSaving(false)
+    }
+  }
 
   const handleLogin = async () => {
     try {
@@ -577,6 +618,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     load(adminApi.notifications, setNotifications)
     load(adminApi.users, setAdminUsers)
     load(adminApi.activityLog, setActivityLog)
+    load(adminApi.settings, (raw: any) => setStoreSettings(normalizeSettings(raw)))
     load(adminApi.revenue, setRevenueData)
     load(adminApi.analyticsOrders, setDailyOrders)
     load(adminApi.analyticsProducts, setBestSellers)
@@ -1552,52 +1594,51 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   // ── Page: Settings ────────────────────────────────────────────────────────
 
   const SettingsPage = () => (
-    <div>
+    <div className="space-y-6">
       <SectionHeader title="Settings" />
       <div className="grid md:grid-cols-2 gap-5">
-        {[
-          { title: 'Store Information', fields: [{ label: 'Store Name', value: 'MRT Metal Mart' }, { label: 'GST Number', value: '27AAFCM1234A1Z5' }, { label: 'Contact Email', value: 'orders@mrtmetalmart.in' }, { label: 'Contact Phone', value: '+91 98765 43210' }] },
-          { title: 'Shipping Settings', fields: [{ label: 'Free Shipping Threshold (₹)', value: '2000' }, { label: 'Standard Shipping Rate (₹)', value: '120' }, { label: 'Express Shipping Rate (₹)', value: '299' }, { label: 'Estimated Delivery Days', value: '5-7' }] },
-        ].map(section => (
-          <div key={section.title} className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
-            <h3 className="text-sm font-semibold text-stone-700 mb-4">{section.title}</h3>
+        {(['Store Information', 'Shipping Settings'] as const).map(section => (
+          <section key={section} className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+            <h3 className="text-sm font-semibold text-stone-700 mb-4">{section}</h3>
             <div className="space-y-3">
-              {section.fields.map(f => (
-                <div key={f.label}>
-                  <label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1">{f.label}</label>
-                  <input type="text" defaultValue={f.value} className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600" />
+              {STORE_SETTING_FIELDS.filter(field => field.section === section).map(field => (
+                <div key={field.key}>
+                  <label htmlFor={field.key} className="block text-[10px] font-semibold uppercase tracking-widest text-stone-500 mb-1">{field.label}</label>
+                  <input
+                    id={field.key}
+                    type={field.type}
+                    min={field.type === 'number' ? 0 : undefined}
+                    value={storeSettings[field.key] ?? ''}
+                    onChange={event => setStoreSettings(previous => ({ ...previous, [field.key]: event.target.value }))}
+                    placeholder="Not configured"
+                    className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600 focus:ring-2 focus:ring-amber-100"
+                  />
                 </div>
               ))}
             </div>
-            <button className="mt-4 px-4 py-2 text-xs font-semibold text-white rounded-lg" style={{ background: BRASS }}>Save Changes</button>
-          </div>
+          </section>
         ))}
-        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-stone-700 mb-4">Security Settings</h3>
-          <div className="space-y-3">
-            {[{ label: 'Current Password', type: 'password' }, { label: 'New Password', type: 'password' }, { label: 'Confirm New Password', type: 'password' }].map(f => (
-              <div key={f.label}>
-                <label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-400 mb-1">{f.label}</label>
-                <input type={f.type} placeholder="••••••••" className="w-full border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600" />
-              </div>
-            ))}
+        <section className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
+          <h3 className="text-sm font-semibold text-stone-700 mb-2">Configuration status</h3>
+          <p className="text-xs text-stone-500 leading-relaxed">
+            These values are loaded from the admin settings API. Blank fields mean the backend has not supplied a value; no sample business details are substituted.
+          </p>
+          <div className="mt-4 rounded-lg bg-stone-50 border border-stone-100 p-3">
+            <p className="text-xs text-stone-600">{Object.values(storeSettings).filter(value => value.trim()).length} configured values</p>
           </div>
-          <button className="mt-4 px-4 py-2 text-xs font-semibold text-white rounded-lg" style={{ background: BRASS }}>Update Password</button>
-        </div>
-        <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
-          <h3 className="text-sm font-semibold text-stone-700 mb-4">Notifications</h3>
-          {[['New order received','Email & SMS'],['Low stock alert','Email'],['Custom order request','Email & SMS'],['Payment failures','Email & SMS'],['New review posted','Email']].map(([event, channel]) => (
-            <div key={event} className="flex items-center justify-between py-2.5 border-b border-stone-100 last:border-0">
-              <div>
-                <p className="text-xs font-medium text-stone-700">{event}</p>
-                <p className="text-[10px] text-stone-400">{channel}</p>
-              </div>
-              <div className="w-10 h-5 rounded-full relative cursor-pointer" style={{ background: BRASS }}>
-                <div className="absolute right-0.5 top-0.5 w-4 h-4 rounded-full bg-white shadow" />
-              </div>
-            </div>
-          ))}
-        </div>
+        </section>
+      </div>
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <p role="status" aria-live="polite" className="text-xs text-stone-600">{settingsMessage}</p>
+        <button
+          type="button"
+          onClick={saveSettings}
+          disabled={settingsSaving}
+          className="px-5 py-2.5 text-xs font-semibold text-white rounded-lg disabled:opacity-60"
+          style={{ background: BRASS }}
+        >
+          {settingsSaving ? 'Saving…' : 'Save Settings'}
+        </button>
       </div>
     </div>
   )
