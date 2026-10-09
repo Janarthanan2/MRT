@@ -231,13 +231,22 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const handleLogin = async () => {
     try {
       const result = await authApi.login(loginForm.email, loginForm.password) as any
-      const role = String(result?.user?.role ?? result?.user?.user_role ?? '').toUpperCase()
+      const user = result?.user ?? result?.data?.user ?? result?.data ?? result
+      const role = String(user?.role ?? user?.user_role ?? user?.userRole ?? '').trim().toUpperCase()
+
       if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
-        setLoggedIn(true); setLoginError('')
+        setLoggedIn(true)
+        setLoginError('')
       } else {
-        await authApi.logout(); setLoginError('Admin access required.')
+        await authApi.logout()
+        const detectedRole = role || 'unknown'
+        setLoginError(
+          `Admin access required. The signed-in account role is "${detectedRole}". Use an ADMIN account or ask an authorized administrator to grant access.`
+        )
       }
-    } catch (error) { setLoginError(error instanceof Error ? error.message : 'Invalid credentials.') }
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Invalid credentials.')
+    }
   }
 
   // Restore the authenticated admin session after a page refresh.
