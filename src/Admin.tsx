@@ -1681,22 +1681,25 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   const renderAdminPage = () => {
     switch (page) {
-      case 'dashboard':     return <DashboardPage />
-      case 'products':      return <ProductsPage />
-      case 'categories':    return <CategoriesPage />
-      case 'inventory':     return <InventoryPage />
-      case 'orders':        return <OrdersPage />
-      case 'customers':     return <CustomersPage />
-      case 'custom-orders': return <CustomOrdersPage />
+      // These page render functions are declared inside Admin and have no hooks.
+      // Calling them directly keeps their element tree stable while controlled inputs update.
+      // QuotationsPage owns hooks, so it must remain a separate React component.
+      case 'dashboard':     return DashboardPage()
+      case 'products':      return ProductsPage()
+      case 'categories':    return CategoriesPage()
+      case 'inventory':     return InventoryPage()
+      case 'orders':        return OrdersPage()
+      case 'customers':     return CustomersPage()
+      case 'custom-orders': return CustomOrdersPage()
       case 'quotations':    return <QuotationsPage />
-      case 'reviews':       return <ReviewsPage />
-      case 'offers':        return <OffersPage />
-      case 'notifications': return <NotificationsPage />
-      case 'analytics':     return <AnalyticsPage />
-      case 'admin-users':   return <AdminUsersPage />
-      case 'settings':      return <SettingsPage />
-      case 'activity-log':  return <ActivityLogPage />
-      default:              return <DashboardPage />
+      case 'reviews':       return ReviewsPage()
+      case 'offers':        return OffersPage()
+      case 'notifications': return NotificationsPage()
+      case 'analytics':     return AnalyticsPage()
+      case 'admin-users':   return AdminUsersPage()
+      case 'settings':      return SettingsPage()
+      case 'activity-log':  return ActivityLogPage()
+      default:              return DashboardPage()
     }
   }
 
