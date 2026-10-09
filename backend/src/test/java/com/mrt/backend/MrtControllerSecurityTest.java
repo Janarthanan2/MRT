@@ -38,6 +38,12 @@ class MrtControllerSecurityTest {
     }
 
     @Test
+    void rejectsEmptyBearerToken() {
+        assertEquals(401, controller.adminAuthorizationStatus("Bearer "));
+        verifyNoInteractions(db, jwtService);
+    }
+
+    @Test
     void rejectsInvalidOrExpiredJwt() {
         when(jwtService.parse("bad-token")).thenThrow(new io.jsonwebtoken.JwtException("invalid"));
         assertEquals(401, controller.adminAuthorizationStatus("Bearer bad-token"));
