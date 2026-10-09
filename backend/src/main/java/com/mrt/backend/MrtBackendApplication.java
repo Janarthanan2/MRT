@@ -3,6 +3,8 @@ package com.mrt.backend;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.*;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -28,7 +30,9 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import java.sql.Statement;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = {"com.mrt.backend", "in.mrt"})
+@EntityScan(basePackages = "in.mrt.domain.entities")
+@EnableJpaRepositories(basePackages = "in.mrt.domain.repositories")
 public class MrtBackendApplication {
  public static void main(String[] args){SpringApplication.run(MrtBackendApplication.class,args);}
  @Bean PasswordEncoder passwordEncoder(){return new BCryptPasswordEncoder();}
