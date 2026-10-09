@@ -43,3 +43,10 @@ pnpm-debug.log*
 # Lock files (keep package-lock.json or yarn.lock, not both)
 yarn.lock
 pnpm-lock.yaml
+
+# Maven build output
+backend/target/
+
+# Local H2 database files
+backend/data/*.mv.db
+backend/data/*.lock.db

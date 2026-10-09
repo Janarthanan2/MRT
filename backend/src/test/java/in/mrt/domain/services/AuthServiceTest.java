@@ -1,14 +1,17 @@
 package in.mrt.domain.services;
 
 import in.mrt.domain.entities.User;
+import in.mrt.domain.enums.UserRole;
 import in.mrt.domain.repositories.UserRepository;
 import in.mrt.security.JwtService;
+import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
 import java.util.Optional;
@@ -19,125 +22,109 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class AuthServiceTest {
+    @Mock UserRepository userRepository;
+    @Mock PasswordEncoder passwordEncoder;
+    @Mock JwtService jwtService;
+    @Mock Claims claims;
 
-    @Mock
-    private UserRepository userRepository;
-
-    @Mock
-    private PasswordEncoder passwordEncoder;
-
-    @Mock
-    private JwtService jwtService;
-
-    @InjectMocks
-    private AuthService authService;
+    @InjectMocks AuthService authService;
 
     @Test
-    void register_Success() {
-        Map<String, Object> data = Map.of(
-                "email", "test@mrt.com",
-                "password", "password123",
-                "phone", "1234567890"
-        );
-
+    void registerCreatesCustomerAndReturnsToken() {
         when(userRepository.existsByEmail("test@mrt.com")).thenReturn(false);
-        when(passwordEncoder.encode(anyString())).thenReturn("hashed_password");
-        when(userRepository.save(any(User.class))).thenAnswer(i -> {
-            User u = i.getArguments()[0];
-            return userRepository.save(u);
+        when(passwordEncoder.encode("password123")).thenReturn("hashed");
+        when(userRepository.save(any(User.class))).thenAnswer(invocation -> {
+            User user = invocation.getArgument(0);
+            user.setId(1L);
+            return user;
         });
-        when(userRepository.findById(anyLong())).thenReturn(Optional.of(User.builder().id(1L).firstName("Test").email("test@mrt.com").phone("1234567890").role(in.mrt.domain.enums.UserRole.CUSTOMER).build()));
-        when(jwtService.generate(anyLong(), anyString(), anyString())).thenReturn("mock_token");
+        when(jwtService.generate(1L, "test@mrt.com", "CUSTOMER")).thenReturn("mock_token");
 
-        Map<String, Object> result = authService.register(data);
+        Map<String, Object> response = authService.register(Map.of(
+                "name", "Test User",
+                "email", " Test@MRT.com ",
+                "password", "password123",
+                "phone", "1234567890"));
 
-        assertNotNull(result);
-        assertTrue(result.containsKey("token"));
+        assertEquals("mock_token", response.get("token"));
+        @SuppressWarnings("unchecked")
+        Map<String, Object> user = (Map<String, Object>) response.get("user");
+        assertEquals("Test User", user.get("name"));
+        assertEquals("CUSTOMER", user.get("role"));
         verify(userRepository).save(any(User.class));
     }
 
     @Test
-    void login_Success() {
-        Map<String, Object> data = Map.of(
-                "email", "test@mrt.com",
-                "password", "password123"
-        );
-
-        when(userRepository.findByEmail("test@mrt.com")).thenReturn(Optional.of(User.builder()
-                .id(1L).email("test@mrt.com").passwordHash("hashed_password").role(in.mrt.domain.enums.UserRole.CUSTOMER).build()));
-        when(passwordEncoder.matches("password123", "hashed_password")).thenReturn(true);
-        when(jwtService.generate(anyLong(), anyString(), anyString())).thenReturn("mock_token");
-
-        Map<String, Object> result = authService.login(data);
-
-        assertNotNull(result);
-        assertEquals("mock_token", result.get("token"));
+    void registerRejectsDuplicateEmail() {
+        when(userRepository.existsByEmail("test@mrt.com")).thenReturn(true);
+        assertThrows(ResponseStatusException.class, () -> authService.register(Map.of(
+                "email", "test@mrt.com", "password", "password123")));
+        verify(userRepository, never()).save(any());
     }
 
     @Test
-    void login_Admin_Success() {
-        Map<String, Object> data = Map.of(
-                "email", "admin@mrt.com",
-                "password", "admin_pass"
-        );
+    void loginReturnsTokenForValidCredentials() {
+        User existing = User.builder().id(1L).firstName("Test").email("test@mrt.com")
+                .passwordHash("hashed").role(UserRole.CUSTOMER).accountLocked(false).build();
+        when(userRepository.findByEmail("test@mrt.com")).thenReturn(Optional.of(existing));
+        when(passwordEncoder.matches("password123", "hashed")).thenReturn(true);
+        when(userRepository.save(existing)).thenReturn(existing);
+        when(jwtService.generate(1L, "test@mrt.com", "CUSTOMER")).thenReturn("mock_token");
 
-        when(userRepository.findByEmail("admin@mrt.com")).thenReturn(Optional.empty());
-        when(userRepository.save(any(User.class))).thenAnswer(i -> {
-            User u = i.getArguments()[0];
-            return userRepository.save(u);
-        });
-        when(jwtService.generate(anyLong(), anyString(), anyString())).thenReturn("admin_token");
-
-        Map<String, Object> result = authService.login(data);
-
-        assertNotNull(result);
-        assertEquals("admin_token", result.get("token"));
+        Map<String, Object> response = authService.login(Map.of(
+                "email", "test@mrt.com", "password", "password123"));
+        assertEquals("mock_token", response.get("token"));
     }
 
     @Test
-    void login_InvalidCredentials_ThrowsException() {
-        Map<String, Object> data = Map.of(
-                "email", "wrong@mrt.com",
-                "password", "wrong_pass"
-        );
+    void loginRejectsInvalidPassword() {
+        User existing = User.builder().id(1L).email("test@mrt.com")
+                .passwordHash("hashed").role(UserRole.CUSTOMER).build();
+        when(userRepository.findByEmail("test@mrt.com")).thenReturn(Optional.of(existing));
+        when(passwordEncoder.matches("wrong", "hashed")).thenReturn(false);
 
-        when(userRepository.findByEmail("wrong@mrt.com")).thenReturn(Optional.of(User.builder()
-                .id(1L).email("wrong@mrt.com").passwordHash("hashed_password").role(in.mrt.domain.enums.UserRole.CUSTOMER).build()));
-        when(passwordEncoder.matches("wrong_pass", "hashed_password")).thenReturn(false);
-
-        assertThrows(org.springframework.web.server.ResponseStatusException.class, () -> authService.login(data));
+        assertThrows(ResponseStatusException.class, () -> authService.login(Map.of(
+                "email", "test@mrt.com", "password", "wrong")));
     }
 
     @Test
-    void getCurrentUser_Success() {
-        String authHeader = "Bearer mock_token";
-        when(jwtService.parse("mock_token")).thenReturn(Map.of("subject", "1"));
-        when(userRepository.findById(1L)).thenReturn(Optional.of(User.builder()
-                .id(1L).firstName("Test").email("test@mrt.com").phone("1234567890").role(in.mrt.domain.enums.UserRole.CUSTOMER).build()));
+    void loginRejectsLockedAccount() {
+        User existing = User.builder().id(1L).email("test@mrt.com")
+                .passwordHash("hashed").role(UserRole.CUSTOMER).accountLocked(true).build();
+        when(userRepository.findByEmail("test@mrt.com")).thenReturn(Optional.of(existing));
 
-        Map<String, Object> result = authService.getCurrentUser(authHeader);
-
-        assertNotNull(result);
-        assertEquals("Test", result.get("name"));
+        assertThrows(ResponseStatusException.class, () -> authService.login(Map.of(
+                "email", "test@mrt.com", "password", "password123")));
+        verify(passwordEncoder, never()).matches(anyString(), anyString());
     }
 
     @Test
-    void logout_Success() {
-        Map<String, Object> result = authService.logout();
-        assertEquals(true, result.get("success"));
+    void getCurrentUserReadsSubjectFromVerifiedToken() {
+        User existing = User.builder().id(1L).firstName("Test").email("test@mrt.com")
+                .role(UserRole.CUSTOMER).build();
+        when(jwtService.parse("mock_token")).thenReturn(claims);
+        when(claims.getSubject()).thenReturn("1");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(existing));
+
+        Map<String, Object> response = authService.getCurrentUser("Bearer mock_token");
+        assertEquals("Test", response.get("name"));
     }
 
     @Test
-    void forgotPassword_Success() {
-        Map<String, Object> data = Map.of("email", "test@mrt.com");
-        Map<String, Object> result = authService.forgotPassword(data);
-        assertEquals(true, result.get("success"));
+    void logoutReturnsSuccess() {
+        assertEquals(true, authService.logout().get("success"));
     }
 
     @Test
-    void resetPassword_Success() {
-        Map<String, Object> data = Map.of("email", "test@mrt.com");
-        Map<String, Object> result = authService.resetPassword(data);
-        assertEquals(true, result.get("success"));
+    void forgotPasswordDoesNotRevealAccountExistence() {
+        assertEquals(true, authService.forgotPassword(Map.of("email", "test@mrt.com")).get("success"));
+        verifyNoInteractions(userRepository);
+    }
+
+    @Test
+    void resetPasswordCannotChangePasswordWithoutTokenSupport() {
+        assertThrows(ResponseStatusException.class,
+                () -> authService.resetPassword(Map.of("email", "test@mrt.com", "password", "newpassword123")));
+        verifyNoInteractions(userRepository);
     }
 }
