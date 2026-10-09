@@ -385,17 +385,20 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
     load(adminApi.dashboard, setDashboardSummary)
     load(adminApi.categories, (rows: any[]) => setCategories(rows.map((c: any) => ({ id: Number(c.id), name: c.name || '', image_url: c.image_url || '', description: c.description || '', active: c.active !== false, status: c.status || '', product_count: Number(c.product_count || 0) }))))
-    load(adminApi.products, (rows: any[]) => setProducts(rows.map((p: any) => ({
-      id: Number(p.id ?? p.product_id ?? 0),
-      name: String(p.name ?? p.product_name ?? p.productName ?? ''),
-      category: String(p.category ?? p.category_name ?? p.categoryName ?? p.category?.name ?? ''),
-      price: Number(p.price ?? p.sale_price ?? p.selling_price ?? p.unit_price ?? 0),
-      stock: Number(p.stock ?? p.stock_quantity ?? p.quantity ?? p.available_stock ?? 0),
+    load(adminApi.products, (rows: any[]) => setProducts((Array.isArray(rows) ? rows : []).map((p: any) => ({
+      id: Number(p.id ?? p.product_id ?? p.productId ?? 0),
+      name: String(p.name ?? p.product_name ?? p.productName ?? p.title ?? ''),
+      category: String(
+        (typeof p.category === 'object' ? p.category?.name : p.category) ??
+        p.category_name ?? p.categoryName ?? p.category_id ?? ''
+      ),
+      price: Number(p.price ?? p.sale_price ?? p.salePrice ?? p.selling_price ?? p.sellingPrice ?? p.unit_price ?? p.unitPrice ?? p.original_price ?? p.originalPrice ?? 0),
+      stock: Number(p.stock ?? p.stock_quantity ?? p.stockQuantity ?? p.quantity ?? p.available_stock ?? p.availableStock ?? p.inventory_quantity ?? 0),
       status: String(p.status ?? (p.active === false || p.is_active === false ? 'Inactive' : 'Active')) as Product['status'],
       material: String(p.material ?? ''),
       weight: String(p.weight ?? ''),
       dimensions: String(p.dimensions ?? ''),
-      sku: String(p.sku ?? p.product_sku ?? ''),
+      sku: String(p.sku ?? p.product_sku ?? p.productSku ?? p.sku_code ?? p.skuCode ?? ''),
       antique: Boolean(p.antique ?? p.is_antique),
       customizable: Boolean(p.customizable ?? p.is_customizable ?? p.isCustomizable),
     }))))
