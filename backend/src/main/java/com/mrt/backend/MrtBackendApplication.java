@@ -87,8 +87,7 @@ class MrtController {
     rows=db.queryForList("select role,account_locked from users where id=?",userId);
     if(rows.isEmpty())return 401;
     Object value=rows.get(0).get("account_locked");
-    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)))
-      || !"ACTIVE".equalsIgnoreCase(String.valueOf(rows.get(0).get("status")));
+    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)));
    } catch(org.springframework.jdbc.BadSqlGrammarException schemaMismatch) {
     // Older production migrations use a status enum instead of account_locked.
     rows=db.queryForList("select role,status from users where id=?",userId);
