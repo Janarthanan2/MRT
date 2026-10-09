@@ -1,0 +1,23 @@
+CREATE TABLE users (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    public_id CHAR(36) NOT NULL,
+    email VARCHAR(254) NOT NULL,
+    phone VARCHAR(20),
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100),
+    password_hash VARCHAR(255),
+    role ENUM('CUSTOMER','STAFF','ADMIN','SUPER_ADMIN') NOT NULL DEFAULT 'CUSTOMER',
+    status ENUM('PENDING','ACTIVE','SUSPENDED','DELETED') NOT NULL DEFAULT 'PENDING',
+    email_verified_at DATETIME(6),
+    phone_verified_at DATETIME(6),
+    last_login_at DATETIME(6),
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    deleted_at DATETIME(6),
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_users_public_id (public_id),
+    UNIQUE KEY uk_users_email (email),
+    UNIQUE KEY uk_users_phone (phone),
+    INDEX idx_users_status (status),
+    INDEX idx_users_created_at (created_at)
+) ENGINE=InnoDB;

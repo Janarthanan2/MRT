@@ -1,0 +1,27 @@
+CREATE TABLE orders (
+    id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    public_id CHAR(36) NOT NULL,
+    order_number VARCHAR(40) NOT NULL,
+    user_id BIGINT UNSIGNED NOT NULL,
+    status ENUM('PENDING_PAYMENT','CONFIRMED','PROCESSING','SHIPPED','DELIVERED','CANCELLED','RETURNED') NOT NULL DEFAULT 'PENDING_PAYMENT',
+    currency CHAR(3) NOT NULL DEFAULT 'INR',
+    subtotal DECIMAL(15,2) NOT NULL,
+    discount_total DECIMAL(15,2) NOT NULL DEFAULT 0,
+    tax_total DECIMAL(15,2) NOT NULL DEFAULT 0,
+    shipping_total DECIMAL(15,2) NOT NULL DEFAULT 0,
+    grand_total DECIMAL(15,2) NOT NULL,
+    shipping_name VARCHAR(200) NOT NULL,
+    shipping_phone VARCHAR(20) NOT NULL,
+    shipping_address TEXT NOT NULL,
+    placed_at DATETIME(6),
+    created_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6),
+    updated_at DATETIME(6) NOT NULL DEFAULT CURRENT_TIMESTAMP(6) ON UPDATE CURRENT_TIMESTAMP(6),
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_orders_public_id (public_id),
+    UNIQUE KEY uk_orders_number (order_number),
+    INDEX idx_orders_user (user_id),
+    INDEX idx_orders_status (status),
+    INDEX idx_orders_created (created_at),
+    CONSTRAINT fk_orders_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+) ENGINE=InnoDB;
