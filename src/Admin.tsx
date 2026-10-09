@@ -174,9 +174,217 @@ const NAV = [
 
 // ─── Admin Component ──────────────────────────────────────────────────────────
 
+function QuotationsPage({ onError }: { onError: (message: string) => void }) {
+    const [quotationSearch, setQuotationSearch] = useState('')
+    const [quotationStatus, setQuotationStatus] = useState('')
+    const [showQuotationForm, setShowQuotationForm] = useState(false)
+    const [editQuotation, setEditQuotation] = useState<any | null>(null)
+    const [quotationForm, setQuotationForm] = useState({
+      customOrderId: '', userId: '', amount: '', notes: '', status: 'Draft',
+    })
+    const [quotationData, setQuotationData] = useState<any[]>([])
+
+    useEffect(() => {
+      let active = true
+      adminApi.quotations().then((rows: any[]) => {
+        if (active) setQuotationData(Array.isArray(rows) ? rows : [])
+      }).catch(() => {})
+      return () => { active = false }
+    }, [])
+
+    const filteredQuotations = quotationData.filter((q: any) => {
+      const term = quotationSearch.toLowerCase()
+      const matchesSearch = !term ||
+        String(q.id || '').includes(term) ||
+        String(q.custom_order_id || '').includes(term) ||
+        String(q.user_id || '').includes(term) ||
+        String(q.notes || '').toLowerCase().includes(term)
+      const matchesStatus = !quotationStatus || String(q.status || '') === quotationStatus
+      return matchesSearch && matchesStatus
+    })
+
+    const openCreateQuotation = () => {
+      setEditQuotation(null)
+      setQuotationForm({ customOrderId: '', userId: '', amount: '', notes: '', status: 'Draft' })
+      setShowQuotationForm(true)
+    }
+
+    const openEditQuotation = (q: any) => {
+      setEditQuotation(q)
+      setQuotationForm({
+        customOrderId: q.custom_order_id == null ? '' : String(q.custom_order_id),
+        userId: q.user_id == null ? '' : String(q.user_id),
+        amount: q.amount == null ? '' : String(q.amount),
+        notes: q.notes || '',
+        status: q.status || 'Draft',
+      })
+      setShowQuotationForm(true)
+    }
+
+    const saveQuotation = async () => {
+      try {
+        const payload = {
+          customOrderId: quotationForm.customOrderId ? Number(quotationForm.customOrderId) : null,
+          userId: quotationForm.userId ? Number(quotationForm.userId) : null,
+          amount: quotationForm.amount ? Number(quotationForm.amount) : null,
+          notes: quotationForm.notes,
+          status: quotationForm.status,
+        }
+        const saved = editQuotation
+          ? await adminApi.updateQuotation(editQuotation.id, payload)
+          : await adminApi.createQuotation(payload)
+        const rows = Array.isArray(saved) ? saved : null
+        if (rows) setQuotationData(rows)
+        else setQuotationData(await adminApi.quotations())
+        setShowQuotationForm(false)
+        setEditQuotation(null)
+      } catch (error) {
+        onError(error instanceof Error ? error.message : 'Could not save quotation.')
+      }
+    }
+
+    const changeQuotationStatus = async (id: number, status: string) => {
+      try {
+        const updated = await adminApi.quotationStatus(id, status)
+        if (updated && typeof updated === 'object' && 'id' in updated) {
+          setQuotationData(prev => prev.map(q => q.id === id ? { ...q, ...updated } : q))
+        } else {
+          setQuotationData(await adminApi.quotations())
+        }
+      } catch (error) {
+        onError(error instanceof Error ? error.message : 'Could not update quotation status.')
+      }
+    }
+
+    return (
+      <div>
+        <SectionHeader title="Quotations" action="New Quotation" onAction={openCreateQuotation} />
+        <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-4 mb-4">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <input
+              value={quotationSearch}
+              onChange={e => setQuotationSearch(e.target.value)}
+              placeholder="Search quotations..."
+              className="flex-1 px-3 py-2 text-xs border border-stone-200 rounded-lg outline-none focus:border-stone-400"
+            />
+            <select
+              value={quotationStatus}
+              onChange={e => setQuotationStatus(e.target.value)}
+              className="px-3 py-2 text-xs border border-stone-200 rounded-lg bg-white outline-none"
+            >
+              <option value="">All statuses</option>
+              <option value="Draft">Draft</option>
+              <option value="Sent">Sent</option>
+              <option value="Accepted">Accepted</option>
+              <option value="Rejected">Rejected</option>
+              <option value="Expired">Expired</option>
+            </select>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
+          {filteredQuotations.length === 0 ? (
+            <div className="p-16 text-center">
+              <div className="text-3xl mb-3">◈</div>
+              <p className="text-sm font-semibold text-stone-700">No quotations found</p>
+              <p className="text-xs text-stone-400 mt-1">Create a quotation or wait for quotation data from the API.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <TableHeader cols={['ID', 'Custom Order', 'Customer', 'Amount', 'Status', 'Created', 'Actions']} />
+                <tbody>
+                  {filteredQuotations.map((q: any) => (
+                    <tr key={q.id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50">
+                      <td className="py-3 px-3 first:pl-5 text-xs font-semibold text-stone-700">#{q.id}</td>
+                      <td className="py-3 px-3 text-xs text-stone-600">{q.custom_order_id ?? '—'}</td>
+                      <td className="py-3 px-3 text-xs text-stone-600">{q.user_id ?? '—'}</td>
+                      <td className="py-3 px-3 text-xs font-semibold text-stone-800">
+                        {q.amount == null ? '—' : '₹' + Number(q.amount).toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-3 px-3"><StatusBadge status={q.status || 'Draft'} /></td>
+                      <td className="py-3 px-3 text-xs text-stone-500">
+                        {q.created_at ? new Date(q.created_at).toLocaleDateString('en-IN') : '—'}
+                      </td>
+                      <td className="py-3 px-3 last:pr-5">
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => openEditQuotation(q)} className="text-[11px] font-semibold text-stone-600 hover:text-stone-900">Edit</button>
+                          <select
+                            value={q.status || 'Draft'}
+                            onChange={e => changeQuotationStatus(Number(q.id), e.target.value)}
+                            className="text-[10px] border border-stone-200 rounded px-1.5 py-1 bg-white"
+                            aria-label={'Change status for quotation ' + q.id}
+                          >
+                            <option value="Draft">Draft</option>
+                            <option value="Sent">Sent</option>
+                            <option value="Accepted">Accepted</option>
+                            <option value="Rejected">Rejected</option>
+                            <option value="Expired">Expired</option>
+                          </select>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {showQuotationForm && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="absolute inset-0 bg-stone-900/50" onClick={() => setShowQuotationForm(false)} />
+            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="font-bold text-stone-800">{editQuotation ? 'Edit Quotation' : 'New Quotation'}</h3>
+                <button onClick={() => setShowQuotationForm(false)} className="text-stone-400 hover:text-stone-700 text-lg">×</button>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <label className="text-xs font-medium text-stone-600">
+                  Custom Order ID
+                  <input value={quotationForm.customOrderId} onChange={e => setQuotationForm(v => ({ ...v, customOrderId: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg" />
+                </label>
+                <label className="text-xs font-medium text-stone-600">
+                  User ID
+                  <input value={quotationForm.userId} onChange={e => setQuotationForm(v => ({ ...v, userId: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg" />
+                </label>
+                <label className="text-xs font-medium text-stone-600">
+                  Amount
+                  <input type="number" min="0" step="0.01" value={quotationForm.amount} onChange={e => setQuotationForm(v => ({ ...v, amount: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg" />
+                </label>
+                <label className="text-xs font-medium text-stone-600">
+                  Status
+                  <select value={quotationForm.status} onChange={e => setQuotationForm(v => ({ ...v, status: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg bg-white">
+                    <option value="Draft">Draft</option>
+                    <option value="Sent">Sent</option>
+                    <option value="Accepted">Accepted</option>
+                    <option value="Rejected">Rejected</option>
+                    <option value="Expired">Expired</option>
+                  </select>
+                </label>
+                <label className="text-xs font-medium text-stone-600 sm:col-span-2">
+                  Notes
+                  <textarea value={quotationForm.notes} onChange={e => setQuotationForm(v => ({ ...v, notes: e.target.value }))} rows={4} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg resize-none" />
+                </label>
+              </div>
+              <div className="flex justify-end gap-3 mt-6">
+                <button onClick={() => setShowQuotationForm(false)} className="px-4 py-2 text-xs font-semibold text-stone-600 border border-stone-200 rounded-lg">Cancel</button>
+                <button onClick={saveQuotation} className="px-4 py-2 text-xs font-semibold text-white rounded-lg" style={{ background: BRASS }}>
+                  {editQuotation ? 'Save Changes' : 'Create Quotation'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+
 export default function Admin({ onBack }: { onBack: () => void }) {
   const [loggedIn, setLoggedIn] = useState(false)
   const [loginForm, setLoginForm] = useState({ email: '', password: '', remember: false })
+  const [adminName, setAdminName] = useState('Administrator')
   const [loginError, setLoginError] = useState('')
   const [forgotPw, setForgotPw] = useState(false)
   const [forgotEmail, setForgotEmail] = useState('')
@@ -229,7 +437,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const handleLogin = async () => {
     try {
       const result = await authApi.login(loginForm.email, loginForm.password) as any
-      if (result?.user?.role === 'SUPER_ADMIN' || result?.user?.role === 'ADMIN' || loginForm.email === 'admin@mrtmetalmart.in') {
+      if (result?.user?.role === 'SUPER_ADMIN' || result?.user?.role === 'ADMIN' || result?.user?.role === 'Super Admin') {
+        setAdminName(String(result?.user?.name || result?.user?.fullName || loginForm.email.split('@')[0] || 'Administrator'))
         setLoggedIn(true); setLoginError('')
       } else {
         await authApi.logout(); setLoginError('Admin access required.')
@@ -376,6 +585,27 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   const unreadCount = notifications.filter(n => !n.read).length
 
+  // Dashboard metrics are derived from the records loaded from the backend.
+  const now = new Date()
+  const parseDate = (value: string) => {
+    const parsed = value ? new Date(value) : null
+    return parsed && !Number.isNaN(parsed.getTime()) ? parsed : null
+  }
+  const currentMonthOrders = orders.filter(order => {
+    const date = parseDate(order.date)
+    return date !== null && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+  })
+  const currentMonthRevenue = currentMonthOrders.reduce((sum, order) => sum + Number(order.total || 0), 0)
+  const totalOrderRevenue = orders.reduce((sum, order) => sum + Number(order.total || 0), 0)
+  const newCustomersThisMonth = customers.filter(customer => {
+    const date = parseDate(customer.joined)
+    return date !== null && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear()
+  }).length
+  const lowStockProducts = products.filter(product => product.stock <= 5)
+  const pendingOrdersCount = orders.filter(order => ['Processing', 'Pending'].includes(order.status)).length
+  const returnedOrdersCount = orders.filter(order => order.status === 'Returned').length
+  const formatCurrency = (value: number) => `₹${Math.round(Number.isFinite(value) ? value : 0).toLocaleString('en-IN')}`
+
   // ── Login Screen ─────────────────────────────────────────────────────────
 
   if (!loggedIn) {
@@ -511,19 +741,19 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-stone-800">Dashboard</h1>
-        <p className="text-xs text-stone-500 mt-0.5">Welcome back, Suresh. Here's your business at a glance.</p>
+        <p className="text-xs text-stone-500 mt-0.5">Welcome back, {adminName.split(/\s+/)[0]}. Here's your business at a glance.</p>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon="₹" label="Total Revenue" value="₹21.4L" sub="This fiscal year" trend="+12.4%" color="brass" />
-        <StatCard icon="📦" label="Total Orders" value="1,247" sub="Last 30 days: 211" trend="+8.2%" color="green" />
-        <StatCard icon="👥" label="Customers" value="892" sub="68 new this month" trend="+9.1%" color="blue" />
-        <StatCard icon="🏺" label="Products Listed" value="128" sub="10 categories" color="purple" />
-        <StatCard icon="⚠️" label="Low Stock Items" value="6" sub="Need reorder" color="amber" />
-        <StatCard icon="⏳" label="Pending Orders" value="23" sub="Awaiting processing" color="amber" />
-        <StatCard icon="✉️" label="Custom Requests" value="5" sub="Needs attention" trend="+2 new" color="red" />
-        <StatCard icon="↩️" label="Return Requests" value="3" sub="Awaiting review" color="red" />
+        <StatCard icon="₹" label="Order Revenue" value={formatCurrency(totalOrderRevenue)} sub="Across loaded orders" color="brass" />
+        <StatCard icon="📦" label="Total Orders" value={String(orders.length)} sub={`${currentMonthOrders.length} this month`} color="green" />
+        <StatCard icon="👥" label="Customers" value={String(customers.length)} sub={`${newCustomersThisMonth} joined this month`} color="blue" />
+        <StatCard icon="🏺" label="Products Listed" value={String(products.length)} sub={`${categories.length} categories`} color="purple" />
+        <StatCard icon="⚠️" label="Low Stock Items" value={String(lowStockProducts.length)} sub="5 or fewer units remaining" color="amber" />
+        <StatCard icon="⏳" label="Pending Orders" value={String(pendingOrdersCount)} sub="Awaiting processing" color="amber" />
+        <StatCard icon="✉️" label="New Custom Requests" value={String(requests.filter(request => request.status === 'New').length)} sub="Needs attention" color="red" />
+        <StatCard icon="↩️" label="Returned Orders" value={String(returnedOrdersCount)} sub="Marked as returned" color="red" />
       </div>
 
       {/* Charts row */}
@@ -531,7 +761,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <div className="md:col-span-2 bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <h3 className="font-semibold text-stone-700 text-sm">Revenue & Orders — Last 6 Months</h3>
-            <span className="text-[10px] text-stone-400">Apr–Sep 2025</span>
+            <span className="text-[10px] text-stone-400">{revenueData.length ? `${revenueData.length} reporting periods` : 'No revenue history available'}</span>
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={revenueData}>
@@ -555,7 +785,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
               <Pie data={categoryData} dataKey="value" cx="50%" cy="50%" outerRadius={65} innerRadius={35}>
-                {categoryData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                {categoryData.map((entry, i) => <Cell key={String(entry.id ?? entry.name ?? i)} fill={entry.color || BRASS} />)}
               </Pie>
               <Tooltip formatter={(v: unknown) => [`${v}%`, "Share"]} />
             </PieChart>
@@ -1058,16 +1288,16 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
       {/* KPI row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon="₹" label="Monthly Revenue" value="₹4.21L" trend="+8.4%" color="brass" />
-        <StatCard icon="📦" label="Orders This Month" value="211" trend="+11.2%" color="green" />
-        <StatCard icon="🛒" label="Avg. Order Value" value="₹1,995" trend="+2.1%" color="blue" />
-        <StatCard icon="↩️" label="Return Rate" value="2.4%" trend="-0.3%" color="amber" />
+        <StatCard icon="₹" label="Revenue This Month" value={formatCurrency(currentMonthRevenue)} sub="From loaded orders" color="brass" />
+        <StatCard icon="📦" label="Orders This Month" value={String(currentMonthOrders.length)} color="green" />
+        <StatCard icon="🛒" label="Avg. Order Value" value={formatCurrency(currentMonthOrders.length ? currentMonthRevenue / currentMonthOrders.length : 0)} color="blue" />
+        <StatCard icon="↩️" label="Return Rate" value={`${orders.length ? (returnedOrdersCount / orders.length * 100).toFixed(1) : '0.0'}%`} sub="Of loaded orders" color="amber" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-5">
         {/* Revenue trend */}
         <div className="bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
-          <h3 className="font-semibold text-stone-700 text-sm mb-5">Revenue Trend — 6 Months</h3>
+          <h3 className="font-semibold text-stone-700 text-sm mb-5">Revenue Trend</h3>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={revenueData}>
               <defs>
@@ -1112,7 +1342,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-semibold text-stone-700">{p.sold} sold</span>
-                    <p className="text-[10px] text-stone-400">₹{p.revenue.toLocaleString()}</p>
+                    <p className="text-[10px] text-stone-400">₹{Number(p.revenue ?? p.total_revenue ?? 0).toLocaleString('en-IN')}</p>
                   </div>
                 </div>
                 <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
@@ -1129,7 +1359,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
               <Pie data={categoryData} dataKey="value" cx="50%" cy="50%" outerRadius={70} innerRadius={30} paddingAngle={2}>
-                {categoryData.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+                {categoryData.map((entry, i) => <Cell key={String(entry.id ?? entry.name ?? i)} fill={entry.color || BRASS} />)}
               </Pie>
               <Tooltip formatter={(v: unknown) => [`${v}%`, "Share"]} />
               <Legend formatter={(value) => <span style={{ fontSize: 11, color: '#78716c' }}>{value}</span>} />
@@ -1146,7 +1376,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
             <TableHeader cols={['Product', 'Stock', 'Units Sold', 'Turnover Rate', 'Status']} />
             <tbody>
               {products.slice(0, 6).map(p => {
-                const sold = Math.floor(Math.random() * 200 + 50)
+                const salesRecord = bestSellers.find((item: any) => Number(item.product_id ?? item.productId ?? item.id) === p.id || String(item.name ?? item.product_name ?? '').toLowerCase() === p.name.toLowerCase())
+                const sold = Number(salesRecord?.sold ?? salesRecord?.units_sold ?? 0)
                 const turnover = ((sold / (p.stock + sold)) * 100).toFixed(1)
                 return (
                   <tr key={p.id} className="border-b border-stone-100">
@@ -1270,9 +1501,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
               <tr key={u.id} className="border-b border-stone-100 hover:bg-amber-50/30">
                 <td className="py-3 px-3 pl-5">
                   <div className="flex items-center gap-2">
-                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: u.id === 1 ? BRASS : '#78716c' }}>{(u.name || u.email || 'A')[0]}</div>
+                    <div className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-bold" style={{ background: String(u.email || '').toLowerCase() === loginForm.email.trim().toLowerCase() ? BRASS : '#78716c' }}>{(u.name || u.email || 'A')[0]}</div>
                     <span className="text-sm font-medium text-stone-700">{u.name}</span>
-                    {u.id === 1 && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-semibold">YOU</span>}
+                    {String(u.email || '').toLowerCase() === loginForm.email.trim().toLowerCase() && <span className="text-[9px] bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded font-semibold">YOU</span>}
                   </div>
                 </td>
                 <td className="py-3 px-3 text-xs text-stone-500">{u.email}</td>
@@ -1284,7 +1515,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                 <td className="py-3 px-3 text-xs text-stone-500">{u.lastLogin}</td>
                 <td className="py-3 px-3"><StatusBadge status={u.status} /></td>
                 <td className="py-3 px-3 pr-5">
-                  {u.id !== 1 && (
+                  {String(u.email || '').toLowerCase() !== loginForm.email.trim().toLowerCase() && (
                     <div className="flex gap-2">
                       <button className="text-xs hover:underline" style={{ color: BRASS }}>Edit</button>
                       <button className="text-xs text-red-600 hover:underline">Remove</button>
@@ -1377,9 +1608,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     <div>
       <SectionHeader title="Inventory Management" action="Update Stock" />
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <StatCard icon="📦" label="Total SKUs" value="128" color="brass" />
-        <StatCard icon="⚠️" label="Low Stock" value="6" sub="Below 10 units" color="amber" />
-        <StatCard icon="🚫" label="Out of Stock" value="2" color="red" />
+        <StatCard icon="📦" label="Total SKUs" value={String(products.length)} color="brass" />
+        <StatCard icon="⚠️" label="Low Stock" value={String(products.filter(product => product.stock > 0 && product.stock <= 10).length)} sub="1–10 units remaining" color="amber" />
+        <StatCard icon="🚫" label="Out of Stock" value={String(products.filter(product => product.stock === 0).length)} color="red" />
       </div>
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
         <table className="w-full">
@@ -1399,7 +1630,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   <td className="py-2.5 px-3">
                     <span className={`text-[10px] font-semibold ${stockColor}`}>{stockStatus}</span>
                   </td>
-                  <td className="py-2.5 px-3 text-[10px] text-stone-400">Sep 24, 2025</td>
+                  <td className="py-2.5 px-3 text-[10px] text-stone-400">—</td>
                   <td className="py-2.5 px-3 pr-5">
                     <button className="text-xs font-medium hover:underline" style={{ color: BRASS }}>Update</button>
                   </td>
@@ -1436,212 +1667,6 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   // ── Simple placeholder for remaining pages ─────────────────────────────────
 
 
-  const QuotationsPage = () => {
-    const [quotationSearch, setQuotationSearch] = useState('')
-    const [quotationStatus, setQuotationStatus] = useState('')
-    const [showQuotationForm, setShowQuotationForm] = useState(false)
-    const [editQuotation, setEditQuotation] = useState<any | null>(null)
-    const [quotationForm, setQuotationForm] = useState({
-      customOrderId: '', userId: '', amount: '', notes: '', status: 'Draft',
-    })
-    const [quotationData, setQuotationData] = useState<any[]>([])
-
-    useEffect(() => {
-      let active = true
-      adminApi.quotations().then((rows: any[]) => {
-        if (active) setQuotationData(Array.isArray(rows) ? rows : [])
-      }).catch(() => {})
-      return () => { active = false }
-    }, [])
-
-    const filteredQuotations = quotationData.filter((q: any) => {
-      const term = quotationSearch.toLowerCase()
-      const matchesSearch = !term ||
-        String(q.id || '').includes(term) ||
-        String(q.custom_order_id || '').includes(term) ||
-        String(q.user_id || '').includes(term) ||
-        String(q.notes || '').toLowerCase().includes(term)
-      const matchesStatus = !quotationStatus || String(q.status || '') === quotationStatus
-      return matchesSearch && matchesStatus
-    })
-
-    const openCreateQuotation = () => {
-      setEditQuotation(null)
-      setQuotationForm({ customOrderId: '', userId: '', amount: '', notes: '', status: 'Draft' })
-      setShowQuotationForm(true)
-    }
-
-    const openEditQuotation = (q: any) => {
-      setEditQuotation(q)
-      setQuotationForm({
-        customOrderId: q.custom_order_id == null ? '' : String(q.custom_order_id),
-        userId: q.user_id == null ? '' : String(q.user_id),
-        amount: q.amount == null ? '' : String(q.amount),
-        notes: q.notes || '',
-        status: q.status || 'Draft',
-      })
-      setShowQuotationForm(true)
-    }
-
-    const saveQuotation = async () => {
-      try {
-        const payload = {
-          customOrderId: quotationForm.customOrderId ? Number(quotationForm.customOrderId) : null,
-          userId: quotationForm.userId ? Number(quotationForm.userId) : null,
-          amount: quotationForm.amount ? Number(quotationForm.amount) : null,
-          notes: quotationForm.notes,
-          status: quotationForm.status,
-        }
-        const saved = editQuotation
-          ? await adminApi.updateQuotation(editQuotation.id, payload)
-          : await adminApi.createQuotation(payload)
-        const rows = Array.isArray(saved) ? saved : null
-        if (rows) setQuotationData(rows)
-        else setQuotationData(await adminApi.quotations())
-        setShowQuotationForm(false)
-        setEditQuotation(null)
-      } catch (error) {
-        setLoginError(error instanceof Error ? error.message : 'Could not save quotation.')
-      }
-    }
-
-    const changeQuotationStatus = async (id: number, status: string) => {
-      try {
-        const updated = await adminApi.quotationStatus(id, status)
-        if (updated && typeof updated === 'object' && 'id' in updated) {
-          setQuotationData(prev => prev.map(q => q.id === id ? { ...q, ...updated } : q))
-        } else {
-          setQuotationData(await adminApi.quotations())
-        }
-      } catch (error) {
-        setLoginError(error instanceof Error ? error.message : 'Could not update quotation status.')
-      }
-    }
-
-    return (
-      <div>
-        <SectionHeader title="Quotations" action="New Quotation" onAction={openCreateQuotation} />
-        <div className="bg-white rounded-xl border border-stone-200 shadow-sm p-4 mb-4">
-          <div className="flex flex-col sm:flex-row gap-3">
-            <input
-              value={quotationSearch}
-              onChange={e => setQuotationSearch(e.target.value)}
-              placeholder="Search quotations..."
-              className="flex-1 px-3 py-2 text-xs border border-stone-200 rounded-lg outline-none focus:border-stone-400"
-            />
-            <select
-              value={quotationStatus}
-              onChange={e => setQuotationStatus(e.target.value)}
-              className="px-3 py-2 text-xs border border-stone-200 rounded-lg bg-white outline-none"
-            >
-              <option value="">All statuses</option>
-              <option value="Draft">Draft</option>
-              <option value="Sent">Sent</option>
-              <option value="Accepted">Accepted</option>
-              <option value="Rejected">Rejected</option>
-              <option value="Expired">Expired</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
-          {filteredQuotations.length === 0 ? (
-            <div className="p-16 text-center">
-              <div className="text-3xl mb-3">◈</div>
-              <p className="text-sm font-semibold text-stone-700">No quotations found</p>
-              <p className="text-xs text-stone-400 mt-1">Create a quotation or wait for quotation data from the API.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <TableHeader cols={['ID', 'Custom Order', 'Customer', 'Amount', 'Status', 'Created', 'Actions']} />
-                <tbody>
-                  {filteredQuotations.map((q: any) => (
-                    <tr key={q.id} className="border-b border-stone-100 last:border-0 hover:bg-stone-50">
-                      <td className="py-3 px-3 first:pl-5 text-xs font-semibold text-stone-700">#{q.id}</td>
-                      <td className="py-3 px-3 text-xs text-stone-600">{q.custom_order_id ?? '—'}</td>
-                      <td className="py-3 px-3 text-xs text-stone-600">{q.user_id ?? '—'}</td>
-                      <td className="py-3 px-3 text-xs font-semibold text-stone-800">
-                        {q.amount == null ? '—' : '₹' + Number(q.amount).toLocaleString('en-IN')}
-                      </td>
-                      <td className="py-3 px-3"><StatusBadge status={q.status || 'Draft'} /></td>
-                      <td className="py-3 px-3 text-xs text-stone-500">
-                        {q.created_at ? new Date(q.created_at).toLocaleDateString('en-IN') : '—'}
-                      </td>
-                      <td className="py-3 px-3 last:pr-5">
-                        <div className="flex items-center gap-2">
-                          <button onClick={() => openEditQuotation(q)} className="text-[11px] font-semibold text-stone-600 hover:text-stone-900">Edit</button>
-                          <select
-                            value={q.status || 'Draft'}
-                            onChange={e => changeQuotationStatus(Number(q.id), e.target.value)}
-                            className="text-[10px] border border-stone-200 rounded px-1.5 py-1 bg-white"
-                            aria-label={'Change status for quotation ' + q.id}
-                          >
-                            <option value="Draft">Draft</option>
-                            <option value="Sent">Sent</option>
-                            <option value="Accepted">Accepted</option>
-                            <option value="Rejected">Rejected</option>
-                            <option value="Expired">Expired</option>
-                          </select>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-
-        {showQuotationForm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <div className="absolute inset-0 bg-stone-900/50" onClick={() => setShowQuotationForm(false)} />
-            <div className="relative bg-white rounded-xl shadow-2xl w-full max-w-lg p-6">
-              <div className="flex items-center justify-between mb-5">
-                <h3 className="font-bold text-stone-800">{editQuotation ? 'Edit Quotation' : 'New Quotation'}</h3>
-                <button onClick={() => setShowQuotationForm(false)} className="text-stone-400 hover:text-stone-700 text-lg">×</button>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <label className="text-xs font-medium text-stone-600">
-                  Custom Order ID
-                  <input value={quotationForm.customOrderId} onChange={e => setQuotationForm(v => ({ ...v, customOrderId: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg" />
-                </label>
-                <label className="text-xs font-medium text-stone-600">
-                  User ID
-                  <input value={quotationForm.userId} onChange={e => setQuotationForm(v => ({ ...v, userId: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg" />
-                </label>
-                <label className="text-xs font-medium text-stone-600">
-                  Amount
-                  <input type="number" min="0" step="0.01" value={quotationForm.amount} onChange={e => setQuotationForm(v => ({ ...v, amount: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg" />
-                </label>
-                <label className="text-xs font-medium text-stone-600">
-                  Status
-                  <select value={quotationForm.status} onChange={e => setQuotationForm(v => ({ ...v, status: e.target.value }))} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg bg-white">
-                    <option value="Draft">Draft</option>
-                    <option value="Sent">Sent</option>
-                    <option value="Accepted">Accepted</option>
-                    <option value="Rejected">Rejected</option>
-                    <option value="Expired">Expired</option>
-                  </select>
-                </label>
-                <label className="text-xs font-medium text-stone-600 sm:col-span-2">
-                  Notes
-                  <textarea value={quotationForm.notes} onChange={e => setQuotationForm(v => ({ ...v, notes: e.target.value }))} rows={4} className="mt-1 w-full px-3 py-2 text-xs border border-stone-200 rounded-lg resize-none" />
-                </label>
-              </div>
-              <div className="flex justify-end gap-3 mt-6">
-                <button onClick={() => setShowQuotationForm(false)} className="px-4 py-2 text-xs font-semibold text-stone-600 border border-stone-200 rounded-lg">Cancel</button>
-                <button onClick={saveQuotation} className="px-4 py-2 text-xs font-semibold text-white rounded-lg" style={{ background: BRASS }}>
-                  {editQuotation ? 'Save Changes' : 'Create Quotation'}
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-    )
-  }
-
   const PlaceholderPage = ({ title }: { title: string }) => (
     <div>
       <SectionHeader title={title} />
@@ -1660,7 +1685,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       case 'orders':       return OrdersPage()
       case 'customers':    return CustomersPage()
       case 'custom-orders':return CustomOrdersPage()
-      case 'quotations':   return QuotationsPage()
+      case 'quotations':   return <QuotationsPage onError={setLoginError} />
       case 'reviews':      return ReviewsPage()
       case 'offers':       return OffersPage()
       case 'notifications':return NotificationsPage()
@@ -1744,9 +1769,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           </button>
           {sidebarOpen && (
             <div className="mt-2 flex items-center gap-2 px-2">
-              <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ background: BRASS }}>S</div>
+              <div className="w-6 h-6 rounded-full flex items-center justify-center text-white text-[10px] font-bold" style={{ background: BRASS }}>{adminName.trim().charAt(0).toUpperCase() || 'A'}</div>
               <div>
-                <p className="text-[11px] text-stone-300 font-medium leading-none">Suresh Kumar</p>
+                <p className="text-[11px] text-stone-300 font-medium leading-none">{adminName}</p>
                 <p className="text-[9px] text-stone-500 mt-0.5">Super Admin</p>
               </div>
             </div>
