@@ -12,7 +12,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 @EnabledIfEnvironmentVariable(named = "MYSQL_IT_URL", matches = ".+")
-// This context smoke test runs only in the dedicated disposable-MySQL workflow job.\nclass MySqlApplicationContextIntegrationTest {
+// This context smoke test runs only in the dedicated disposable-MySQL workflow job.
+class MySqlApplicationContextIntegrationTest {
     @DynamicPropertySource
     static void mysqlProperties(DynamicPropertyRegistry properties) {
         properties.add("spring.datasource.url", () -> System.getenv("MYSQL_IT_URL"));
