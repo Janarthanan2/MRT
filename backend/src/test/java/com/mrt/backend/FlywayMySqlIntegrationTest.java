@@ -11,6 +11,7 @@ import java.sql.Statement;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 class FlywayMySqlIntegrationTest {
     @Test
@@ -18,6 +19,7 @@ class FlywayMySqlIntegrationTest {
         String url = System.getenv("MYSQL_IT_URL");
         String username = System.getenv("MYSQL_IT_USERNAME");
         String password = System.getenv("MYSQL_IT_PASSWORD");
+        assumeTrue(url != null && !url.isBlank(), "Run only in the disposable MySQL integration job");
         assertNotNull(url, "MYSQL_IT_URL must point only to a disposable MySQL database");
         assertNotNull(username, "MYSQL_IT_USERNAME is required");
         assertNotNull(password, "MYSQL_IT_PASSWORD is required");
