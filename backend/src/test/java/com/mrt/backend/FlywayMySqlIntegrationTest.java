@@ -33,7 +33,7 @@ class FlywayMySqlIntegrationTest {
                 "Migrations V1-V23 must validate before applying compatibility migration");
 
         long originalId;
-        String publicId = "it-user-0000-0000-0000-000000000001";
+        String publicId = "00000000-0000-4000-8000-000000000001";
         try (Connection connection = DriverManager.getConnection(url, username, password);
              PreparedStatement insert = connection.prepareStatement(
                      "INSERT INTO users(public_id,email,first_name,last_name,password_hash,role,status,email_verified_at) " +
