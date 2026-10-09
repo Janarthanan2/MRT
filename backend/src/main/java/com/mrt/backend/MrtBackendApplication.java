@@ -12,6 +12,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.HandlerInterceptor;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.cors.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,7 +36,8 @@ public class MrtBackendApplication {
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:4173"})
 @RequestMapping("/api")
 class MrtController {
- private final JdbcTemplate db; private final PasswordEncoder enc; private final Map<String,Long> tokens=new ConcurrentHashMap<>(); private final String adminEmail,adminPassword;
+ static final Map<String,Long> tokens=new ConcurrentHashMap<>();
+ private final JdbcTemplate db; private final PasswordEncoder enc; private final String adminEmail,adminPassword;
  MrtController(JdbcTemplate db,PasswordEncoder enc,@Value("${mrt.admin-email}")String ae,@Value("${mrt.admin-password}")String ap){this.db=db;this.enc=enc;adminEmail=ae;adminPassword=ap;}
  Map<String,Object> ok(Object d){return Map.of("success",true,"data",d);} Map<String,Object> fail(String m){return Map.of("success",false,"message",m);}
  long insertId(String sql,Object... args){KeyHolder kh=new GeneratedKeyHolder();db.update(conn->{var ps=conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);for(int i=0;i<args.length;i++)ps.setObject(i+1,args[i]);return ps;},kh);Map<String,Object> keys=kh.getKeys();Object key=keys==null?null:(keys.get("ID")!=null?keys.get("ID"):keys.get("id"));return key==null?0:((Number)key).longValue();} long id(Map<String,Object>b,String k){return Long.parseLong(String.valueOf(b.get(k)));}
@@ -129,4 +135,25 @@ class MrtController {
  @PostMapping("/admin/quotations") Map<String,Object> adminQuotationCreate(@RequestBody Map<String,Object>b){db.update("insert into quotations(custom_order_id,user_id,amount,notes,status) values(?,?,?,?,?)",b.get("customOrderId"),b.get("userId"),b.get("amount"),b.get("notes"),b.getOrDefault("status","Draft"));return quotes();}
  @PutMapping("/admin/quotations/{id}") Map<String,Object> adminQuotationUpdate(@PathVariable long id,@RequestBody Map<String,Object>b){db.update("update quotations set amount=?,notes=?,status=? where id=?",b.get("amount"),b.get("notes"),b.getOrDefault("status","Draft"),id);return adminQuotation(id);}
  @PatchMapping("/admin/quotations/{id}/status") Map<String,Object> adminQuotationStatus(@PathVariable long id,@RequestBody Map<String,Object>b){db.update("update quotations set status=? where id=?",b.get("status"),id);return adminQuotation(id);}
+}
+
+
+/** Enforces server-side authorization for every admin API route. */
+@Configuration
+class AdminApiAuthorizationConfig implements WebMvcConfigurer {
+ private final JdbcTemplate db;
+ AdminApiAuthorizationConfig(JdbcTemplate db){this.db=db;}
+ @Override public void addInterceptors(InterceptorRegistry registry){registry.addInterceptor(new HandlerInterceptor(){
+  @Override public boolean preHandle(HttpServletRequest request,HttpServletResponse response,Object handler)throws Exception{
+   if(!request.getRequestURI().startsWith(request.getContextPath()+"/api/admin/")) return true;
+   String header=request.getHeader("Authorization");
+   String token=header!=null&&header.startsWith("Bearer ")?header.substring(7).trim():"";
+   Long userId=MrtController.tokens.get(token);
+   if(userId==null){response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);response.setContentType("application/json");response.getWriter().write("{\\"success\\":false,\\"message\\":\\"Authentication required\\"}");return false;}
+   List<Map<String,Object>> rows=db.queryForList("select role from users where id=?",userId);
+   String role=rows.isEmpty()||rows.get(0).get("role")==null?"":String.valueOf(rows.get(0).get("role")).trim().toUpperCase(Locale.ROOT);
+   if(!role.equals("ADMIN")&&!role.equals("SUPER_ADMIN")){response.setStatus(HttpServletResponse.SC_FORBIDDEN);response.setContentType("application/json");response.getWriter().write("{\\"success\\":false,\\"message\\":\\"Admin role required\\"}");return false;}
+   return true;
+  }
+ });}
 }
