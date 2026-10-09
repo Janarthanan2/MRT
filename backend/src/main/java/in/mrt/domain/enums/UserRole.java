@@ -3,5 +3,6 @@ package in.mrt.domain.enums;
 public enum UserRole {
     CUSTOMER,
     STAFF,
-    ADMIN
+    ADMIN,
+    SUPER_ADMIN
 }
