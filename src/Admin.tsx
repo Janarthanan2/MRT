@@ -340,40 +340,81 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const saveProduct = async () => {
     try {
       const payload = {
-        name: productForm.name,
+        name: productForm.name.trim(),
         category: productForm.category,
-        price: +productForm.price,
-        stock: +productForm.stock,
+        price: Number(productForm.price),
+        stock: Number(productForm.stock),
         status: productForm.status,
         material: productForm.material,
         weight: productForm.weight,
         dimensions: productForm.dimensions,
-        sku: productForm.sku,
+        sku: productForm.sku.trim(),
         description: productForm.description,
         featured: false,
       }
-      const saved = editProduct
-        ? await adminApi.updateProduct(editProduct.id, payload)
-        : await adminApi.createProduct(payload)
-      const p: Product = {
-        id: Number(saved?.id || editProduct?.id || Date.now()),
-        name: saved?.name || payload.name,
-        category: saved?.category || payload.category || 'Uncategorized',
-        price: Number(saved?.price || payload.price),
-        stock: Number(saved?.stock || payload.stock),
-        status: (saved?.status || payload.status || 'Active') as Product['status'],
-        material: saved?.material || payload.material,
-        weight: saved?.weight || payload.weight,
-        dimensions: saved?.dimensions || payload.dimensions,
-        sku: saved?.sku || payload.sku,
-        antique: productForm.antique,
-        customizable: productForm.customizable,
-      }
-      setProducts(prev => editProduct ? prev.map(x => x.id === p.id ? p : x) : [p, ...prev])
+
+      if (!payload.name) throw new Error('Product name is required.')
+      if (!Number.isFinite(payload.price) || payload.price < 0) throw new Error('Enter a valid product price.')
+      if (!Number.isInteger(payload.stock) || payload.stock < 0) throw new Error('Stock must be a non-negative whole number.')
+
+      if (editProduct) await adminApi.updateProduct(editProduct.id, payload)
+      else await adminApi.createProduct(payload)
+
+      // Reload the server's persisted records instead of manufacturing a local row.
+      const rows = await adminApi.products()
+      setProducts((Array.isArray(rows) ? rows : []).map((p: any) => ({
+        id: Number(p.id ?? p.product_id ?? p.productId ?? 0),
+        name: String(p.name ?? p.product_name ?? p.productName ?? p.title ?? ''),
+        category: String((typeof p.category === 'object' ? p.category?.name : p.category) ?? p.category_name ?? p.categoryName ?? p.category_id ?? ''),
+        price: Number(p.price ?? p.sale_price ?? p.salePrice ?? p.selling_price ?? p.sellingPrice ?? p.unit_price ?? p.unitPrice ?? p.original_price ?? p.originalPrice ?? 0),
+        stock: Number(p.stock ?? p.stock_quantity ?? p.stockQuantity ?? p.quantity ?? p.available_stock ?? p.availableStock ?? p.inventory_quantity ?? 0),
+        status: (() => { const value = String(p.status ?? (p.active === false || p.is_active === false ? 'Inactive' : 'Active')).toUpperCase(); return (value === 'ACTIVE' ? 'Active' : value === 'DRAFT' ? 'Draft' : 'Inactive') as Product['status'] })(),
+        material: String(p.material ?? ''),
+        weight: String(p.weight ?? ''),
+        dimensions: String(p.dimensions ?? ''),
+        sku: String(p.sku ?? p.product_sku ?? p.productSku ?? p.sku_code ?? p.skuCode ?? ''),
+        antique: Boolean(p.antique ?? p.is_antique),
+        customizable: Boolean(p.customizable ?? p.is_customizable ?? p.isCustomizable),
+      })))
       setShowProductForm(false)
       setEditProduct(null)
+      setLoginError('')
     } catch (error) {
       setLoginError(error instanceof Error ? error.message : 'Could not save product.')
+    }
+  }
+
+  const toggleProductStatus = async (product: Product) => {
+    try {
+      const nextStatus = product.status === 'Active' ? 'Inactive' : 'Active'
+      await adminApi.productStatus(product.id, nextStatus.toUpperCase())
+      const rows = await adminApi.products()
+      setProducts((Array.isArray(rows) ? rows : []).map((p: any) => ({
+        id: Number(p.id ?? p.product_id ?? p.productId ?? 0),
+        name: String(p.name ?? p.product_name ?? p.productName ?? p.title ?? ''),
+        category: String((typeof p.category === 'object' ? p.category?.name : p.category) ?? p.category_name ?? p.categoryName ?? p.category_id ?? ''),
+        price: Number(p.price ?? p.sale_price ?? p.salePrice ?? p.selling_price ?? p.sellingPrice ?? p.unit_price ?? p.unitPrice ?? p.original_price ?? p.originalPrice ?? 0),
+        stock: Number(p.stock ?? p.stock_quantity ?? p.stockQuantity ?? p.quantity ?? p.available_stock ?? p.availableStock ?? p.inventory_quantity ?? 0),
+        status: (() => { const value = String(p.status ?? 'Active').toUpperCase(); return (value === 'ACTIVE' ? 'Active' : value === 'DRAFT' ? 'Draft' : 'Inactive') as Product['status'] })(),
+        material: String(p.material ?? ''), weight: String(p.weight ?? ''), dimensions: String(p.dimensions ?? ''),
+        sku: String(p.sku ?? p.product_sku ?? p.productSku ?? p.sku_code ?? p.skuCode ?? ''),
+        antique: Boolean(p.antique ?? p.is_antique), customizable: Boolean(p.customizable ?? p.is_customizable ?? p.isCustomizable),
+      })))
+      setLoginError('')
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Could not update product status.')
+    }
+  }
+
+  const deleteProduct = async (id: number) => {
+    try {
+      await adminApi.deleteProduct(id)
+      setProducts(prev => prev.filter(product => product.id !== id))
+      setConfirmDelete(null)
+      setLoginError('')
+    } catch (error) {
+      setLoginError(error instanceof Error ? error.message : 'Could not delete product.')
+      setConfirmDelete(null)
     }
   }
 
@@ -394,7 +435,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       ),
       price: Number(p.price ?? p.sale_price ?? p.salePrice ?? p.selling_price ?? p.sellingPrice ?? p.unit_price ?? p.unitPrice ?? p.original_price ?? p.originalPrice ?? 0),
       stock: Number(p.stock ?? p.stock_quantity ?? p.stockQuantity ?? p.quantity ?? p.available_stock ?? p.availableStock ?? p.inventory_quantity ?? 0),
-      status: String(p.status ?? (p.active === false || p.is_active === false ? 'Inactive' : 'Active')) as Product['status'],
+      status: (() => { const value = String(p.status ?? (p.active === false || p.is_active === false ? 'Inactive' : 'Active')).toUpperCase(); return (value === 'ACTIVE' ? 'Active' : value === 'DRAFT' ? 'Draft' : 'Inactive') as Product['status'] })(),
       material: String(p.material ?? ''),
       weight: String(p.weight ?? ''),
       dimensions: String(p.dimensions ?? ''),
@@ -747,7 +788,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                 <td className="py-3 px-3 pr-5">
                   <div className="flex items-center gap-2">
                     <button onClick={() => openEditProduct(p)} className="text-xs font-medium hover:underline" style={{ color: BRASS }}>Edit</button>
-                    <button onClick={() => setProducts(prev => prev.map(x => x.id === p.id ? { ...x, status: x.status === 'Active' ? 'Inactive' : 'Active' } : x))} className="text-xs text-stone-500 hover:text-stone-700">
+                    <button onClick={() => void toggleProductStatus(p)} className="text-xs text-stone-500 hover:text-stone-700">
                       {p.status === 'Active' ? 'Deactivate' : 'Activate'}
                     </button>
                     <button onClick={() => setConfirmDelete(p.id)} className="text-xs text-red-600 hover:text-red-800">Delete</button>
@@ -832,7 +873,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <ConfirmDialog
           title="Delete Product"
           message="This will permanently remove the product and all associated data. This action cannot be undone."
-          onConfirm={() => { setProducts(prev => prev.filter(p => p.id !== confirmDelete)); setConfirmDelete(null) }}
+          onConfirm={() => void deleteProduct(confirmDelete)}
           onCancel={() => setConfirmDelete(null)}
         />
       )}
