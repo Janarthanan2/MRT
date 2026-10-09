@@ -62,3 +62,9 @@ jobs:
           MYSQL_IT_USERNAME: mrt_it
           MYSQL_IT_PASSWORD: mrt_it_password
         run: mvn -B -Dtest=FlywayMySqlIntegrationTest test
+      - name: Validate Spring and Hibernate against migrated MySQL schema
+        env:
+          MYSQL_IT_URL: jdbc:mysql://127.0.0.1:3306/mrt_it?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+          MYSQL_IT_USERNAME: mrt_it
+          MYSQL_IT_PASSWORD: mrt_it_password
+        run: mvn -B -Dtest=MySqlApplicationContextIntegrationTest test
