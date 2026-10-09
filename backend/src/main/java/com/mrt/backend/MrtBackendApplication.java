@@ -152,10 +152,10 @@ class AdminApiAuthorizationConfig implements WebMvcConfigurer {
    String header=request.getHeader("Authorization");
    String token=header!=null&&header.startsWith("Bearer ")?header.substring(7).trim():"";
    Long userId=MrtController.tokens.get(token);
-   if(userId==null){response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);response.setContentType("application/json");response.getWriter().write("{\\"success\\":false,\\"message\\":\\"Authentication required\\"}");return false;}
+   if(userId==null){response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);response.setContentType("application/json");response.getWriter().write("{\"success\":false,\"message\":\"Authentication required\"}");return false;}
    List<Map<String,Object>> rows=db.queryForList("select role from users where id=?",userId);
    String role=rows.isEmpty()||rows.get(0).get("role")==null?"":String.valueOf(rows.get(0).get("role")).trim().toUpperCase(Locale.ROOT);
-   if(!role.equals("ADMIN")&&!role.equals("SUPER_ADMIN")){response.setStatus(HttpServletResponse.SC_FORBIDDEN);response.setContentType("application/json");response.getWriter().write("{\\"success\\":false,\\"message\\":\\"Admin role required\\"}");return false;}
+   if(!role.equals("ADMIN")&&!role.equals("SUPER_ADMIN")){response.setStatus(HttpServletResponse.SC_FORBIDDEN);response.setContentType("application/json");response.getWriter().write("{\"success\":false,\"message\":\"Admin role required\"}");return false;}
    return true;
   }
  });}
