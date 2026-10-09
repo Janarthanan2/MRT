@@ -193,6 +193,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [categoryForm, setCategoryForm] = useState({ name: '', imageUrl: '', description: '', active: true })
   const [productSearch, setProductSearch] = useState('')
   const [productCategoryFilter, setProductCategoryFilter] = useState('')
+  const [productStatusFilter, setProductStatusFilter] = useState('')
   const [showProductForm, setShowProductForm] = useState(false)
   const [editProduct, setEditProduct] = useState<Product | null>(null)
   const [confirmDelete, setConfirmDelete] = useState<number | null>(null)
@@ -282,9 +283,10 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const filteredProducts = useMemo(() =>
     products.filter(p =>
       (!productCategoryFilter || p.category === productCategoryFilter) &&
+      (!productStatusFilter || p.status === productStatusFilter) &&
       (p.name.toLowerCase().includes(productSearch.toLowerCase()) || p.sku.toLowerCase().includes(productSearch.toLowerCase()))
     ),
-    [products, productSearch, productCategoryFilter]
+    [products, productSearch, productCategoryFilter, productStatusFilter]
   )
 
   const filteredOrders = useMemo(() =>
@@ -759,9 +761,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           <option value="">All Categories</option>
           {categories.map(c => <option key={c.id} value={c.name}>{c.name}</option>)}
         </select>
-        <select className="border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600">
-          <option>All Status</option>
-          <option>Active</option><option>Inactive</option><option>Draft</option>
+        <select value={productStatusFilter} onChange={e => setProductStatusFilter(e.target.value)} className="border border-stone-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-amber-600">
+          <option value="">All Status</option>
+          <option value="Active">Active</option><option value="Inactive">Inactive</option><option value="Draft">Draft</option>
         </select>
       </div>
 
