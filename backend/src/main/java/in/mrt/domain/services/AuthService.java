@@ -176,8 +176,8 @@ public class AuthService {
         result.put("email", user.getEmail());
         result.put("phone", user.getPhone());
         result.put("role", user.getRole() == null ? UserRole.CUSTOMER.name() : user.getRole().name());
-        result.put("status", user.isAccountLocked() || !"ACTIVE".equalsIgnoreCase(user.getStatus())
-                ? (user.getStatus() == null ? "LOCKED" : user.getStatus()) : "ACTIVE");
+        result.put("status", user.isAccountLocked() ? "LOCKED"
+                : (!"ACTIVE".equalsIgnoreCase(user.getStatus()) ? user.getStatus() : "ACTIVE"));
         return result;
     }
 
