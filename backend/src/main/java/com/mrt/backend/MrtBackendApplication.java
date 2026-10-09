@@ -62,10 +62,11 @@ class MrtController {
    List<Map<String,Object>> rows;
    boolean locked;
    try {
-    rows=db.queryForList("select account_locked from users where id=?",userId);
+    rows=db.queryForList("select account_locked,status from users where id=?",userId);
     if(rows.isEmpty())return null;
     Object value=rows.get(0).get("account_locked");
-    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)));
+    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)))
+      || !"ACTIVE".equalsIgnoreCase(String.valueOf(rows.get(0).get("status")));
    } catch(org.springframework.jdbc.BadSqlGrammarException schemaMismatch) {
     rows=db.queryForList("select status from users where id=?",userId);
     if(rows.isEmpty())return null;
@@ -84,10 +85,11 @@ class MrtController {
    List<Map<String,Object>> rows;
    boolean locked;
    try {
-    rows=db.queryForList("select role,account_locked from users where id=?",userId);
+    rows=db.queryForList("select role,account_locked,status from users where id=?",userId);
     if(rows.isEmpty())return 401;
     Object value=rows.get(0).get("account_locked");
-    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)));
+    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)))
+      || !"ACTIVE".equalsIgnoreCase(String.valueOf(rows.get(0).get("status")));
    } catch(org.springframework.jdbc.BadSqlGrammarException schemaMismatch) {
     // Older production migrations use a status enum instead of account_locked.
     rows=db.queryForList("select role,status from users where id=?",userId);
@@ -114,7 +116,7 @@ class MrtController {
  @GetMapping("/reviews/product/{id}") Map<String,Object> reviews(@PathVariable long id){return ok(db.queryForList("select r.*,u.name from reviews r join users u on u.id=r.user_id where r.product_id=? and r.status='APPROVED'",id));}
  @PostMapping("/reviews") Map<String,Object> review(@RequestHeader(value="Authorization",required=false)String h,@RequestBody Map<String,Object>b){Long u=auth(h);if(u==null)return fail("Authentication required");db.update("insert into reviews(user_id,product_id,rating,title,body) values(?,?,?,?,?)",u,b.get("productId"),b.get("rating"),b.get("title"),b.get("body"));return ok("Review submitted");}
  @GetMapping("/user/profile") Map<String,Object> profile(@RequestHeader(value="Authorization",required=false)String h){Long u=auth(h);return u==null?fail("Authentication required"):ok(db.queryForMap("select id,name,email,phone,role,status from users where id=?",u));}
- @PutMapping("/user/profile") Map<String,Object> profileUpdate(@RequestHeader(value="Authorization",required=false)String h,@RequestBody Map<String,Object>b){Long u=auth(h);if(u==null)return fail("Authentication required");db.update("update users set name=?,phone=? where id=?",b.get("name"),b.get("phone"),u);return profile(h);}
+ @PutMapping("/user/profile") Map<String,Object> profileUpdate(@RequestHeader(value="Authorization",required=false)String h,@RequestBody Map<String,Object>b){Long u=auth(h);if(u==null)return fail("Authentication required");String name=String.valueOf(b.getOrDefault("name","")).trim();String[] parts=name.isEmpty()?new String[]{"",""}:name.split("\\s+",2);db.update("update users set name=?,first_name=?,last_name=?,phone=? where id=?",name,parts[0],parts.length>1?parts[1]:null,b.get("phone"),u);return profile(h);}
 
  @GetMapping("/admin/dashboard") Map<String,Object> dashboard(){return ok(Map.of("products",count("products"),"orders",count("orders"),"customers",count("users"),"revenue",db.queryForObject("select coalesce(sum(total),0) from orders",Object.class)));}
  @GetMapping("/admin/products") Map<String,Object> adminProducts(){return ok(db.queryForList("select p.*,c.name category from products p left join categories c on c.id=p.category_id order by p.id desc"));}
@@ -159,8 +161,8 @@ class MrtController {
  @PatchMapping("/admin/offers/{id}/status") Map<String,Object> adminOfferStatus(@PathVariable long id,@RequestBody Map<String,Object>b){db.update("update offers set active=? where id=?",b.get("active"),id);return offers();}
  @PatchMapping("/admin/notifications/{id}/read") Map<String,Object> adminNotificationRead(@PathVariable long id){db.update("update notifications set read_flag=true where id=?",id);return ok("Read");}
  @PatchMapping("/admin/notifications/read-all") Map<String,Object> adminNotificationsReadAll(){db.update("update notifications set read_flag=true");return ok("All read");}
- @PostMapping("/admin/users") Map<String,Object> adminUserCreate(@RequestBody Map<String,Object>b){db.update("insert into users(name,email,password_hash,role) values(?,?,?,?)",b.get("name"),b.get("email"),enc.encode(String.valueOf(b.get("password"))),b.getOrDefault("role","MANAGER"));return admins();}
- @PutMapping("/admin/users/{id}") Map<String,Object> adminUserUpdate(@PathVariable long id,@RequestBody Map<String,Object>b){db.update("update users set name=?,email=?,role=? where id=?",b.get("name"),b.get("email"),b.get("role"),id);return admins();}
+ @PostMapping("/admin/users") Map<String,Object> adminUserCreate(@RequestBody Map<String,Object>b){String name=String.valueOf(b.getOrDefault("name","")).trim();String[] parts=name.isEmpty()?new String[]{"Admin",""}:name.split("\\s+",2);String role=String.valueOf(b.getOrDefault("role","STAFF")).toUpperCase(Locale.ROOT);if(!Set.of("CUSTOMER","STAFF","ADMIN","SUPER_ADMIN").contains(role))role="STAFF";db.update("insert into users(public_id,name,first_name,last_name,email,password_hash,role,status,email_verified,account_locked) values(?,?,?,?,?,?,?,?,?,?)",UUID.randomUUID().toString(),name,parts[0],parts.length>1?parts[1]:null,b.get("email"),enc.encode(String.valueOf(b.get("password"))),role,"ACTIVE",false,false);return admins();}
+ @PutMapping("/admin/users/{id}") Map<String,Object> adminUserUpdate(@PathVariable long id,@RequestBody Map<String,Object>b){String name=String.valueOf(b.getOrDefault("name","")).trim();String[] parts=name.isEmpty()?new String[]{"",""}:name.split("\\s+",2);String role=String.valueOf(b.getOrDefault("role","STAFF")).toUpperCase(Locale.ROOT);if(!Set.of("CUSTOMER","STAFF","ADMIN","SUPER_ADMIN").contains(role))return fail("Invalid role");db.update("update users set name=?,first_name=?,last_name=?,email=?,role=? where id=?",name,parts[0],parts.length>1?parts[1]:null,b.get("email"),role,id);return admins();}
  @DeleteMapping("/admin/users/{id}") Map<String,Object> adminUserDelete(@PathVariable long id){db.update("delete from users where id=?",id);return ok("Deleted");}
  @PatchMapping("/admin/users/{id}/status") Map<String,Object> adminUserStatus(@PathVariable long id,@RequestBody Map<String,Object>b){db.update("update users set status=? where id=?",b.get("status"),id);return admins();}
  @PutMapping("/admin/settings") Map<String,Object> adminSettingsSave(@RequestBody Map<String,Object>b){b.forEach((k,v)->db.update("merge into admin_settings(setting_key,setting_value) key(setting_key) values(?,?)",k,String.valueOf(v)));return settings();}
