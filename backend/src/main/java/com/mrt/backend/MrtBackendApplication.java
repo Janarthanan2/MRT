@@ -70,10 +70,21 @@ class MrtController {
   try{
    Claims claims=jwtService.parse(h.substring(7).trim());
    long userId=Long.parseLong(claims.getSubject());
-   List<Map<String,Object>> rows=db.queryForList("select role,account_locked from users where id=?",userId);
-   if(rows.isEmpty())return 401;
-   Object locked=rows.get(0).get("account_locked");
-   if(Boolean.TRUE.equals(locked)||(locked!=null&&"true".equalsIgnoreCase(String.valueOf(locked))))return 401;
+   List<Map<String,Object>> rows;
+   boolean locked;
+   try {
+    rows=db.queryForList("select role,account_locked from users where id=?",userId);
+    if(rows.isEmpty())return 401;
+    Object value=rows.get(0).get("account_locked");
+    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)));
+   } catch(org.springframework.jdbc.BadSqlGrammarException schemaMismatch) {
+    // Older production migrations use a status enum instead of account_locked.
+    rows=db.queryForList("select role,status from users where id=?",userId);
+    if(rows.isEmpty())return 401;
+    String accountStatus=String.valueOf(rows.get(0).get("status"));
+    locked=!"ACTIVE".equalsIgnoreCase(accountStatus);
+   }
+   if(locked)return 401;
    String role=String.valueOf(rows.get(0).get("role"));
    return "ADMIN".equalsIgnoreCase(role)||"SUPER_ADMIN".equalsIgnoreCase(role)?200:403;
   }catch(JwtException|IllegalArgumentException ex){return 401;}
