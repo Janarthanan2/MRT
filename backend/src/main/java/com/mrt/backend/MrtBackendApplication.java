@@ -55,7 +55,7 @@ class MrtController {
  private Long auth(String h){
   if(h==null||!h.startsWith("Bearer "))return null;
   String token=h.substring(7).trim();
-  if(token.isEmpty())return 401;
+  if(token.isEmpty())return null;
   try{
    Claims claims=jwtService.parse(token);
    long userId=Long.parseLong(claims.getSubject());
@@ -76,8 +76,10 @@ class MrtController {
  }
  int adminAuthorizationStatus(String h){
   if(h==null||!h.startsWith("Bearer "))return 401;
+  String token=h.substring(7).trim();
+  if(token.isEmpty())return 401;
   try{
-   Claims claims=jwtService.parse(h.substring(7).trim());
+   Claims claims=jwtService.parse(token);
    long userId=Long.parseLong(claims.getSubject());
    List<Map<String,Object>> rows;
    boolean locked;
