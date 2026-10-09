@@ -231,13 +231,44 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const handleLogin = async () => {
     try {
       const result = await authApi.login(loginForm.email, loginForm.password) as any
-      if (result?.user?.role === 'SUPER_ADMIN' || result?.user?.role === 'ADMIN' || loginForm.email === 'admin@mrtmetalmart.in') {
+      const role = String(result?.user?.role ?? result?.user?.user_role ?? '').toUpperCase()
+      if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
         setLoggedIn(true); setLoginError('')
       } else {
         await authApi.logout(); setLoginError('Admin access required.')
       }
     } catch (error) { setLoginError(error instanceof Error ? error.message : 'Invalid credentials.') }
   }
+
+  // Restore the authenticated admin session after a page refresh.
+  useEffect(() => {
+    const token = localStorage.getItem('mrt_access_token')
+    if (!token) return
+
+    let cancelled = false
+    authApi.me()
+      .then((result: any) => {
+        if (cancelled) return
+        const user = result?.user ?? result?.data?.user ?? result?.data ?? result
+        const role = String(user?.role ?? user?.user_role ?? '').toUpperCase()
+        if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
+          setLoggedIn(true)
+          setLoginError('')
+        } else {
+          localStorage.removeItem('mrt_access_token')
+          setLoggedIn(false)
+          setLoginError('Your session is not authorized for admin access. Please sign in again.')
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          localStorage.removeItem('mrt_access_token')
+          setLoggedIn(false)
+        }
+      })
+
+    return () => { cancelled = true }
+  }, [])
 
   const filteredProducts = useMemo(() =>
     products.filter(p =>
