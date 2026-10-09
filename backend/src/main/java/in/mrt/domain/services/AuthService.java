@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -65,15 +66,20 @@ public class AuthService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Last name must be 100 characters or fewer");
         }
 
+        String normalizedFirstName = firstName.trim();
+        String normalizedLastName = lastName == null || lastName.isBlank() ? null : lastName.trim();
         User user = User.builder()
-                .firstName(firstName.trim())
-                .lastName(lastName == null || lastName.isBlank() ? null : lastName.trim())
+                .publicId(UUID.randomUUID().toString())
+                .name((normalizedFirstName + (normalizedLastName == null ? "" : " " + normalizedLastName)).trim())
+                .firstName(normalizedFirstName)
+                .lastName(normalizedLastName)
                 .email(email)
                 .passwordHash(passwordEncoder.encode(password))
                 .phone(value(data, "phone"))
                 .role(UserRole.CUSTOMER)
                 .emailVerified(false)
                 .accountLocked(false)
+                .status("ACTIVE")
                 .lastLoginAt(LocalDateTime.now())
                 .build();
 
@@ -91,7 +97,7 @@ public class AuthService {
 
         User user = userRepository.findByEmail(email)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
-        if (user.isAccountLocked()) {
+        if (user.isAccountLocked() || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This account is locked");
         }
         if (user.getPasswordHash() == null || !passwordEncoder.matches(password, user.getPasswordHash())) {
@@ -119,7 +125,7 @@ public class AuthService {
             long userId = Long.parseLong(subject);
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User not found"));
-            if (user.isAccountLocked()) {
+            if (user.isAccountLocked() || !"ACTIVE".equalsIgnoreCase(user.getStatus())) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, "This account is locked");
             }
             return userResponse(user);
@@ -164,11 +170,14 @@ public class AuthService {
         result.put("id", user.getId());
         String first = user.getFirstName() == null ? "" : user.getFirstName().trim();
         String last = user.getLastName() == null ? "" : user.getLastName().trim();
-        result.put("name", (first + " " + last).trim());
+        String fullName = user.getName() == null || user.getName().isBlank()
+                ? (first + " " + last).trim() : user.getName().trim();
+        result.put("name", fullName);
         result.put("email", user.getEmail());
         result.put("phone", user.getPhone());
         result.put("role", user.getRole() == null ? UserRole.CUSTOMER.name() : user.getRole().name());
-        result.put("status", user.isAccountLocked() ? "LOCKED" : "ACTIVE");
+        result.put("status", user.isAccountLocked() || !"ACTIVE".equalsIgnoreCase(user.getStatus())
+                ? (user.getStatus() == null ? "LOCKED" : user.getStatus()) : "ACTIVE");
         return result;
     }
 
