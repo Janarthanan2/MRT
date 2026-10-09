@@ -31,13 +31,13 @@ public class User {
     @Column(name = "last_name", length = 100)
     private String lastName;
 
-    @Column(unique = true, nullable = false)
+    @Column(length = 254, unique = true, nullable = false)
     private String email;
 
-    @Column(name = "password_hash", nullable = false)
+    @Column(name = "password_hash")
     private String passwordHash;
 
-    @Column(length = 30)
+    @Column(length = 20)
     private String phone;
 
     @Enumerated(EnumType.STRING)
