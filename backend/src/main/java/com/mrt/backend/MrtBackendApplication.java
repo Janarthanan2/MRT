@@ -65,6 +65,19 @@ class MrtController {
    return userId;
   }catch(JwtException|IllegalArgumentException ex){return null;}
  }
+ int adminAuthorizationStatus(String h){
+  if(h==null||!h.startsWith("Bearer "))return 401;
+  try{
+   Claims claims=jwtService.parse(h.substring(7).trim());
+   long userId=Long.parseLong(claims.getSubject());
+   List<Map<String,Object>> rows=db.queryForList("select role,account_locked from users where id=?",userId);
+   if(rows.isEmpty())return 401;
+   Object locked=rows.get(0).get("account_locked");
+   if(Boolean.TRUE.equals(locked)||(locked!=null&&"true".equalsIgnoreCase(String.valueOf(locked))))return 401;
+   String role=String.valueOf(rows.get(0).get("role"));
+   return "ADMIN".equalsIgnoreCase(role)||"SUPER_ADMIN".equalsIgnoreCase(role)?200:403;
+  }catch(JwtException|IllegalArgumentException ex){return 401;}
+ }
  @GetMapping("/cart") Map<String,Object> cart(@RequestHeader(value="Authorization",required=false)String h){Long u=auth(h);if(u==null)return fail("Authentication required");return ok(db.queryForList("select ci.*,p.name,p.price,p.image_url,p.stock from cart_items ci join carts c on c.id=ci.cart_id join products p on p.id=ci.product_id where c.user_id=?",u));}
  @PostMapping("/cart/items") Map<String,Object> addCart(@RequestHeader(value="Authorization",required=false)String h,@RequestBody Map<String,Object>b){Long u=auth(h);if(u==null)return fail("Authentication required");long p=id(b,"productId");int q=Integer.parseInt(String.valueOf(b.getOrDefault("quantity",1)));List<Map<String,Object>>c=db.queryForList("select id from carts where user_id=?",u);long cid=c.isEmpty()?insertId("insert into carts(user_id) values(?)",u):((Number)c.get(0).get("id")).longValue();List<Map<String,Object>>i=db.queryForList("select id,quantity from cart_items where cart_id=? and product_id=?",cid,p);if(i.isEmpty())db.update("insert into cart_items(cart_id,product_id,quantity) values(?,?,?)",cid,p,q);else db.update("update cart_items set quantity=quantity+? where id=?",q,i.get(0).get("id"));return cart(h);}
  @PutMapping("/cart/items/{id}") Map<String,Object> updateCart(@RequestHeader(value="Authorization",required=false)String h,@PathVariable long id,@RequestBody Map<String,Object>b){Long u=auth(h);if(u==null)return fail("Authentication required");db.update("update cart_items set quantity=? where id=? and cart_id in(select id from carts where user_id=?)",b.get("quantity"),id,u);return cart(h);}
