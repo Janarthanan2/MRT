@@ -59,12 +59,19 @@ class MrtController {
   try{
    Claims claims=jwtService.parse(token);
    long userId=Long.parseLong(claims.getSubject());
-   List<Map<String,Object>> rows=db.queryForList("select account_locked from users where id=?",userId);
-   if(rows.isEmpty())return null;
-   Object locked=rows.get(0).get("account_locked");
-   if(locked instanceof Boolean b && b)return null;
-   if(locked!=null && "true".equalsIgnoreCase(String.valueOf(locked)))return null;
-   return userId;
+   List<Map<String,Object>> rows;
+   boolean locked;
+   try {
+    rows=db.queryForList("select account_locked from users where id=?",userId);
+    if(rows.isEmpty())return null;
+    Object value=rows.get(0).get("account_locked");
+    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)));
+   } catch(org.springframework.jdbc.BadSqlGrammarException schemaMismatch) {
+    rows=db.queryForList("select status from users where id=?",userId);
+    if(rows.isEmpty())return null;
+    locked=!"ACTIVE".equalsIgnoreCase(String.valueOf(rows.get(0).get("status")));
+   }
+   return locked?null:userId;
   }catch(JwtException|IllegalArgumentException ex){return null;}
  }
  int adminAuthorizationStatus(String h){
