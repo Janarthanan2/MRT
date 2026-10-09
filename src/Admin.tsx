@@ -1157,21 +1157,13 @@ export default function Admin({ onBack }: { onBack: () => void }) {
             <TableHeader cols={['Product', 'Stock', 'Units Sold', 'Turnover Rate', 'Status']} />
             <tbody>
               {products.slice(0, 6).map(p => {
-                const sold = Number(p.review_count || 0)
-                const turnover = (p.stock + sold) > 0 ? ((sold / (p.stock + sold)) * 100).toFixed(1) : '0.0'
+                // Product data does not currently include units sold, so don't treat review_count as sales.
                 return (
                   <tr key={p.id} className="border-b border-stone-100">
                     <td className="py-2.5 px-3 pl-5 text-sm text-stone-700">{p.name}</td>
                     <td className="py-2.5 px-3 text-sm">{p.stock}</td>
-                    <td className="py-2.5 px-3 text-sm text-stone-600">{sold}</td>
-                    <td className="py-2.5 px-3">
-                      <div className="flex items-center gap-2">
-                        <div className="h-1.5 w-16 bg-stone-100 rounded-full overflow-hidden">
-                          <div className="h-full rounded-full" style={{ width: `${turnover}%`, background: BRASS }} />
-                        </div>
-                        <span className="text-xs text-stone-600">{turnover}%</span>
-                      </div>
-                    </td>
+                    <td className="py-2.5 px-3 text-sm text-stone-400">—</td>
+                    <td className="py-2.5 px-3 text-xs text-stone-400">Unavailable</td>
                     <td className="py-2.5 px-3 pr-5"><StatusBadge status={p.stock === 0 ? 'Inactive' : p.stock < 5 ? 'Draft' : 'Active'} /></td>
                   </tr>
                 )
