@@ -222,6 +222,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const [dailyOrders, setDailyOrders] = useState<any[]>([])
   const [bestSellers, setBestSellers] = useState<any[]>([])
   const [categoryData, setCategoryData] = useState<any[]>([])
+  const [dashboardSummary, setDashboardSummary] = useState<any>({})
   const [selectedReq, setSelectedReq] = useState<CustomRequest | null>(null)
   const [showQuoteForm, setShowQuoteForm] = useState(false)
   const [quoteForm, setQuoteForm] = useState({ amount: '', validity: '30', notes: '', deliveryDays: '45' })
@@ -338,6 +339,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       loader().then(setter).catch(() => {})
     }
 
+    load(adminApi.dashboard, setDashboardSummary)
     load(adminApi.categories, (rows: any[]) => setCategories(rows.map((c: any) => ({ id: Number(c.id), name: c.name || '', image_url: c.image_url || '', description: c.description || '', active: c.active !== false, status: c.status || '', product_count: Number(c.product_count || 0) }))))
     load(adminApi.products, (rows: any[]) => setProducts(rows.map((p: any) => ({
       id: Number(p.id), name: p.name || '', category: p.category || '', price: Number(p.price || 0),
@@ -368,9 +370,17 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     load(adminApi.notifications, setNotifications)
     load(adminApi.users, setAdminUsers)
     load(adminApi.activityLog, setActivityLog)
-    load(adminApi.revenue, setRevenueData)
-    load(adminApi.analyticsOrders, setDailyOrders)
-    load(adminApi.analyticsProducts, setBestSellers)
+    load(adminApi.revenue, (rows: any[]) => setRevenueData(rows.map((r: any) => ({
+      month: r.report_date ? new Date(r.report_date).toLocaleDateString('en-IN', { month: 'short', year: '2-digit' }) : '',
+      revenue: Number(r.revenue || 0),
+    })).reverse()))
+    load(adminApi.analyticsOrders, (rows: any[]) => setDailyOrders(rows.map((r: any) => ({
+      day: r.status || 'Unknown',
+      orders: Number(r.count || 0),
+    }))))
+    load(adminApi.analyticsProducts, (rows: any[]) => setBestSellers(rows.map((p: any) => ({
+      ...p, sold: Number(p.review_count || 0), revenue: 0,
+    }))))
     load(adminApi.dashboardCategories, setCategoryData)
   }, [loggedIn])
 
@@ -507,23 +517,24 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
   // ── Page: Dashboard ───────────────────────────────────────────────────────
 
+  const money = (value: unknown) => '₹' + Number(value || 0).toLocaleString('en-IN', { maximumFractionDigits: 0 })
   const DashboardPage = () => (
     <div className="space-y-6">
       <div>
         <h1 className="text-xl font-bold text-stone-800">Dashboard</h1>
-        <p className="text-xs text-stone-500 mt-0.5">Welcome back, Suresh. Here's your business at a glance.</p>
+        <p className="text-xs text-stone-500 mt-0.5">Here's your business at a glance, based on the latest available data.</p>
       </div>
 
       {/* Stat Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon="₹" label="Total Revenue" value="₹21.4L" sub="This fiscal year" trend="+12.4%" color="brass" />
-        <StatCard icon="📦" label="Total Orders" value="1,247" sub="Last 30 days: 211" trend="+8.2%" color="green" />
-        <StatCard icon="👥" label="Customers" value="892" sub="68 new this month" trend="+9.1%" color="blue" />
-        <StatCard icon="🏺" label="Products Listed" value="128" sub="10 categories" color="purple" />
-        <StatCard icon="⚠️" label="Low Stock Items" value="6" sub="Need reorder" color="amber" />
-        <StatCard icon="⏳" label="Pending Orders" value="23" sub="Awaiting processing" color="amber" />
-        <StatCard icon="✉️" label="Custom Requests" value="5" sub="Needs attention" trend="+2 new" color="red" />
-        <StatCard icon="↩️" label="Return Requests" value="3" sub="Awaiting review" color="red" />
+        <StatCard icon="₹" label="Total Revenue" value={money(dashboardSummary.revenue)} sub="From recorded orders" color="brass" />
+        <StatCard icon="📦" label="Total Orders" value={String(dashboardSummary.orders ?? orders.length)} sub="All recorded orders" color="green" />
+        <StatCard icon="👥" label="Customers" value={String(dashboardSummary.customers ?? customers.length)} sub="Registered accounts" color="blue" />
+        <StatCard icon="🏺" label="Products Listed" value={String(dashboardSummary.products ?? products.length)} sub={categories.length + ' categories'} color="purple" />
+        <StatCard icon="⚠️" label="Low Stock Items" value={String(products.filter(p => p.stock > 0 && p.stock <= 10).length)} sub="10 units or fewer" color="amber" />
+        <StatCard icon="⏳" label="Pending Orders" value={String(orders.filter(o => ['Pending', 'Processing', 'New'].includes(o.status)).length)} sub="Awaiting processing" color="amber" />
+        <StatCard icon="✉️" label="Custom Requests" value={String(requests.filter(r => !['Confirmed', 'Declined'].includes(r.status)).length)} sub="Open requests" color="red" />
+        <StatCard icon="↩️" label="Return Requests" value={String(orders.filter(o => o.status === 'Returned').length)} sub="Marked as returned" color="red" />
       </div>
 
       {/* Charts row */}
@@ -531,7 +542,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
         <div className="md:col-span-2 bg-white rounded-xl border border-stone-200 p-5 shadow-sm">
           <div className="flex items-center justify-between mb-5">
             <h3 className="font-semibold text-stone-700 text-sm">Revenue & Orders — Last 6 Months</h3>
-            <span className="text-[10px] text-stone-400">Apr–Sep 2025</span>
+            <span className="text-[10px] text-stone-400">Based on recorded order dates</span>
           </div>
           <ResponsiveContainer width="100%" height={200}>
             <AreaChart data={revenueData}>
@@ -1058,10 +1069,10 @@ export default function Admin({ onBack }: { onBack: () => void }) {
 
       {/* KPI row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <StatCard icon="₹" label="Monthly Revenue" value="₹4.21L" trend="+8.4%" color="brass" />
-        <StatCard icon="📦" label="Orders This Month" value="211" trend="+11.2%" color="green" />
-        <StatCard icon="🛒" label="Avg. Order Value" value="₹1,995" trend="+2.1%" color="blue" />
-        <StatCard icon="↩️" label="Return Rate" value="2.4%" trend="-0.3%" color="amber" />
+        <StatCard icon="₹" label="Recorded Revenue" value={money(dashboardSummary.revenue)} sub="From recorded orders" color="brass" />
+        <StatCard icon="📦" label="Orders" value={String(dashboardSummary.orders ?? orders.length)} sub="All recorded orders" color="green" />
+        <StatCard icon="🛒" label="Average Order Value" value={money(orders.length ? orders.reduce((sum, order) => sum + order.total, 0) / orders.length : 0)} sub="Based on loaded orders" color="blue" />
+        <StatCard icon="↩️" label="Returned Orders" value={String(orders.filter(o => o.status === 'Returned').length)} sub="Recorded returns" color="amber" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-5">
@@ -1111,12 +1122,12 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                     <span className="text-xs text-stone-700">{p.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-semibold text-stone-700">{p.sold} sold</span>
-                    <p className="text-[10px] text-stone-400">₹{p.revenue.toLocaleString()}</p>
+                    <span className="text-xs font-semibold text-stone-700">{Number(p.stock || 0)} in stock</span>
+                    <p className="text-[10px] text-stone-400">{Number(p.review_count || 0)} reviews</p>
                   </div>
                 </div>
                 <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${(p.sold / 312) * 100}%`, background: i === 0 ? BRASS : GOLD }} />
+                  <div className="h-full rounded-full" style={{ width: `${Math.min(100, Number(p.stock || 0))}%`, background: i === 0 ? BRASS : GOLD }} />
                 </div>
               </div>
             ))}
@@ -1146,8 +1157,8 @@ export default function Admin({ onBack }: { onBack: () => void }) {
             <TableHeader cols={['Product', 'Stock', 'Units Sold', 'Turnover Rate', 'Status']} />
             <tbody>
               {products.slice(0, 6).map(p => {
-                const sold = Math.floor(Math.random() * 200 + 50)
-                const turnover = ((sold / (p.stock + sold)) * 100).toFixed(1)
+                const sold = Number(p.review_count || 0)
+                const turnover = (p.stock + sold) > 0 ? ((sold / (p.stock + sold)) * 100).toFixed(1) : '0.0'
                 return (
                   <tr key={p.id} className="border-b border-stone-100">
                     <td className="py-2.5 px-3 pl-5 text-sm text-stone-700">{p.name}</td>
@@ -1377,9 +1388,9 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     <div>
       <SectionHeader title="Inventory Management" action="Update Stock" />
       <div className="grid grid-cols-3 gap-4 mb-6">
-        <StatCard icon="📦" label="Total SKUs" value="128" color="brass" />
-        <StatCard icon="⚠️" label="Low Stock" value="6" sub="Below 10 units" color="amber" />
-        <StatCard icon="🚫" label="Out of Stock" value="2" color="red" />
+        <StatCard icon="📦" label="Total SKUs" value={String(products.length)} color="brass" />
+        <StatCard icon="⚠️" label="Low Stock" value={String(products.filter(p => p.stock > 0 && p.stock <= 10).length)} sub="Below or equal to 10 units" color="amber" />
+        <StatCard icon="🚫" label="Out of Stock" value={String(products.filter(p => p.stock === 0).length)} color="red" />
       </div>
       <div className="bg-white rounded-xl border border-stone-200 shadow-sm overflow-hidden">
         <table className="w-full">
@@ -1399,7 +1410,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   <td className="py-2.5 px-3">
                     <span className={`text-[10px] font-semibold ${stockColor}`}>{stockStatus}</span>
                   </td>
-                  <td className="py-2.5 px-3 text-[10px] text-stone-400">Sep 24, 2025</td>
+                  <td className="py-2.5 px-3 text-[10px] text-stone-400">—</td>
                   <td className="py-2.5 px-3 pr-5">
                     <button className="text-xs font-medium hover:underline" style={{ color: BRASS }}>Update</button>
                   </td>
