@@ -548,7 +548,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                     <label className="block text-[10px] font-semibold uppercase tracking-widest text-stone-500 mb-1.5">Admin Email</label>
                     <input
                       type="email"
-                      placeholder="admin@mrtmetalmart.in"
+                      placeholder="Administrator email"
                       value={loginForm.email}
                       onChange={e => setLoginForm(f => ({ ...f, email: e.target.value }))}
                       className="w-full border border-stone-200 rounded-lg px-4 py-3 text-sm outline-none focus:border-amber-600 transition-colors"
@@ -585,7 +585,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
                   </button>
 
                   <p className="text-[10px] text-stone-400 text-center mt-2">
-                    Hint: admin@mrtmetalmart.in / admin123
+                    Use an administrator account created by an authorized administrator.
                   </p>
                 </div>
               )}
