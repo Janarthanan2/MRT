@@ -4,6 +4,7 @@ import in.mrt.domain.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Entity
 @Table(name = "users")
@@ -16,6 +17,13 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "public_id", length = 36, nullable = false, unique = true, updatable = false)
+    @Builder.Default
+    private String publicId = UUID.randomUUID().toString();
+
+    @Column(length = 200)
+    private String name;
 
     @Column(name = "first_name", length = 100, nullable = false)
     private String firstName;
@@ -41,6 +49,13 @@ public class User {
     @Column(name = "email_verified", nullable = false)
     @Builder.Default
     private boolean emailVerified = false;
+
+    @Column(name = "email_verified_at")
+    private LocalDateTime emailVerifiedAt;
+
+    @Column(name = "status", length = 20, nullable = false)
+    @Builder.Default
+    private String status = "ACTIVE";
 
 
     @Column(name = "account_locked", nullable = false)
