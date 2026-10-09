@@ -61,7 +61,7 @@ function normalizeSettings(raw: any): Record<string, string> {
   const source = raw?.settings ?? raw
   if (Array.isArray(source)) {
     return Object.fromEntries(source
-      .map((entry: any) => [String(entry.key ?? entry.setting_key ?? ''), String(entry.value ?? entry.setting_value ?? '')])
+      .map((entry: any): [string, string] => [String(entry.key ?? entry.setting_key ?? ''), String(entry.value ?? entry.setting_value ?? '')])
       .filter(([key]) => Boolean(key)))
   }
   if (source && typeof source === 'object') {
@@ -646,6 +646,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
   const lowStockProducts = products.filter(product => product.stock <= 5)
   const pendingOrdersCount = orders.filter(order => ['Processing', 'Pending'].includes(order.status)).length
   const returnedOrdersCount = orders.filter(order => order.status === 'Returned').length
+  const maxBestSellerSold = Math.max(1, ...bestSellers.map((item: any) => Number(item.sold ?? item.units_sold ?? 0)))
   const formatCurrency = (value: number) => `₹${Math.round(Number.isFinite(value) ? value : 0).toLocaleString('en-IN')}`
 
   // ── Login Screen ─────────────────────────────────────────────────────────
@@ -1376,19 +1377,19 @@ export default function Admin({ onBack }: { onBack: () => void }) {
           <h3 className="font-semibold text-stone-700 text-sm mb-5">🏆 Bestselling Products</h3>
           <div className="space-y-3">
             {bestSellers.map((p, i) => (
-              <div key={p.name}>
+              <div key={String(p.id ?? p.product_id ?? p.name ?? i)}>
                 <div className="flex items-center justify-between mb-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[10px] font-bold w-4" style={{ color: i < 3 ? GOLD : '#78716c' }}>#{i+1}</span>
                     <span className="text-xs text-stone-700">{p.name}</span>
                   </div>
                   <div className="text-right">
-                    <span className="text-xs font-semibold text-stone-700">{p.sold} sold</span>
+                    <span className="text-xs font-semibold text-stone-700">{Number(p.sold ?? p.units_sold ?? 0)} sold</span>
                     <p className="text-[10px] text-stone-400">₹{Number(p.revenue ?? p.total_revenue ?? 0).toLocaleString('en-IN')}</p>
                   </div>
                 </div>
                 <div className="h-1.5 bg-stone-100 rounded-full overflow-hidden">
-                  <div className="h-full rounded-full" style={{ width: `${(p.sold / 312) * 100}%`, background: i === 0 ? BRASS : GOLD }} />
+                  <div className="h-full rounded-full" style={{ width: `${Math.min(100, Math.max(0, Number(p.sold ?? p.units_sold ?? 0) / maxBestSellerSold * 100))}%`, background: i === 0 ? BRASS : GOLD }} />
                 </div>
               </div>
             ))}
