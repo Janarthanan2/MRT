@@ -7,6 +7,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.jdbc.core.JdbcTemplate;
+import in.mrt.security.JwtService;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -30,7 +33,6 @@ public class MrtBackendApplication {
  public static void main(String[] args){SpringApplication.run(MrtBackendApplication.class,args);}
  @Bean PasswordEncoder passwordEncoder(){return new BCryptPasswordEncoder();}
  @Bean SecurityFilterChain security(HttpSecurity h)throws Exception{return h.csrf(c->c.disable()).cors(c->{}).sessionManagement(s->s.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).authorizeHttpRequests(a->a.requestMatchers(HttpMethod.OPTIONS,"/**").permitAll().anyRequest().permitAll()).build();}
- @Bean WebMvcConfigurer adminAuthorization(MrtController controller){return new WebMvcConfigurer(){@Override public void addInterceptors(InterceptorRegistry registry){registry.addInterceptor(new HandlerInterceptor(){@Override public boolean preHandle(HttpServletRequest request,HttpServletResponse response,Object handler)throws java.io.IOException{String path=request.getRequestURI();if(!path.startsWith("/api/admin/"))return true;int status=controller.adminAuthorizationStatus(request.getHeader("Authorization"));if(status==200)return true;response.setStatus(status);response.setContentType("application/json");response.getWriter().write(status==401?"{\"success\":false,\"message\":\"Authentication required\"}":"{\"success\":false,\"message\":\"Admin role required\"}");return false;}});}};}
  @Bean CorsConfigurationSource cors(@Value("${mrt.cors-origins}")String origins){CorsConfiguration c=new CorsConfiguration();c.setAllowedOrigins(Arrays.asList(origins.split(",")));c.setAllowedMethods(List.of("*"));c.setAllowedHeaders(List.of("*"));c.setAllowCredentials(true);UrlBasedCorsConfigurationSource s=new UrlBasedCorsConfigurationSource();s.registerCorsConfiguration("/**",c);return s;}
 }
 
@@ -38,16 +40,10 @@ public class MrtBackendApplication {
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:4173"})
 @RequestMapping("/api")
 class MrtController {
- static final Map<String,Long> tokens=new ConcurrentHashMap<>();
- private final JdbcTemplate db; private final PasswordEncoder enc; private final String adminEmail,adminPassword;
- MrtController(JdbcTemplate db,PasswordEncoder enc,@Value("${mrt.admin-email}")String ae,@Value("${mrt.admin-password}")String ap){this.db=db;this.enc=enc;adminEmail=ae;adminPassword=ap;}
+ private final JdbcTemplate db; private final PasswordEncoder enc; private final JwtService jwtService;
+ MrtController(JdbcTemplate db,PasswordEncoder enc,JwtService jwtService){this.db=db;this.enc=enc;this.jwtService=jwtService;}
  Map<String,Object> ok(Object d){return Map.of("success",true,"data",d);} Map<String,Object> fail(String m){return Map.of("success",false,"message",m);}
  long insertId(String sql,Object... args){KeyHolder kh=new GeneratedKeyHolder();db.update(conn->{var ps=conn.prepareStatement(sql,Statement.RETURN_GENERATED_KEYS);for(int i=0;i<args.length;i++)ps.setObject(i+1,args[i]);return ps;},kh);Map<String,Object> keys=kh.getKeys();Object key=keys==null?null:(keys.get("ID")!=null?keys.get("ID"):keys.get("id"));return key==null?0:((Number)key).longValue();} long id(Map<String,Object>b,String k){return Long.parseLong(String.valueOf(b.get(k)));}
-
- @PostMapping("/auth/register") Map<String,Object> register(@RequestBody Map<String,Object>b){String e=String.valueOf(b.get("email")).toLowerCase();if(!db.queryForList("select id from users where email=?",e).isEmpty())return fail("Email already registered");long id=insertId("insert into users(name,email,password_hash,phone) values(?,?,?,?)",b.get("name"),e,enc.encode(String.valueOf(b.get("password"))),b.get("phone"));String t=UUID.randomUUID().toString();tokens.put(t,id);return ok(Map.of("token",t,"user",db.queryForMap("select id,name,email,phone,role,status from users where id=?",id)));}
- @PostMapping("/auth/login") Map<String,Object> login(@RequestBody Map<String,Object>b){String e=String.valueOf(b.get("email")).toLowerCase(),p=String.valueOf(b.get("password"));if(e.equals(adminEmail)&&p.equals(adminPassword)){List<Map<String,Object>>x=db.queryForList("select id from users where email=?",e);long id=x.isEmpty()?insertId("insert into users(name,email,password_hash,role) values(?,?,?,'SUPER_ADMIN')","MRT Admin",e,enc.encode(p)):((Number)x.get(0).get("id")).longValue();String t=UUID.randomUUID().toString();tokens.put(t,id);return ok(Map.of("token",t,"user",db.queryForMap("select id,name,email,role,status from users where id=?",id)));}List<Map<String,Object>>x=db.queryForList("select * from users where email=? and status='ACTIVE'",e);if(x.isEmpty()||!enc.matches(p,String.valueOf(x.get(0).get("password_hash"))))return fail("Invalid email or password");long id=((Number)x.get(0).get("id")).longValue();String t=UUID.randomUUID().toString();tokens.put(t,id);return ok(Map.of("token",t,"user",db.queryForMap("select id,name,email,phone,role,status from users where id=?",id)));}
- @PostMapping("/auth/logout") Map<String,Object> logout(@RequestHeader(value="Authorization",required=false)String h){if(h!=null)tokens.remove(h.replace("Bearer ",""));return ok("Logged out");}
- @GetMapping("/auth/me") Map<String,Object> me(@RequestHeader(value="Authorization",required=false)String h){Long id=h==null?null:tokens.get(h.replace("Bearer ",""));return id==null?fail("Not authenticated"):ok(db.queryForMap("select id,name,email,phone,role,status from users where id=?",id));}
 
  @GetMapping("/products") Map<String,Object> products(@RequestParam(required=false)String search){String q="select p.*,c.name category from products p left join categories c on c.id=p.category_id where p.status='ACTIVE'";if(search!=null&&!search.isBlank())q+=" and lower(p.name) like '%"+search.toLowerCase().replace("'","''")+"%'";return ok(db.queryForList(q+" order by p.featured desc,p.id desc"));}
  @GetMapping("/products/{id}") Map<String,Object> product(@PathVariable long id){return ok(db.queryForMap("select p.*,c.name category from products p left join categories c on c.id=p.category_id where p.id=?",id));}
@@ -55,8 +51,19 @@ class MrtController {
  @GetMapping("/categories") Map<String,Object> cats(){return ok(db.queryForList("select * from categories where active=true order by name"));}
  @GetMapping("/categories/{id}") Map<String,Object> cat(@PathVariable long id){return ok(db.queryForMap("select * from categories where id=?",id));}
 
- private Long auth(String h){return h==null?null:tokens.get(h.replace("Bearer ",""));}
- int adminAuthorizationStatus(String header){Long userId=auth(header);if(userId==null)return 401;List<Map<String,Object>> rows=db.queryForList("select role,status from users where id=?",userId);if(rows.isEmpty())return 401;String status=String.valueOf(rows.get(0).getOrDefault("status","ACTIVE"));if(!"ACTIVE".equalsIgnoreCase(status))return 401;String role=String.valueOf(rows.get(0).getOrDefault("role","CUSTOMER"));return "ADMIN".equalsIgnoreCase(role)||"SUPER_ADMIN".equalsIgnoreCase(role)?200:403;}
+ private Long auth(String h){
+  if(h==null||!h.startsWith("Bearer "))return null;
+  try{
+   Claims claims=jwtService.parse(h.substring(7).trim());
+   long userId=Long.parseLong(claims.getSubject());
+   List<Map<String,Object>> rows=db.queryForList("select account_locked from users where id=?",userId);
+   if(rows.isEmpty())return null;
+   Object locked=rows.get(0).get("account_locked");
+   if(locked instanceof Boolean b && b)return null;
+   if(locked!=null && "true".equalsIgnoreCase(String.valueOf(locked)))return null;
+   return userId;
+  }catch(JwtException|IllegalArgumentException ex){return null;}
+ }
  @GetMapping("/cart") Map<String,Object> cart(@RequestHeader(value="Authorization",required=false)String h){Long u=auth(h);if(u==null)return fail("Authentication required");return ok(db.queryForList("select ci.*,p.name,p.price,p.image_url,p.stock from cart_items ci join carts c on c.id=ci.cart_id join products p on p.id=ci.product_id where c.user_id=?",u));}
  @PostMapping("/cart/items") Map<String,Object> addCart(@RequestHeader(value="Authorization",required=false)String h,@RequestBody Map<String,Object>b){Long u=auth(h);if(u==null)return fail("Authentication required");long p=id(b,"productId");int q=Integer.parseInt(String.valueOf(b.getOrDefault("quantity",1)));List<Map<String,Object>>c=db.queryForList("select id from carts where user_id=?",u);long cid=c.isEmpty()?insertId("insert into carts(user_id) values(?)",u):((Number)c.get(0).get("id")).longValue();List<Map<String,Object>>i=db.queryForList("select id,quantity from cart_items where cart_id=? and product_id=?",cid,p);if(i.isEmpty())db.update("insert into cart_items(cart_id,product_id,quantity) values(?,?,?)",cid,p,q);else db.update("update cart_items set quantity=quantity+? where id=?",q,i.get(0).get("id"));return cart(h);}
  @PutMapping("/cart/items/{id}") Map<String,Object> updateCart(@RequestHeader(value="Authorization",required=false)String h,@PathVariable long id,@RequestBody Map<String,Object>b){Long u=auth(h);if(u==null)return fail("Authentication required");db.update("update cart_items set quantity=? where id=? and cart_id in(select id from carts where user_id=?)",b.get("quantity"),id,u);return cart(h);}
@@ -141,22 +148,3 @@ class MrtController {
 }
 
 
-/** Enforces server-side authorization for every admin API route. */
-@Configuration
-class AdminApiAuthorizationConfig implements WebMvcConfigurer {
- private final JdbcTemplate db;
- AdminApiAuthorizationConfig(JdbcTemplate db){this.db=db;}
- @Override public void addInterceptors(InterceptorRegistry registry){registry.addInterceptor(new HandlerInterceptor(){
-  @Override public boolean preHandle(HttpServletRequest request,HttpServletResponse response,Object handler)throws Exception{
-   if(!request.getRequestURI().startsWith(request.getContextPath()+"/api/admin/")) return true;
-   String header=request.getHeader("Authorization");
-   String token=header!=null&&header.startsWith("Bearer ")?header.substring(7).trim():"";
-   Long userId=MrtController.tokens.get(token);
-   if(userId==null){response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);response.setContentType("application/json");response.getWriter().write("{\"success\":false,\"message\":\"Authentication required\"}");return false;}
-   List<Map<String,Object>> rows=db.queryForList("select role from users where id=?",userId);
-   String role=rows.isEmpty()||rows.get(0).get("role")==null?"":String.valueOf(rows.get(0).get("role")).trim().toUpperCase(Locale.ROOT);
-   if(!role.equals("ADMIN")&&!role.equals("SUPER_ADMIN")){response.setStatus(HttpServletResponse.SC_FORBIDDEN);response.setContentType("application/json");response.getWriter().write("{\"success\":false,\"message\":\"Admin role required\"}");return false;}
-   return true;
-  }
- });}
-}
