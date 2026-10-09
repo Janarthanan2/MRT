@@ -62,11 +62,10 @@ class MrtController {
    List<Map<String,Object>> rows;
    boolean locked;
    try {
-    rows=db.queryForList("select account_locked,status from users where id=?",userId);
+    rows=db.queryForList("select account_locked from users where id=?",userId);
     if(rows.isEmpty())return null;
     Object value=rows.get(0).get("account_locked");
-    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)))
-      || !"ACTIVE".equalsIgnoreCase(String.valueOf(rows.get(0).get("status")));
+    locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)));
    } catch(org.springframework.jdbc.BadSqlGrammarException schemaMismatch) {
     rows=db.queryForList("select status from users where id=?",userId);
     if(rows.isEmpty())return null;
@@ -85,7 +84,7 @@ class MrtController {
    List<Map<String,Object>> rows;
    boolean locked;
    try {
-    rows=db.queryForList("select role,account_locked,status from users where id=?",userId);
+    rows=db.queryForList("select role,account_locked from users where id=?",userId);
     if(rows.isEmpty())return 401;
     Object value=rows.get(0).get("account_locked");
     locked=Boolean.TRUE.equals(value)||(value!=null&&"true".equalsIgnoreCase(String.valueOf(value)))
@@ -164,7 +163,7 @@ class MrtController {
  @PostMapping("/admin/users") Map<String,Object> adminUserCreate(@RequestBody Map<String,Object>b){String name=String.valueOf(b.getOrDefault("name","")).trim();String[] parts=name.isEmpty()?new String[]{"Admin",""}:name.split("\\s+",2);String role=String.valueOf(b.getOrDefault("role","STAFF")).toUpperCase(Locale.ROOT);if(!Set.of("CUSTOMER","STAFF","ADMIN","SUPER_ADMIN").contains(role))role="STAFF";db.update("insert into users(public_id,name,first_name,last_name,email,password_hash,role,status,email_verified,account_locked) values(?,?,?,?,?,?,?,?,?,?)",UUID.randomUUID().toString(),name,parts[0],parts.length>1?parts[1]:null,b.get("email"),enc.encode(String.valueOf(b.get("password"))),role,"ACTIVE",false,false);return admins();}
  @PutMapping("/admin/users/{id}") Map<String,Object> adminUserUpdate(@PathVariable long id,@RequestBody Map<String,Object>b){String name=String.valueOf(b.getOrDefault("name","")).trim();String[] parts=name.isEmpty()?new String[]{"",""}:name.split("\\s+",2);String role=String.valueOf(b.getOrDefault("role","STAFF")).toUpperCase(Locale.ROOT);if(!Set.of("CUSTOMER","STAFF","ADMIN","SUPER_ADMIN").contains(role))return fail("Invalid role");db.update("update users set name=?,first_name=?,last_name=?,email=?,role=? where id=?",name,parts[0],parts.length>1?parts[1]:null,b.get("email"),role,id);return admins();}
  @DeleteMapping("/admin/users/{id}") Map<String,Object> adminUserDelete(@PathVariable long id){db.update("delete from users where id=?",id);return ok("Deleted");}
- @PatchMapping("/admin/users/{id}/status") Map<String,Object> adminUserStatus(@PathVariable long id,@RequestBody Map<String,Object>b){db.update("update users set status=? where id=?",b.get("status"),id);return admins();}
+ @PatchMapping("/admin/users/{id}/status") Map<String,Object> adminUserStatus(@PathVariable long id,@RequestBody Map<String,Object>b){String status=String.valueOf(b.get("status"));db.update("update users set status=?,account_locked=? where id=?",status,!"ACTIVE".equalsIgnoreCase(status),id);return admins();}
  @PutMapping("/admin/settings") Map<String,Object> adminSettingsSave(@RequestBody Map<String,Object>b){b.forEach((k,v)->db.update("merge into admin_settings(setting_key,setting_value) key(setting_key) values(?,?)",k,String.valueOf(v)));return settings();}
  @PutMapping("/admin/settings/password") Map<String,Object> adminPassword(@RequestHeader(value="Authorization",required=false)String h,@RequestBody Map<String,Object>b){Long u=auth(h);if(u==null)return fail("Authentication required");db.update("update users set password_hash=? where id=?",enc.encode(String.valueOf(b.get("newPassword"))),u);return ok("Password updated");}
  private long count(String t){return Optional.ofNullable(db.queryForObject("select count(*) from "+t,Long.class)).orElse(0L);}
@@ -178,7 +177,7 @@ class MrtController {
  @GetMapping("/admin/dashboard/categories") Map<String,Object> dashboardCategories(){return ok(db.queryForList("select c.id,c.name,count(p.id) product_count from categories c left join products p on p.category_id=c.id group by c.id,c.name order by product_count desc"));}
  @GetMapping("/admin/customers/{id}") Map<String,Object> customer(@PathVariable long id){return ok(db.queryForMap("select id,name,email,phone,role,status,created_at from users where id=?",id));}
  @GetMapping("/admin/customers/{id}/orders") Map<String,Object> customerOrders(@PathVariable long id){return ok(db.queryForList("select * from orders where user_id=? order by created_at desc",id));}
- @PatchMapping("/admin/customers/{id}/status") Map<String,Object> customerStatus(@PathVariable long id,@RequestBody Map<String,Object>b){db.update("update users set status=? where id=?",b.get("status"),id);return customer(id);}
+ @PatchMapping("/admin/customers/{id}/status") Map<String,Object> customerStatus(@PathVariable long id,@RequestBody Map<String,Object>b){String status=String.valueOf(b.get("status"));db.update("update users set status=?,account_locked=? where id=?",status,!"ACTIVE".equalsIgnoreCase(status),id);return customer(id);}
  @GetMapping("/admin/quotations/{id}") Map<String,Object> adminQuotation(@PathVariable long id){return ok(db.queryForMap("select * from quotations where id=?",id));}
  @PostMapping("/admin/quotations") Map<String,Object> adminQuotationCreate(@RequestBody Map<String,Object>b){db.update("insert into quotations(custom_order_id,user_id,amount,notes,status) values(?,?,?,?,?)",b.get("customOrderId"),b.get("userId"),b.get("amount"),b.get("notes"),b.getOrDefault("status","Draft"));return quotes();}
  @PutMapping("/admin/quotations/{id}") Map<String,Object> adminQuotationUpdate(@PathVariable long id,@RequestBody Map<String,Object>b){db.update("update quotations set amount=?,notes=?,status=? where id=?",b.get("amount"),b.get("notes"),b.getOrDefault("status","Draft"),id);return adminQuotation(id);}
