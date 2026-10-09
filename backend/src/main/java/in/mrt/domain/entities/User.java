@@ -41,7 +41,7 @@ public class User {
     private String phone;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(length = 30, nullable = false)
     @Builder.Default
     private UserRole role = UserRole.CUSTOMER;
 
