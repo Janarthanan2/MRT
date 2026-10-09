@@ -232,7 +232,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
     try {
       const result = await authApi.login(loginForm.email, loginForm.password) as any
       const user = result?.user ?? result?.data?.user ?? result?.data ?? result
-      const role = String(user?.role ?? user?.user_role ?? user?.userRole ?? '').trim().toUpperCase()
+      const role = String(user?.role ?? user?.ROLE ?? user?.user_role ?? user?.USER_ROLE ?? user?.userRole ?? user?.USERROLE ?? '').trim().toUpperCase()
 
       if (role === 'SUPER_ADMIN' || role === 'ADMIN') {
         setLoggedIn(true)
@@ -259,7 +259,7 @@ export default function Admin({ onBack }: { onBack: () => void }) {
       .then((result: any) => {
         if (cancelled) return
         const user = result?.user ?? result?.data?.user ?? result?.data ?? result
-        const role = String(user?.role ?? user?.user_role ?? '').toUpperCase()
+        const role = String(user?.role ?? user?.ROLE ?? user?.user_role ?? user?.USER_ROLE ?? user?.userRole ?? user?.USERROLE ?? '').trim().toUpperCase()
         if (role === 'ADMIN' || role === 'SUPER_ADMIN') {
           setLoggedIn(true)
           setLoginError('')
