@@ -9,20 +9,11 @@ CREATE DATABASE IF NOT EXISTS mrt_metal_mart
 
 USE mrt_metal_mart;
 
-SET FOREIGN_KEY_CHECKS = 0;
+-- SAFETY: Never drop application tables from this bootstrap script.
+-- Existing data is preserved. This script is intended only for an empty database;
+-- use versioned Flyway migrations for changes to an existing installation.
 
-DROP TABLE IF EXISTS audit_logs, notifications, customization_assets, customizations,
-  rfq_quotations, rfq_status_history, rfq_items, rfqs,
-  order_status_history, shipments, payments, order_items, order_addresses, orders,
-  coupon_usages, coupons, reviews,
-  wishlist_items, wishlists, cart_items, carts,
-  inventory_transactions, inventory, product_variants, product_specifications,
-  product_images, products, brands, categories,
-  addresses, users;
-
-SET FOREIGN_KEY_CHECKS = 1;
-
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   first_name VARCHAR(100) NOT NULL,
   last_name VARCHAR(100) NULL,
@@ -37,7 +28,7 @@ CREATE TABLE users (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-CREATE TABLE addresses (
+CREATE TABLE IF NOT EXISTS addresses (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL,
   name VARCHAR(150) NOT NULL,
@@ -54,7 +45,7 @@ CREATE TABLE addresses (
   INDEX idx_addresses_user (user_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE categories (
+CREATE TABLE IF NOT EXISTS categories (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   parent_id BIGINT UNSIGNED NULL,
   name VARCHAR(150) NOT NULL,
@@ -69,7 +60,7 @@ CREATE TABLE categories (
   INDEX idx_categories_parent (parent_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE brands (
+CREATE TABLE IF NOT EXISTS brands (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL UNIQUE,
   slug VARCHAR(180) NOT NULL UNIQUE,
@@ -80,7 +71,7 @@ CREATE TABLE brands (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-CREATE TABLE products (
+CREATE TABLE IF NOT EXISTS products (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   slug VARCHAR(280) NOT NULL UNIQUE,
@@ -113,7 +104,7 @@ CREATE TABLE products (
   INDEX idx_products_price (price)
 ) ENGINE=InnoDB;
 
-CREATE TABLE product_images (
+CREATE TABLE IF NOT EXISTS product_images (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   product_id BIGINT UNSIGNED NOT NULL,
   image_url VARCHAR(1000) NOT NULL,
@@ -125,7 +116,7 @@ CREATE TABLE product_images (
   INDEX idx_product_images_product (product_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE product_specifications (
+CREATE TABLE IF NOT EXISTS product_specifications (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   product_id BIGINT UNSIGNED NOT NULL,
   specification_name VARCHAR(150) NOT NULL,
@@ -136,7 +127,7 @@ CREATE TABLE product_specifications (
   INDEX idx_product_specifications_product (product_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE product_variants (
+CREATE TABLE IF NOT EXISTS product_variants (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   product_id BIGINT UNSIGNED NOT NULL,
   sku VARCHAR(100) NOT NULL UNIQUE,
@@ -152,7 +143,7 @@ CREATE TABLE product_variants (
   INDEX idx_product_variants_product (product_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE inventory (
+CREATE TABLE IF NOT EXISTS inventory (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   product_id BIGINT UNSIGNED NOT NULL,
   variant_id BIGINT UNSIGNED NULL,
@@ -166,7 +157,7 @@ CREATE TABLE inventory (
   INDEX idx_inventory_product (product_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE inventory_transactions (
+CREATE TABLE IF NOT EXISTS inventory_transactions (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   product_id BIGINT UNSIGNED NOT NULL,
   variant_id BIGINT UNSIGNED NULL,
@@ -182,7 +173,7 @@ CREATE TABLE inventory_transactions (
   INDEX idx_inventory_tx_reference (reference_type, reference_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE carts (
+CREATE TABLE IF NOT EXISTS carts (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL UNIQUE,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -190,7 +181,7 @@ CREATE TABLE carts (
   CONSTRAINT fk_carts_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE cart_items (
+CREATE TABLE IF NOT EXISTS cart_items (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   cart_id BIGINT UNSIGNED NOT NULL,
   product_id BIGINT UNSIGNED NOT NULL,
@@ -205,14 +196,14 @@ CREATE TABLE cart_items (
   INDEX idx_cart_items_product (product_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE wishlists (
+CREATE TABLE IF NOT EXISTS wishlists (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL UNIQUE,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT fk_wishlists_user FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE wishlist_items (
+CREATE TABLE IF NOT EXISTS wishlist_items (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   wishlist_id BIGINT UNSIGNED NOT NULL,
   product_id BIGINT UNSIGNED NOT NULL,
@@ -222,7 +213,7 @@ CREATE TABLE wishlist_items (
   UNIQUE KEY uq_wishlist_product (wishlist_id, product_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE orders (
+CREATE TABLE IF NOT EXISTS orders (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_number VARCHAR(50) NOT NULL UNIQUE,
   user_id BIGINT UNSIGNED NOT NULL,
@@ -241,7 +232,7 @@ CREATE TABLE orders (
   INDEX idx_orders_created (created_at)
 ) ENGINE=InnoDB;
 
-CREATE TABLE order_addresses (
+CREATE TABLE IF NOT EXISTS order_addresses (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT UNSIGNED NOT NULL,
   address_type ENUM('BILLING','SHIPPING') NOT NULL,
@@ -257,7 +248,7 @@ CREATE TABLE order_addresses (
   UNIQUE KEY uq_order_address_type (order_id, address_type)
 ) ENGINE=InnoDB;
 
-CREATE TABLE order_items (
+CREATE TABLE IF NOT EXISTS order_items (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT UNSIGNED NOT NULL,
   product_id BIGINT UNSIGNED NOT NULL,
@@ -277,7 +268,7 @@ CREATE TABLE order_items (
   INDEX idx_order_items_product (product_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE payments (
+CREATE TABLE IF NOT EXISTS payments (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT UNSIGNED NOT NULL,
   provider VARCHAR(50) NOT NULL,
@@ -295,7 +286,7 @@ CREATE TABLE payments (
   INDEX idx_payments_reference (payment_reference)
 ) ENGINE=InnoDB;
 
-CREATE TABLE shipments (
+CREATE TABLE IF NOT EXISTS shipments (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT UNSIGNED NOT NULL,
   courier VARCHAR(100) NULL,
@@ -311,7 +302,7 @@ CREATE TABLE shipments (
   INDEX idx_shipments_tracking (tracking_number)
 ) ENGINE=InnoDB;
 
-CREATE TABLE order_status_history (
+CREATE TABLE IF NOT EXISTS order_status_history (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT UNSIGNED NOT NULL,
   status VARCHAR(50) NOT NULL,
@@ -323,7 +314,7 @@ CREATE TABLE order_status_history (
   INDEX idx_order_history_order (order_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE coupons (
+CREATE TABLE IF NOT EXISTS coupons (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   code VARCHAR(50) NOT NULL UNIQUE,
   description VARCHAR(500) NULL,
@@ -340,7 +331,7 @@ CREATE TABLE coupons (
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
-CREATE TABLE coupon_usages (
+CREATE TABLE IF NOT EXISTS coupon_usages (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   coupon_id BIGINT UNSIGNED NOT NULL,
   user_id BIGINT UNSIGNED NOT NULL,
@@ -354,7 +345,7 @@ CREATE TABLE coupon_usages (
   INDEX idx_coupon_usage_user (user_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE reviews (
+CREATE TABLE IF NOT EXISTS reviews (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL,
   product_id BIGINT UNSIGNED NOT NULL,
@@ -374,7 +365,7 @@ CREATE TABLE reviews (
   INDEX idx_reviews_product (product_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE rfqs (
+CREATE TABLE IF NOT EXISTS rfqs (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   reference_number VARCHAR(50) NOT NULL UNIQUE,
   user_id BIGINT UNSIGNED NULL,
@@ -392,7 +383,7 @@ CREATE TABLE rfqs (
   INDEX idx_rfqs_user (user_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE rfq_items (
+CREATE TABLE IF NOT EXISTS rfq_items (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   rfq_id BIGINT UNSIGNED NOT NULL,
   product_id BIGINT UNSIGNED NULL,
@@ -404,7 +395,7 @@ CREATE TABLE rfq_items (
   INDEX idx_rfq_items_rfq (rfq_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE rfq_quotations (
+CREATE TABLE IF NOT EXISTS rfq_quotations (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   rfq_id BIGINT UNSIGNED NOT NULL,
   quotation_number VARCHAR(50) NOT NULL UNIQUE,
@@ -422,7 +413,7 @@ CREATE TABLE rfq_quotations (
   INDEX idx_rfq_quotes_rfq (rfq_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE rfq_status_history (
+CREATE TABLE IF NOT EXISTS rfq_status_history (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   rfq_id BIGINT UNSIGNED NOT NULL,
   status VARCHAR(50) NOT NULL,
@@ -434,7 +425,7 @@ CREATE TABLE rfq_status_history (
   INDEX idx_rfq_history_rfq (rfq_id)
 ) ENGINE=InnoDB;
 
-CREATE TABLE customizations (
+CREATE TABLE IF NOT EXISTS customizations (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_item_id BIGINT UNSIGNED NOT NULL,
   text_line_1 VARCHAR(255) NULL,
@@ -448,7 +439,7 @@ CREATE TABLE customizations (
   CONSTRAINT fk_customizations_order_item FOREIGN KEY (order_item_id) REFERENCES order_items(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE customization_assets (
+CREATE TABLE IF NOT EXISTS customization_assets (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   customization_id BIGINT UNSIGNED NOT NULL,
   file_url VARCHAR(1000) NOT NULL,
@@ -457,7 +448,7 @@ CREATE TABLE customization_assets (
   CONSTRAINT fk_customization_assets_customization FOREIGN KEY (customization_id) REFERENCES customizations(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
-CREATE TABLE notifications (
+CREATE TABLE IF NOT EXISTS notifications (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NOT NULL,
   type VARCHAR(80) NOT NULL,
@@ -469,7 +460,7 @@ CREATE TABLE notifications (
   INDEX idx_notifications_user_read (user_id, is_read)
 ) ENGINE=InnoDB;
 
-CREATE TABLE audit_logs (
+CREATE TABLE IF NOT EXISTS audit_logs (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT UNSIGNED NULL,
   action VARCHAR(100) NOT NULL,
