@@ -1,0 +1,4 @@
+in\mrt\domain\services\ShipmentServiceTest.class
+in\mrt\domain\services\AuthServiceTest.class
+in\mrt\domain\services\OrderServiceTest.class
+in\mrt\domain\mappers\OrderMapperTest.class
